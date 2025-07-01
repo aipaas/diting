@@ -43,3 +43,37 @@ exclude = [
 testpaths = [
   "tests",
 ]
+
+[tool.coverage.run]
+include = [
+    "src/**/*.py",
+    "tests/**/*.py",
+]
+branch = true
+
+# https://coverage.readthedocs.io/en/latest/config.html#report
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
+ignore_errors = true
+precision = 2
+exclude_lines = [
+    # `# pragma: no cover` is standard marker for code that's not covered, this will error if code is covered
+    'pragma: no cover',
+    # use `# pragma: lax no cover` if you want to ignore cases where (some of) the code is covered
+    'pragma: lax no cover',
+    'raise NotImplementedError',
+    'if TYPE_CHECKING:',
+    'if typing.TYPE_CHECKING:',
+    '@overload',
+    '@deprecated',
+    '@typing.overload',
+    '@abstractmethod',
+    '\(Protocol\):$',
+    'typing.assert_never',
+    '$\s*assert_never\(',
+    'if __name__ == .__main__.:',
+    'except ImportError as _import_error:',
+    '$\s*pass$',
+    'assert False',
+]

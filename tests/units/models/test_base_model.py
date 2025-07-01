@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 class MockLLM(BaseLLM):
     def load_model(self, *args: Tuple[Any], **kwargs: Dict[str, Any]):
-        return "Model Loaded"
+        return None
 
     def generate(self, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> str:
         return "Generated Response"
@@ -23,7 +23,7 @@ class TestBaseLLM(unittest.IsolatedAsyncioTestCase):
 
     def test_load_model(self):
         result = self.model.load_model()
-        self.assertEqual(result, "Model Loaded")
+        self.assertEqual(result, None)
 
     def test_generate(self):
         result = self.model.generate()

@@ -6,7 +6,6 @@ from diting.models.base_model import BaseLLM
 
 
 class BaseMetric(ABC):
-    threshold: float
     score: Optional[float] = None
     model = Optional[BaseLLM]
 

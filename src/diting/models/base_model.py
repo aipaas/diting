@@ -36,7 +36,7 @@ class BaseLLM(ABC):
         Returns:
             A list of strings.
         """
-        raise AttributeError
+        raise NotImplementedError
 
     @abstractmethod
     def get_model_name(self, *args: Any, **kwargs: Dict[str, Any]) -> str:

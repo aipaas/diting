@@ -4,7 +4,7 @@ from diting.metrics.base_metric import BaseMetric
 from typing import Any, Dict, Tuple
 
 
-class MockMetric(BaseMetric):
+class MockBaseMetric(BaseMetric):
     async def compute(
         self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
     ) -> float:
@@ -13,7 +13,7 @@ class MockMetric(BaseMetric):
 
 class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        self.metric = MockMetric()
+        self.metric = MockBaseMetric()
         self.test_case = LLMCase(input="Test input", actual_output="Test output")
 
     async def test_compute(self):

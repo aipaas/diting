@@ -1,5 +1,6 @@
 import unittest
-from typing import Any, Dict, Tuple
+from typing import Any
+from typing import Dict
 from unittest.mock import AsyncMock
 
 from diting.cases.llm_case import LLMCase, LLMCaseParams
@@ -9,7 +10,7 @@ from diting.metrics.base_metric import _assert_testcase_validity
 
 class MockBaseMetric(BaseMetric):
     async def _compute(
-        self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
+        self, test_case: LLMCase, *args: Any, **kwargs: Any
     ) -> MetricValue:
         return MetricValue(score=1.0)
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple, List
+from typing import Any, List
 from diting.cases.llm_case import LLMCase, LLMCaseParams
 from diting.metrics.base_metric import BaseMetric, MetricValue
 
@@ -29,7 +29,7 @@ class LengthRatioExampleMetric(BaseMetric):
     ]
 
     async def _compute(
-        self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
+        self, test_case: LLMCase, *args: Any, **kwargs: Any
     ) -> MetricValue:
         """
         Compute the ratio of actual output length to expected output length.

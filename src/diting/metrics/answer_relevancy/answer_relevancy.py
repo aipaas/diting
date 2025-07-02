@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from dataclasses import field, dataclass
-from typing import Type, Tuple, Any, List, Dict
+from typing import Type, Any, List, Optional
 
+from diting.callbacks.base import Callbacks
+from diting.callbacks.manager import new_group
 from diting.cases.llm_case import LLMCase, LLMCaseParams
 from diting.metrics.answer_relevancy.schema import (
     AnswerRelevancyVerdict,
@@ -60,16 +62,21 @@ class AnswerRelevancyMetric(BaseMetric):
     evaluation_template: Type[AnswerRelevancyTemplate] = AnswerRelevancyTemplate
 
     async def _compute(
-        self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
+        self,
+        test_case: LLMCase,
+        *args: Any,
+        callbacks: Optional[Callbacks] = None,
+        **kwargs: Any,
     ) -> MetricValue:
-        assert test_case.user_input
-        assert test_case.actual_output
-        assert test_case.expected_output
+        assert test_case.user_input, "user_input cannot be empty"
+        assert test_case.actual_output, "actual_output cannot be empty"
+        assert test_case.expected_output, "expected_output cannot be empty"
+
         statements: List[str] = await self._a_generate_statements(
-            test_case.actual_output
+            test_case.actual_output, callbacks
         )
         verdicts: List[AnswerRelevancyVerdict] = await self._a_generate_verdicts(
-            test_case.user_input, statements
+            test_case.user_input, statements, callbacks
         )
         score = _calculate_score(verdicts)
         reason = None
@@ -77,8 +84,7 @@ class AnswerRelevancyMetric(BaseMetric):
             reason = await self._a_generate_reason(
                 test_case.user_input, score, verdicts
             )
-
-        return MetricValue(
+        metric_value = MetricValue(
             score=score,
             reason=reason,
             run_logs={
@@ -87,20 +93,40 @@ class AnswerRelevancyMetric(BaseMetric):
             },
         )
 
+        return metric_value
+
     async def _a_generate_statements(
         self,
         actual_output: str,
+        callbacks: Optional[Callbacks] = None,
     ) -> List[str]:
         prompt = self.evaluation_template.generate_statements(
             actual_output=actual_output,
         )
-        res: Statements = await self.model.generate_structured_output(
-            prompt, schema=Statements
+        print(f"callbacks in _a_generate_statements:{callbacks}")
+        run_mgt, grp_cb = await new_group(
+            name="generate_statements",
+            inputs={"actual_output": actual_output},
+            callbacks=callbacks,
         )
-        return res.statements
+
+        try:
+            res: Statements = await self.model.generate_structured_output(
+                prompt, schema=Statements, callbacks=grp_cb
+            )
+            statements = res.statements
+        except Exception as e:
+            await run_mgt.on_chain_error(e)
+            raise e
+
+        await run_mgt.on_chain_end(outputs={"statements": statements})
+        return statements
 
     async def _a_generate_verdicts(
-        self, user_input: str, statements: List[str]
+        self,
+        user_input: str,
+        statements: List[str],
+        callbacks: Optional[Callbacks] = None,
     ) -> List[AnswerRelevancyVerdict]:
         if len(statements) == 0:
             return []
@@ -110,7 +136,21 @@ class AnswerRelevancyMetric(BaseMetric):
             statements=statements,
         )
 
-        res = await self.model.generate_structured_output(prompt, schema=Verdicts)
+        run_mgt, grp_cb = await new_group(
+            name="generate_verdicts",
+            inputs={"user_input": user_input, "statements": statements},
+            callbacks=callbacks,
+        )
+        try:
+            res = await self.model.generate_structured_output(
+                prompt, schema=Verdicts, callbacks=callbacks
+            )
+            verdicts = res.verdicts
+        except Exception as e:
+            await run_mgt.on_chain_error(e)
+            raise e
+
+        await run_mgt.on_chain_end(outputs={"verdicts": verdicts})
         return res.verdicts
 
     async def _a_generate_reason(

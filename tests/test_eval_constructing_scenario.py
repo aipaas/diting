@@ -1,7 +1,7 @@
 import unittest
 from diting.cases.llm_case import LLMCase
 from diting.metrics.base_metric import BaseMetric, MetricValue
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from diting.models.base_model import BaseLLM
 
@@ -15,7 +15,7 @@ class MockMetric(BaseMetric):
         self.model = model
 
     async def _compute(
-        self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
+        self, test_case: LLMCase, *args: Any, **kwargs: Any
     ) -> MetricValue:
         # Example logic for computing a metric
         if test_case.user_input == "error":
@@ -30,7 +30,7 @@ class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
 
     async def test_compute_valid_case(self):
         test_case = LLMCase(user_input="Valid input", actual_output="Output")
-        kwargs: Dict[str, Any] = {"debug": True}
+        kwargs: dict[str, Any] = {"debug": True}
         result = await self.metric.compute(test_case, **kwargs)
         self.assertEqual(result.score, 1.0)
 

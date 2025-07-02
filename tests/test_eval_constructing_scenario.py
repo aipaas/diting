@@ -1,7 +1,7 @@
 import unittest
 from diting.cases.llm_case import LLMCase
-from diting.metrics.base_metric import BaseMetric
-from typing import Any, Dict, Optional, Tuple, Union
+from diting.metrics.base_metric import BaseMetric, MetricValue
+from typing import Any, Dict, Tuple
 
 from diting.models.base_model import BaseLLM
 
@@ -10,17 +10,17 @@ from diting.models.base_model import BaseLLM
 class MockMetric(BaseMetric):
     def __init__(
         self,
-        model: Optional[Union[str, BaseLLM]] = None,
+        model: BaseLLM | None,
     ):
         self.model = model
 
-    async def compute(
+    async def _compute(
         self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
-    ) -> float:
+    ) -> MetricValue:
         # Example logic for computing a metric
-        if test_case.input == "error":
+        if test_case.user_input == "error":
             raise ValueError("Invalid input")
-        return 1.0
+        return MetricValue(score=1.0)
 
 
 class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
@@ -30,12 +30,12 @@ class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
         self.metric = MockMetric(model=None)
 
     async def test_compute_valid_case(self):
-        test_case = LLMCase(input="Valid input", actual_output="Output")
+        test_case = LLMCase(user_input="Valid input", actual_output="Output")
         result = await self.metric.compute(test_case)
-        self.assertEqual(result, 1.0)
+        self.assertEqual(result.score, 1.0)
 
     async def test_compute_error_case(self):
-        test_case = LLMCase(input="error", actual_output="Output")
+        test_case = LLMCase(user_input="error", actual_output="Output")
         with self.assertRaises(ValueError) as context:
             await self.metric.compute(test_case)
         self.assertEqual(str(context.exception), "Invalid input")

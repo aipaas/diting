@@ -1,43 +1,34 @@
 from abc import ABC, abstractmethod
-from typing import List, Any, Dict
+import typing as t
+from pydantic import BaseModel
+
+_BM = t.TypeVar("_BM", bound=BaseModel)
+_DictOrPydanticClass = t.Union[dict[str, t.Any], type[_BM], type]
+_Pydantic = _BM
 
 
 class BaseLLM(ABC):
     @abstractmethod
-    def load_model(self, *args: Any, **kwargs: Dict[str, Any]):
-        """Loads a model, that will be responsible for scoring.
-
-        Returns:
-            A model object
+    async def generate(self, *args: t.Any, **kwargs: t.Dict[str, t.Any]) -> str:
         """
-        pass
-
-    @abstractmethod
-    def generate(self, *args: Any, **kwargs: Dict[str, Any]) -> str:
-        """Runs the model to output LLM response.
+        Runs the model to output LLM response.
 
         Returns:
             A string.
         """
-        pass
+        ...
 
     @abstractmethod
-    async def a_generate(self, *args: Any, **kwargs: Dict[str, Any]) -> str:
-        """Runs the model to output LLM response.
+    async def generate_structured_output(
+        self,
+        prompt: str,
+        schema: t.Optional[_DictOrPydanticClass] = None,
+        **kwargs: t.Any,
+    ) -> _Pydantic:
+        """
+        Runs the model to output LLM structured response.
 
         Returns:
-            A string.
+            A BaseModel instance.
         """
-        pass
-
-    def batch_generate(self, *args: Any, **kwargs: Dict[str, Any]) -> List[str]:
-        """Runs the model to output LLM responses.
-
-        Returns:
-            A list of strings.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_model_name(self, *args: Any, **kwargs: Dict[str, Any]) -> str:
-        pass
+        ...

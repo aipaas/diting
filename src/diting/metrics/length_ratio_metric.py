@@ -1,6 +1,6 @@
-from typing import Any, Dict, Tuple
-from diting.cases.llm_case import LLMCase
-from diting.metrics.base_metric import BaseMetric
+from typing import Any, Dict, Tuple, List
+from diting.cases.llm_case import LLMCase, LLMCaseParams
+from diting.metrics.base_metric import BaseMetric, MetricValue
 
 
 class LengthRatioExampleMetric(BaseMetric):
@@ -15,13 +15,22 @@ class LengthRatioExampleMetric(BaseMetric):
 
     Note: This is an example metric only.
 
-    Attributes:
-        score (float): The computed length ratio score.
+    Constraints:
+        To use the LengthRatioExampleMetric, you'll have to provide the following arguments when creating an LLMTestCase:
+            - expected_output
+            - actual_output
+        The expected_output and actual_output are required to create an LLMCase (and hence required by all metrics)
+        even though they might not be used for metric calculation.
     """
 
-    async def compute(
+    _required_params: List[LLMCaseParams] = [
+        LLMCaseParams.EXPECTED_OUTPUT,
+        LLMCaseParams.ACTUAL_OUTPUT,
+    ]
+
+    async def _compute(
         self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
-    ) -> float:
+    ) -> MetricValue:
         """
         Compute the ratio of actual output length to expected output length.
 
@@ -31,14 +40,18 @@ class LengthRatioExampleMetric(BaseMetric):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            float: The length ratio, or 0 if no expected output exists.
+            MetricValue: whose score calculate by the length ratio, or 0 if no expected output exists.
         """
+
+        assert test_case.expected_output is not None
+        assert test_case.actual_output is not None
+
         expected_length = (
             len(test_case.expected_output) if test_case.expected_output else 0
         )
         actual_length = len(test_case.actual_output)
 
+        score = 0.0
         if expected_length > 0:
-            self.score = actual_length / expected_length
-            return self.score
-        return 0.0
+            score = actual_length / expected_length
+        return MetricValue(score=score)

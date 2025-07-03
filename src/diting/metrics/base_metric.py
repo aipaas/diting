@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 import typing as t
+import time
 from dataclasses import dataclass
 
 from diting.cases.llm_case import LLMCase, LLMCaseParams
 from diting.utilities.slug import camel_to_snake
+from diting.utilities.print import get_bolded_text, get_colored_text, print_text
 
 
 @dataclass
@@ -11,6 +13,13 @@ class MetricValue:
     score: t.Optional[float] = None
     reason: t.Optional[str] = None
     run_logs: t.Optional[t.Dict[str, t.Any]] = None
+
+    def __str__(self):
+        return (
+            f"MetricValue(score={self.score}, "
+            f"reason={self.reason}, "
+            f"run_logs={self.run_logs})"
+        )
 
 
 class BaseMetric(ABC):
@@ -50,10 +59,44 @@ class BaseMetric(ABC):
         4. Executes post-computation callbacks
         """
         _assert_testcase_validity(self.name, test_case, self._required_params)
-        # todo start callback
-        metric_value = await self._compute(test_case, *args, **kwargs)
-        # todo error/end callback
-        return metric_value
+        debug = kwargs.get("debug", False)
+        try:
+            if debug:
+                print(
+                    f"Starting {get_colored_text(self.name, color='green')} evaluation algorithm"
+                )
+                required_params_info = ", ".join(
+                    [
+                        get_colored_text(p.name, color="green")
+                        for p in self._required_params
+                    ]
+                )
+                print(
+                    f"Algorithm requires the following parameters: {required_params_info}"
+                )
+                print(get_bolded_text("Test Case Information:"))
+                print(get_colored_text(str(test_case), "blue"))
+            start_time: float = time.perf_counter()
+            metric_value = await self._compute(test_case, *args, **kwargs)
+            end_time: float = time.perf_counter()
+            duration = int((end_time - start_time) * 1000)
+            if debug:
+                print(
+                    get_bolded_text(
+                        f"Computation Complete! Total time taken: {duration} ms"
+                    )
+                )
+                print(get_bolded_text("Metric Value:"))
+                print(get_colored_text(str(metric_value), color="green"))
+            return metric_value
+        except Exception as err:
+            if debug:
+                print_text("Error occurred during computation:", color="red")
+                print_text(str(err), color="red")
+            raise
+        finally:
+            if debug:
+                print(get_bolded_text("Evaluation finished."))
 
     @abstractmethod
     async def _compute(

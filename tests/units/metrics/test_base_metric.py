@@ -1,5 +1,6 @@
 import unittest
 from typing import Any, Dict, Tuple
+from unittest.mock import AsyncMock
 
 from diting.cases.llm_case import LLMCase, LLMCaseParams
 from diting.metrics.base_metric import BaseMetric, MetricValue
@@ -21,6 +22,15 @@ class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
     async def test_compute(self):
         result = await self.metric.compute(self.test_case)
         self.assertEqual(result.score, 1.0)
+
+    async def test_compute_exception_handling(self):
+        metric = MockBaseMetric()
+        metric._compute = AsyncMock()
+        metric._compute.side_effect = ValueError("Simulated computation error")
+        with self.assertRaises(ValueError) as context:
+            kwargs: Dict[str, Any] = {"debug": True}
+            await metric.compute(self.test_case, **kwargs)
+        self.assertEqual(str(context.exception), "Simulated computation error")
 
 
 class TestAssertTestcaseValidity(unittest.TestCase):

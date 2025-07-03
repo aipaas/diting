@@ -31,6 +31,9 @@ lint = [
     "ruff>=0.12.1",
 ]
 
+[tool.ruff.format]
+line-ending = "lf"
+
 [tool.mypy]
 strict = true
 ignore_missing_imports = true

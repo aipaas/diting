@@ -48,6 +48,15 @@ class LLMCase:
     context: Optional[List[str]] = None
     retrieval_context: Optional[List[str]] = None
 
+    def __str__(self):
+        return (
+            f"LLMCase(user_input={self.user_input}, "
+            f"actual_output={self.actual_output}, "
+            f"expected_output={self.expected_output}, "
+            f"context={self.context}, "
+            f"retrieval_context={self.retrieval_context})"
+        )
+
 
 class LLMCaseParams(Enum):
     USER_INPUT = "user_input"

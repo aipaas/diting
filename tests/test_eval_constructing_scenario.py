@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 from diting.models.base_model import BaseLLM
 
 
-# 1. 定义一个指标，实现算法
+# 1. Define a metric, implementing the algorithm
 class MockMetric(BaseMetric):
     def __init__(
         self,
@@ -25,13 +25,13 @@ class MockMetric(BaseMetric):
 
 class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        # 2. 构造评估指标，依赖所评估的模型
-        # 3. 评估可解释性数据，存储在 self.metric 实例
+        # 2. Construct the evaluation metric, depending on the model being evaluated
         self.metric = MockMetric(model=None)
 
     async def test_compute_valid_case(self):
         test_case = LLMCase(user_input="Valid input", actual_output="Output")
-        result = await self.metric.compute(test_case)
+        kwargs: Dict[str, Any] = {"debug": True}
+        result = await self.metric.compute(test_case, **kwargs)
         self.assertEqual(result.score, 1.0)
 
     async def test_compute_error_case(self):
@@ -42,4 +42,9 @@ class TestBaseMetric(unittest.IsolatedAsyncioTestCase):
 
 
 if __name__ == "__main__":
+    # metric = MockMetric(model=None)
+    # test_case = LLMCase(user_input="Valid input", actual_output="Output")
+    # kwargs:Dict[str, Any] = {"debug": True}
+    # import asyncio
+    # asyncio.run(metric.compute(test_case, **kwargs))
     unittest.main()

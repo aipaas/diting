@@ -3,7 +3,7 @@ from diting.cases.llm_case import LLMCase
 from diting.metrics.base_metric import BaseMetric, MetricValue
 from typing import Any
 
-from diting.models.base_model import BaseLLM
+from diting.models.llms.base_model import BaseLLM
 
 
 # 1. Define a metric, implementing the algorithm

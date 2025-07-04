@@ -14,8 +14,8 @@ from diting.metrics.answer_relevancy.schema import (
 )
 from diting.metrics.answer_relevancy.template import AnswerRelevancyTemplate
 from diting.metrics.base_metric import BaseMetric, MetricValue
-from diting.models.base_model import BaseLLM
-from diting.models.factory import llm_factory
+from diting.models.llms.base_model import BaseLLM
+from diting.models.llms.factory import llm_factory
 
 
 def _calculate_score(verdicts: List[AnswerRelevancyVerdict]) -> float:

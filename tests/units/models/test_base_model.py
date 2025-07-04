@@ -1,6 +1,6 @@
 import typing as t
 import unittest
-from diting.models.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
+from diting.models.llms.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
 from typing import Any, Dict, Tuple
 
 

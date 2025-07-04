@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import patch
+
+
 from diting.metrics.answer_relevancy.answer_relevancy import (
     AnswerRelevancyMetric,
     _calculate_score,
@@ -23,6 +25,25 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             actual_output="Test answer",
             expected_output="Expected answer",
         )
+
+    async def test_compute_with_verbose(self):
+        """测试callback的情况"""
+        with patch.object(
+            self.metric, "_a_generate_statements", return_value=["statement1"]
+        ):
+            with patch.object(
+                self.metric,
+                "_a_generate_verdicts",
+                return_value=[AnswerRelevancyVerdict(verdict="yes")],
+            ):
+                result = await self.metric.compute(self.test_case, verbose=True)
+                self.assertEqual(result.score, 1.0)
+                assert result.run_logs
+                self.assertEqual(result.run_logs["statements"], ["statement1"])
+                self.assertEqual(
+                    result.run_logs["verdicts"],
+                    [AnswerRelevancyVerdict(verdict="yes")],
+                )
 
     async def test_calculate_score_all_relevant(self):
         """测试所有verdict为'yes'或'idk'的情况"""
@@ -88,7 +109,7 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             user_input="", actual_output="Output", expected_output="Expected"
         )
         with self.assertRaises(AssertionError):
-            await self.metric._compute(test_case)
+            await self.metric.compute(test_case, verbose=True)
 
     async def test_compute_missing_output(self):
         """测试缺少actual_output时抛出断言错误"""

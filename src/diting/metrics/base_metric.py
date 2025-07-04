@@ -1,11 +1,10 @@
-from abc import ABC, abstractmethod
 import typing as t
-import time
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from diting.callbacks.manager import new_group
 from diting.cases.llm_case import LLMCase, LLMCaseParams
 from diting.utilities.slug import camel_to_snake
-from diting.utilities.print import get_bolded_text, get_colored_text, print_text
 
 
 @dataclass
@@ -28,7 +27,10 @@ class BaseMetric(ABC):
     _required_params: t.List[LLMCaseParams] = []
 
     async def compute(
-        self, test_case: LLMCase, *args: t.Tuple[t.Any], **kwargs: t.Dict[str, t.Any]
+        self,
+        test_case: LLMCase,
+        *args: t.Any,
+        **kwargs: t.Any,
     ) -> MetricValue:
         """Compute metric value for a test case.
 
@@ -39,7 +41,11 @@ class BaseMetric(ABC):
         *args : t.Tuple[t.Any]
             Additional positional arguments.
         **kwargs : t.Dict[str, t.Any]
-            Additional keyword arguments.
+            verbose : bool
+                Whether to enable verbose mode. Defaults to False.
+            callbacks : Callbacks
+                The callback register to the evaluation
+            Other Additional keyword arguments.
 
         Returns
         -------
@@ -58,49 +64,34 @@ class BaseMetric(ABC):
         3. Executes computation
         4. Executes post-computation callbacks
         """
-        _assert_testcase_validity(self.name, test_case, self._required_params)
-        debug = kwargs.get("debug", False)
+        from diting.callbacks.base import ChainType
+
+        run_manager, grp_cb = await new_group(
+            name=self.name,
+            inputs={"test_case": test_case},
+            callbacks=kwargs.get("callbacks"),
+            verbose=kwargs.get("verbose", False),
+            chain_type=ChainType.METRIC,
+            required_params=self._required_params,
+        )
         try:
-            if debug:
-                print(
-                    f"Starting {get_colored_text(self.name, color='green')} evaluation algorithm"
-                )
-                required_params_info = ", ".join(
-                    [
-                        get_colored_text(p.name, color="green")
-                        for p in self._required_params
-                    ]
-                )
-                print(
-                    f"Algorithm requires the following parameters: {required_params_info}"
-                )
-                print(get_bolded_text("Test Case Information:"))
-                print(get_colored_text(str(test_case), "blue"))
-            start_time: float = time.perf_counter()
-            metric_value = await self._compute(test_case, *args, **kwargs)
-            end_time: float = time.perf_counter()
-            duration = int((end_time - start_time) * 1000)
-            if debug:
-                print(
-                    get_bolded_text(
-                        f"Computation Complete! Total time taken: {duration} ms"
-                    )
-                )
-                print(get_bolded_text("Metric Value:"))
-                print(get_colored_text(str(metric_value), color="green"))
-            return metric_value
-        except Exception as err:
-            if debug:
-                print_text("Error occurred during computation:", color="red")
-                print_text(str(err), color="red")
-            raise
-        finally:
-            if debug:
-                print(get_bolded_text("Evaluation finished."))
+            _assert_testcase_validity(self.name, test_case, self._required_params)
+            metric_value = await self._compute(
+                test_case, callbacks=grp_cb, *args, **kwargs
+            )
+        except Exception as e:
+            await run_manager.on_chain_error(e)
+            raise e
+
+        await run_manager.on_chain_end({"metric_value": metric_value})
+        return metric_value
 
     @abstractmethod
     async def _compute(
-        self, test_case: LLMCase, *args: t.Tuple[t.Any], **kwargs: t.Dict[str, t.Any]
+        self,
+        test_case: LLMCase,
+        *args: t.Any,
+        **kwargs: t.Any,
     ) -> MetricValue:
         """Abstract method to perform actual metric computation.
 

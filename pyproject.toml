@@ -5,23 +5,29 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "langchain-core>=0.3.68",
-    "langchain-openai>=0.3.27",
-    "numpy>=2.3.1",
-    "openai>=1.93.0",
-    "pydantic>=2.0.0",
+  "diting-core",
 ]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "uv-dynamic-versioning>=0.7.0"]
 build-backend = "hatchling.build"
 
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+bump = true
+
 [tool.hatch.build.targets.wheel]
-packages = ["src/diting"]
+only-include = ["/README.md"]
 
+[tool.uv.sources]
+diting-core = { workspace = true }
 
-[tool.uv]
-index-url = "http://mirrors.sangfor.org/pypi/simple/"
+[tool.uv.workspace]
+members = ["packages/*"]
 
 [dependency-groups]
 dev = [
@@ -38,24 +44,14 @@ lint = [
 [tool.ruff.format]
 line-ending = "lf"
 
-[tool.mypy]
-strict = true
-ignore_missing_imports = true
-python_version = "3.11"
-mypy_path = "./src"
-explicit_package_bases = true
-exclude = [
-  "tests/",
-]
+[tool.uv]
+index-url = "http://mirrors.sangfor.org/pypi/simple/"
 
-[tool.pytest.ini_options]
-testpaths = [
-  "tests",
-]
-
+# https://coverage.readthedocs.io/en/latest/config.html#run
 [tool.coverage.run]
+# required to avoid warnings about files created by create_module fixture
 include = [
-    "src/**/*.py",
+    "packages/**/*.py",
     "tests/**/*.py",
 ]
 branch = true

@@ -2,6 +2,12 @@ version = 1
 revision = 2
 requires-python = ">=3.11"
 
+[manifest]
+members = [
+    "diting",
+    "diting-core",
+]
+
 [[package]]
 name = "annotated-types"
 version = "0.7.0"
@@ -222,11 +228,7 @@ name = "diting"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "langchain-core" },
-    { name = "langchain-openai" },
-    { name = "numpy" },
-    { name = "openai" },
-    { name = "pydantic" },
+    { name = "diting-core" },
 ]
 
 [package.dev-dependencies]
@@ -242,13 +244,7 @@ lint = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "langchain-core", specifier = ">=0.3.68" },
-    { name = "langchain-openai", specifier = ">=0.3.27" },
-    { name = "numpy", specifier = ">=2.3.1" },
-    { name = "openai", specifier = ">=1.93.0" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-]
+requires-dist = [{ name = "diting-core", editable = "packages/diting-core" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -260,6 +256,27 @@ lint = [
     { name = "mypy", specifier = ">=1.16.1" },
     { name = "pyright", specifier = ">=1.1.402" },
     { name = "ruff", specifier = ">=0.12.1" },
+]
+
+[[package]]
+name = "diting-core"
+version = "0.1.0"
+source = { editable = "packages/diting-core" }
+dependencies = [
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "numpy" },
+    { name = "openai" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "langchain-core", specifier = ">=0.3.68" },
+    { name = "langchain-openai", specifier = ">=0.3.27" },
+    { name = "numpy", specifier = ">=2.3.1" },
+    { name = "openai", specifier = ">=1.93.0" },
+    { name = "pydantic", specifier = ">=2.0.0" },
 ]
 
 [[package]]
@@ -1027,11 +1044,11 @@ wheels = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.14.0"
+version = "4.14.1"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/typing-extensions/4.14.0/typing_extensions-4.14.0.tar.gz", hash = "sha256:8676b788e32f02ab42d9e7c61324048ae4c6d844a399eebace3d4979d75ceef4" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/typing-extensions/4.14.1/typing_extensions-4.14.1.tar.gz", hash = "sha256:38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/typing-extensions/4.14.0/typing_extensions-4.14.0-py3-none-any.whl", hash = "sha256:a1514509136dd0b477638fc68d6a91497af5076466ad0fa6c338e44e359944af" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/typing-extensions/4.14.1/typing_extensions-4.14.1-py3-none-any.whl", hash = "sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76" },
 ]
 
 [[package]]

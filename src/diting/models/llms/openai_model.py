@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import typing as t
 
-from diting.models.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
+from diting.models.llms.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
 
 
 class OpenAIModel(BaseLLM):

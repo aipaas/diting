@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from diting.models.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
+from diting.models.llms.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
 import typing as t
 
 

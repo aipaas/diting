@@ -103,8 +103,8 @@ class FileImportService:
                 # Split by semicolon or comma and clean
                 items = [
                     item.strip()
-                    for item in str(field_value).split(";")
-                    if item.strip()  # type: ignore[misc]
+                    for item in str(field_value).split(";")  # type: ignore[misc]
+                    if item.strip()
                 ]
                 if not items:
                     # Try splitting by comma if semicolon didn't work

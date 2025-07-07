@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 import typing as t
 
-from diting_core.models.llms.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
+from diting_core.models.llms.base_model import (
+    BaseLLM,
+    DictOrPydanticClass,
+    DictOrPydantic,
+)
 
 
 class OpenAIModel(BaseLLM):
@@ -11,7 +15,6 @@ class OpenAIModel(BaseLLM):
     async def generate_structured_output(
         self,
         prompt: str,
-        schema: t.Optional[_DictOrPydanticClass] = None,
+        schema: t.Optional[DictOrPydanticClass] = None,
         **kwargs: t.Any,
-    ) -> _Pydantic:
-        pass
+    ) -> DictOrPydantic: ...

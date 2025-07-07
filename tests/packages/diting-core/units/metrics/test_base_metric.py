@@ -3,9 +3,8 @@ from typing import Any
 from typing import Dict
 from unittest.mock import AsyncMock
 
-from diting_core.cases.llm_case import LLMCase, LLMCaseParams
+from diting_core.cases.llm_case import LLMCase, LLMCaseParams, assert_testcase_validity
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
-from diting_core.metrics.base_metric import _assert_testcase_validity
 
 
 class MockBaseMetric(BaseMetric):
@@ -38,17 +37,17 @@ class TestAssertTestcaseValidity(unittest.TestCase):
     def test_assert_valid_with_no_required_params(self):
         """测试 required_params 为 None 的情况"""
         test_case = LLMCase(user_input="test", actual_output="test")
-        _assert_testcase_validity("test_metric", test_case, None)
+        assert_testcase_validity("test_metric", test_case, None)
 
     def test_assert_valid_with_missing_one_param(self):
         """测试缺失单个参数的情况"""
         test_case = LLMCase(user_input=None, actual_output="test")
         required_params = [LLMCaseParams.USER_INPUT]
         with self.assertRaises(ValueError) as context:
-            _assert_testcase_validity("test_metric", test_case, required_params)
+            assert_testcase_validity("test_metric", test_case, required_params)
         self.assertEqual(
             str(context.exception),
-            "'user_input' cannot be None for the 'test_metric' metric",
+            "'user_input' cannot be None for the 'test_metric' run",
         )
 
     def test_assert_valid_with_missing_two_params(self):
@@ -56,10 +55,10 @@ class TestAssertTestcaseValidity(unittest.TestCase):
         test_case = LLMCase(user_input=None, actual_output=None)
         required_params = [LLMCaseParams.USER_INPUT, LLMCaseParams.ACTUAL_OUTPUT]
         with self.assertRaises(ValueError) as context:
-            _assert_testcase_validity("test_metric", test_case, required_params)
+            assert_testcase_validity("test_metric", test_case, required_params)
         self.assertEqual(
             str(context.exception),
-            "'user_input' and 'actual_output' cannot be None for the 'test_metric' metric",
+            "'user_input' and 'actual_output' cannot be None for the 'test_metric' run",
         )
 
     def test_assert_valid_with_missing_three_params(self):
@@ -71,10 +70,10 @@ class TestAssertTestcaseValidity(unittest.TestCase):
             LLMCaseParams.EXPECTED_OUTPUT,
         ]
         with self.assertRaises(ValueError) as context:
-            _assert_testcase_validity("test_metric", test_case, required_params)
+            assert_testcase_validity("test_metric", test_case, required_params)
         self.assertEqual(
             str(context.exception),
-            "'user_input', 'actual_output', and 'expected_output' cannot be None for the 'test_metric' metric",
+            "'user_input', 'actual_output', and 'expected_output' cannot be None for the 'test_metric' run",
         )
 
     def test_assert_valid_with_all_params_present(self):
@@ -87,13 +86,13 @@ class TestAssertTestcaseValidity(unittest.TestCase):
             LLMCaseParams.ACTUAL_OUTPUT,
             LLMCaseParams.EXPECTED_OUTPUT,
         ]
-        _assert_testcase_validity("test_metric", test_case, required_params)
+        assert_testcase_validity("test_metric", test_case, required_params)
 
     def test_assert_valid_with_empty_required_params(self):
         """测试 required_params 为空集合的情况"""
         test_case = LLMCase(user_input="value", actual_output="value")
         required_params = None
-        _assert_testcase_validity("test_metric", test_case, required_params)
+        assert_testcase_validity("test_metric", test_case, required_params)
 
     def test_assert_valid_with_missing_multiple_params(self):
         """测试缺失多个参数（超过三个）的情况"""
@@ -105,8 +104,8 @@ class TestAssertTestcaseValidity(unittest.TestCase):
             LLMCaseParams.CONTEXT,
         ]
         with self.assertRaises(ValueError) as context:
-            _assert_testcase_validity("test_metric", test_case, required_params)
-        expected_error = "'user_input', 'actual_output', 'expected_output', and 'context' cannot be None for the 'test_metric' metric"
+            assert_testcase_validity("test_metric", test_case, required_params)
+        expected_error = "'user_input', 'actual_output', 'expected_output', and 'context' cannot be None for the 'test_metric' run"
         self.assertEqual(str(context.exception), expected_error)
 
     def test_assert_valid_with_missing_params_and_custom_metric_name(self):
@@ -114,10 +113,10 @@ class TestAssertTestcaseValidity(unittest.TestCase):
         test_case = LLMCase(user_input=None, actual_output="test")
         required_params = [LLMCaseParams.USER_INPUT]
         with self.assertRaises(ValueError) as context:
-            _assert_testcase_validity("custom_metric", test_case, required_params)
+            assert_testcase_validity("custom_metric", test_case, required_params)
         self.assertEqual(
             str(context.exception),
-            "'user_input' cannot be None for the 'custom_metric' metric",
+            "'user_input' cannot be None for the 'custom_metric' run",
         )
 
     def test_assert_valid_with_missing_params_and_multiple_missing(self):
@@ -131,8 +130,10 @@ class TestAssertTestcaseValidity(unittest.TestCase):
             LLMCaseParams.EXPECTED_OUTPUT,
         ]
         with self.assertRaises(ValueError) as context:
-            _assert_testcase_validity("test_metric", test_case, required_params)
-        expected_error = "'user_input' and 'actual_output' cannot be None for the 'test_metric' metric"
+            assert_testcase_validity("test_metric", test_case, required_params)
+        expected_error = (
+            "'user_input' and 'actual_output' cannot be None for the 'test_metric' run"
+        )
         self.assertEqual(str(context.exception), expected_error)
 
 

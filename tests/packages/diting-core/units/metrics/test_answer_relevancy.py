@@ -1,6 +1,6 @@
 import unittest
+from typing import Optional, Any, Tuple, Dict
 from unittest.mock import patch
-
 
 from diting_core.metrics.answer_relevancy.answer_relevancy import (
     AnswerRelevancyMetric,
@@ -13,7 +13,24 @@ from diting_core.metrics.answer_relevancy.schema import (
     Statements,
     Reason,
 )
-from .mock_model import MockLLM
+from diting_core.models.llms.base_model import (
+    BaseLLM,
+    DictOrPydanticClass,
+    DictOrPydantic,
+)
+
+
+class MockLLM(BaseLLM):
+    async def generate(self, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> str:
+        return "Generated Response"
+
+    async def generate_structured_output(
+        self,
+        prompt: str,
+        schema: Optional[DictOrPydanticClass] = None,
+        **kwargs: Any,
+    ) -> DictOrPydantic:
+        return {"testkey": "testval"}
 
 
 class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
@@ -305,3 +322,7 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(
                     result.score, 2 / 3
                 )  # "yes"和"idk"视为相关，"no"不相关
+
+
+if __name__ == "__main__":
+    unittest.main()

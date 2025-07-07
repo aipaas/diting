@@ -277,6 +277,7 @@ Callbacks = Optional[Union[list[BaseCallbackHandler], BaseCallbackManager]]
 
 class ChainType(Enum):
     METRIC = "metric"
+    GENERATE_RULE = "generate_rule"
     FUNC = "func"
 
 

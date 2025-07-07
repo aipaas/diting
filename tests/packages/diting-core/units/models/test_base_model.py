@@ -1,6 +1,10 @@
 import typing as t
 import unittest
-from diting_core.models.llms.base_model import BaseLLM, _DictOrPydanticClass, _Pydantic
+from diting_core.models.llms.base_model import (
+    BaseLLM,
+    DictOrPydanticClass,
+    DictOrPydantic,
+)
 from typing import Any, Dict, Tuple
 
 
@@ -11,9 +15,9 @@ class MockLLM(BaseLLM):
     async def generate_structured_output(
         self,
         prompt: str,
-        schema: t.Optional[_DictOrPydanticClass] = None,
+        schema: t.Optional[DictOrPydanticClass] = None,
         **kwargs: t.Any,
-    ) -> _Pydantic:
+    ) -> DictOrPydantic:
         return {"testkey": "testval"}
 
 

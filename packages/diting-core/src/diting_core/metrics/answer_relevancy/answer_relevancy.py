@@ -41,9 +41,9 @@ class AnswerRelevancyMetric(BaseMetric):
 
     Constraints:
         To use the AnswerRelevancyMetric, you'll have to provide the following arguments when creating an LLMTestCase:
-        - input
+        - user_input
         - actual_output
-        The input and actual_output are required to create an LLMCase (and hence required by all metrics)
+        The user_input and actual_output are required to create an LLMCase (and hence required by all metrics)
         even though they might not be used for metric calculation.
 
     Attributes:
@@ -103,7 +103,7 @@ class AnswerRelevancyMetric(BaseMetric):
         prompt = self.evaluation_template.generate_statements(
             actual_output=actual_output,
         )
-        print(f"callbacks in _a_generate_statements:{callbacks}")
+
         run_mgt, grp_cb = await new_group(
             name="generate_statements",
             inputs={"actual_output": actual_output},
@@ -111,9 +111,10 @@ class AnswerRelevancyMetric(BaseMetric):
         )
 
         try:
-            res: Statements = await self.model.generate_structured_output(
+            res = await self.model.generate_structured_output(
                 prompt, schema=Statements, callbacks=grp_cb
             )
+            res = Statements.model_validate(res)
             statements = res.statements
         except Exception as e:
             await run_mgt.on_chain_error(e)
@@ -143,8 +144,9 @@ class AnswerRelevancyMetric(BaseMetric):
         )
         try:
             res = await self.model.generate_structured_output(
-                prompt, schema=Verdicts, callbacks=callbacks
+                prompt, schema=Verdicts, callbacks=grp_cb
             )
+            res = Verdicts.model_validate(res)
             verdicts = res.verdicts
         except Exception as e:
             await run_mgt.on_chain_error(e)
@@ -156,10 +158,10 @@ class AnswerRelevancyMetric(BaseMetric):
     async def _a_generate_reason(
         self, user_input: str, score: float, verdicts: List[AnswerRelevancyVerdict]
     ) -> str:
-        irrelevant_statements = []
+        irrelevant_statements: List[str] = []
         for verdict in verdicts:
             if verdict.verdict.strip().lower() == "no":
-                irrelevant_statements.append(verdict.reason)
+                irrelevant_statements.append(verdict.reason or "")
 
         prompt = self.evaluation_template.generate_reason(
             irrelevant_statements=irrelevant_statements,
@@ -167,4 +169,5 @@ class AnswerRelevancyMetric(BaseMetric):
             score=round(score, 2),
         )
         res = await self.model.generate_structured_output(prompt, schema=Reason)
+        res = Reason.model_validate(res)
         return res.reason

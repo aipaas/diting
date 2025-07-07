@@ -2,7 +2,7 @@ import unittest
 from diting_core.metrics.answer_similarity.answer_similarity import AnswerSimilarity
 from diting_core.metrics.base_metric import MetricValue
 from diting_core.cases.llm_case import LLMCase
-from .mock_embedding import MockEmbeddings
+from mock_embedding import MockEmbeddings
 
 
 class TestAnswerSimilarity(unittest.IsolatedAsyncioTestCase):

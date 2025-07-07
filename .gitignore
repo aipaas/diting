@@ -9,6 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .aider*
+# remove in 1.0 publish
+uv.lock
 
 # Unit test / coverage reports
 htmlcov/

@@ -1,11 +1,16 @@
 version = 1
 revision = 2
 requires-python = ">=3.11"
+resolution-markers = [
+    "python_full_version >= '3.12'",
+    "python_full_version < '3.12'",
+]
 
 [manifest]
 members = [
     "diting",
     "diting-core",
+    "diting-inspect",
 ]
 
 [[package]]
@@ -143,6 +148,18 @@ wheels = [
 ]
 
 [[package]]
+name = "click"
+version = "8.2.1"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/click/8.2.1/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/click/8.2.1/click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
@@ -229,6 +246,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "diting-core" },
+    { name = "diting-inspect" },
 ]
 
 [package.dev-dependencies]
@@ -244,7 +262,10 @@ lint = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "diting-core", editable = "packages/diting-core" }]
+requires-dist = [
+    { name = "diting-core", editable = "packages/diting-core" },
+    { name = "diting-inspect", editable = "packages/diting-inspect" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -277,6 +298,52 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.3.1" },
     { name = "openai", specifier = ">=1.93.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
+]
+
+[[package]]
+name = "diting-inspect"
+version = "0.1.0"
+source = { editable = "packages/diting-inspect" }
+dependencies = [
+    { name = "diting-core" },
+    { name = "fastapi" },
+    { name = "openpyxl" },
+    { name = "pandas" },
+    { name = "python-multipart" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "diting-core", editable = "packages/diting-core" },
+    { name = "fastapi", specifier = ">=0.115.14" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "pandas", specifier = ">=2.3.0" },
+    { name = "python-multipart", specifier = ">=0.0.20" },
+    { name = "uvicorn", specifier = ">=0.35.0" },
+]
+
+[[package]]
+name = "et-xmlfile"
+version = "2.0.0"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/et-xmlfile/2.0.0/et_xmlfile-2.0.0.tar.gz", hash = "sha256:dab3f4764309081ce75662649be815c4c9081e88f0837825f90fd28317d4da54" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/et-xmlfile/2.0.0/et_xmlfile-2.0.0-py3-none-any.whl", hash = "sha256:7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa" },
+]
+
+[[package]]
+name = "fastapi"
+version = "0.115.14"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/fastapi/0.115.14/fastapi-0.115.14.tar.gz", hash = "sha256:b1de15cdc1c499a4da47914db35d0e4ef8f1ce62b624e94e0e5824421df99739" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/fastapi/0.115.14/fastapi-0.115.14-py3-none-any.whl", hash = "sha256:6c0c8bf9420bd58f565e585036d971872472b4f7d3f6c73b698e10cffdefb3ca" },
 ]
 
 [[package]]
@@ -611,6 +678,18 @@ wheels = [
 ]
 
 [[package]]
+name = "openpyxl"
+version = "3.1.5"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "et-xmlfile" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/openpyxl/3.1.5/openpyxl-3.1.5.tar.gz", hash = "sha256:cf0e3cf56142039133628b5acffe8ef0c12bc902d2aadd3e0fe5878dc08d1050" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/openpyxl/3.1.5/openpyxl-3.1.5-py2.py3-none-any.whl", hash = "sha256:5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2" },
+]
+
+[[package]]
 name = "orjson"
 version = "3.10.18"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
@@ -670,6 +749,47 @@ source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 sdist = { url = "http://mirrors.sangfor.org/pypi/packages/packaging/24.2/packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f" }
 wheels = [
     { url = "http://mirrors.sangfor.org/pypi/packages/packaging/24.2/packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759" },
+]
+
+[[package]]
+name = "pandas"
+version = "2.3.0"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "python-dateutil" },
+    { name = "pytz" },
+    { name = "tzdata" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0.tar.gz", hash = "sha256:34600ab34ebf1131a7613a260a61dbe8b62c188ec0ea4c296da7c9a06b004133" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:8adff9f138fc614347ff33812046787f7d43b3cef7c0f0171b3340cae333f6ca" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e5f08eb9a445d07720776df6e641975665c9ea12c9d8a331e0f6890f2dcd76ef" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fa35c266c8cd1a67d75971a1912b185b492d257092bdd2709bbdebe574ed228d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14a0cc77b0f089d2d2ffe3007db58f170dae9b9f54e569b299db871a3ab5bf46" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:c06f6f144ad0a1bf84699aeea7eff6068ca5c63ceb404798198af7eb86082e33" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:ed16339bc354a73e0a609df36d256672c7d296f3f767ac07257801aa064ff73c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-win_amd64.whl", hash = "sha256:fa07e138b3f6c04addfeaf56cc7fdb96c3b68a3fe5e5401251f231fce40a0d7a" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:2eb4728a18dcd2908c7fccf74a982e241b467d178724545a48d0caf534b38ebf" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b9d8c3187be7479ea5c3d30c32a5d73d62a621166675063b2edd21bc47614027" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9ff730713d4c4f2f1c860e36c005c7cefc1c7c80c21c0688fd605aa43c9fcf09" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ba24af48643b12ffe49b27065d3babd52702d95ab70f50e1b34f71ca703e2c0d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:404d681c698e3c8a40a61d0cd9412cc7364ab9a9cc6e144ae2992e11a2e77a20" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:6021910b086b3ca756755e86ddc64e0ddafd5e58e076c72cb1585162e5ad259b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-win_amd64.whl", hash = "sha256:094e271a15b579650ebf4c5155c05dcd2a14fd4fdd72cf4854b2f7ad31ea30be" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:2c7e2fc25f89a49a11599ec1e76821322439d90820108309bf42130d2f36c983" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:c6da97aeb6a6d233fb6b17986234cc723b396b50a3c6804776351994f2a658fd" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bb32dc743b52467d488e7a7c8039b821da2826a9ba4f85b89ea95274f863280f" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:213cd63c43263dbb522c1f8a7c9d072e25900f6975596f883f4bebd77295d4f3" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:1d2b33e68d0ce64e26a4acc2e72d747292084f4e8db4c847c6f5f6cbe56ed6d8" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:430a63bae10b5086995db1b02694996336e5a8ac9a96b4200572b413dfdfccb9" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-win_amd64.whl", hash = "sha256:4930255e28ff5545e2ca404637bcc56f031893142773b3468dc021c6c32a1390" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-macosx_10_13_x86_64.whl", hash = "sha256:f925f1ef673b4bd0271b1809b72b3270384f2b7d9d14a189b12b7fc02574d575" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:e78ad363ddb873a631e92a3c063ade1ecfb34cae71e9a2be6ad100f875ac1042" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:951805d146922aed8357e4cc5671b8b0b9be1027f0619cea132a9f3f65f2f09c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1a881bc1309f3fce34696d07b00f13335c41f5f5a8770a33b09ebe23261cfc67" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:e1991bbb96f4050b09b5f811253c4f3cf05ee89a589379aa36cd623f21a31d6f" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:bb3be958022198531eb7ec2008cfc78c5b1eed51af8600c6c5d9160d89d8d249" },
 ]
 
 [[package]]
@@ -843,6 +963,36 @@ wheels = [
 ]
 
 [[package]]
+name = "python-dateutil"
+version = "2.9.0.post0"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/python-dateutil/2.9.0.post0/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/python-dateutil/2.9.0.post0/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427" },
+]
+
+[[package]]
+name = "python-multipart"
+version = "0.0.20"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/python-multipart/0.0.20/python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/python-multipart/0.0.20/python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104" },
+]
+
+[[package]]
+name = "pytz"
+version = "2025.2"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/pytz/2025.2/pytz-2025.2.tar.gz", hash = "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/pytz/2025.2/pytz-2025.2-py2.py3-none-any.whl", hash = "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.2"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
@@ -983,12 +1133,33 @@ wheels = [
 ]
 
 [[package]]
+name = "six"
+version = "1.17.0"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/six/1.17.0/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/six/1.17.0/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274" },
+]
+
+[[package]]
 name = "sniffio"
 version = "1.3.1"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 sdist = { url = "http://mirrors.sangfor.org/pypi/packages/sniffio/1.3.1/sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc" }
 wheels = [
     { url = "http://mirrors.sangfor.org/pypi/packages/sniffio/1.3.1/sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2" },
+]
+
+[[package]]
+name = "starlette"
+version = "0.46.2"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/starlette/0.46.2/starlette-0.46.2.tar.gz", hash = "sha256:7f7361f34eed179294600af672f565727419830b54b7b084efe44bb82d2fccd5" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/starlette/0.46.2/starlette-0.46.2-py3-none-any.whl", hash = "sha256:595633ce89f8ffa71a015caed34a5b2dc1c0cdb3f0f1fbd1e69339cf2abeec35" },
 ]
 
 [[package]]
@@ -1064,12 +1235,34 @@ wheels = [
 ]
 
 [[package]]
+name = "tzdata"
+version = "2025.2"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/tzdata/2025.2/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/tzdata/2025.2/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8" },
+]
+
+[[package]]
 name = "urllib3"
 version = "2.5.0"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 sdist = { url = "http://mirrors.sangfor.org/pypi/packages/urllib3/2.5.0/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760" }
 wheels = [
     { url = "http://mirrors.sangfor.org/pypi/packages/urllib3/2.5.0/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc" },
+]
+
+[[package]]
+name = "uvicorn"
+version = "0.35.0"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "h11" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/uvicorn/0.35.0/uvicorn-0.35.0.tar.gz", hash = "sha256:bc662f087f7cf2ce11a1d7fd70b90c9f98ef2e2831556dd078d131b96cc94a01" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/uvicorn/0.35.0/uvicorn-0.35.0-py3-none-any.whl", hash = "sha256:197535216b25ff9b785e29a0b79199f55222193d47f820816e7da751e9bc8d4a" },
 ]
 
 [[package]]

@@ -4,7 +4,7 @@ Provides high-level operations and encapsulates business rules.
 """
 
 from typing import List, Optional, Dict, Any
-from diting_inspect.models.case_model import LLMCase, CaseRepository
+from diting_inspect.models.case_model import LLMCaseData, CaseRepository
 
 
 class CaseService:
@@ -24,7 +24,7 @@ class CaseService:
         """
         self._repository = repository
 
-    async def get_cases(self, skip: int = 0, limit: int = 100) -> List[LLMCase]:
+    async def get_cases(self, skip: int = 0, limit: int = 100) -> List[LLMCaseData]:
         """
         Retrieve paginated list of test cases.
 
@@ -43,7 +43,7 @@ class CaseService:
 
         return await self._repository.get_all(skip=skip, limit=limit)
 
-    async def get_case(self, case_id: str) -> Optional[LLMCase]:
+    async def get_case(self, case_id: str) -> Optional[LLMCaseData]:
         """
         Retrieve a specific test case by ID.
 
@@ -58,7 +58,7 @@ class CaseService:
 
         return await self._repository.get_by_id(case_id.strip())
 
-    async def create_case(self, case: LLMCase) -> LLMCase:
+    async def create_case(self, case: LLMCaseData) -> LLMCaseData:
         """
         Create a new test case with validation.
 
@@ -76,7 +76,7 @@ class CaseService:
 
     async def update_case(
         self, case_id: str, updates: Dict[str, Any]
-    ) -> Optional[LLMCase]:
+    ) -> Optional[LLMCaseData]:
         """
         Update an existing test case.
 
@@ -117,7 +117,7 @@ class CaseService:
 
         return await self._repository.delete(case_id.strip())
 
-    async def get_cases_by_tags(self, tags: List[str]) -> List[LLMCase]:
+    async def get_cases_by_tags(self, tags: List[str]) -> List[LLMCaseData]:
         """
         Retrieve test cases filtered by tags.
 
@@ -137,7 +137,7 @@ class CaseService:
 
         return await self._repository.get_by_tags(clean_tags)
 
-    def _validate_case(self, case: LLMCase) -> None:
+    def _validate_case(self, case: LLMCaseData) -> None:
         """
         Validate test case data.
 

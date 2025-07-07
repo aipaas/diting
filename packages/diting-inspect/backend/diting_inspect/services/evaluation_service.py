@@ -4,19 +4,20 @@ Handles concurrent execution and result management.
 """
 
 import asyncio
+from copy import deepcopy
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import logging
 from enum import Enum
 
-from diting_core.utilities.executor import task_wrapper
-from diting_inspect.models.case_model import LLMCase, CaseRepository
+from diting_core.cases.llm_case import LLMCase
+from diting_inspect.models.case_model import LLMCaseData, CaseRepository
 from diting_inspect.models.evaluation_model import (
     EvaluationResult,
     EvaluationRepository,
 )
-from diting_inspect.metrics.base_metric import BaseMetric
-from diting_inspect.metrics.metric_factory import MetricFactory
+from diting_core.metrics.base_metric import BaseMetric
+from diting_inspect.metrics import MetricFactory, MetricOptionSchema, discover_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,17 @@ class EvaluationService:
         self._case_repository = case_repository
         self._max_concurrent = max_concurrent_evaluations
         self._active_evaluations: Dict[str, Dict[str, Any]] = {}
+
+    async def get_available_metrics(self) -> list[MetricOptionSchema]:
+        metrics = discover_metrics()
+        return [
+            MetricOptionSchema(
+                name=k,
+                threshold=getattr(v, "threshold", None),
+                debug=getattr(v, "debug", None),
+            )
+            for k, v in metrics.items()
+        ]
 
     async def run_evaluation(
         self,
@@ -97,7 +109,7 @@ class EvaluationService:
             await self._evaluation_repository.save(initial_result)
 
             # Get test cases
-            cases: list[LLMCase] = []
+            cases: list[LLMCaseData] = []
             if self._case_repository:
                 for case_id in case_ids:
                     case = await self._case_repository.get_by_id(case_id)
@@ -108,26 +120,34 @@ class EvaluationService:
                 raise ValueError("No valid test cases found")
 
             # Load metrics from configs
-            metrics = self._load_metrics(metric_configs)
+            metric_configs_loaded = self._load_metrics(metric_configs)
 
-            # Run evaluations concurrently
+            # Create a semaphore to limit concurrent evaluations
             semaphore = asyncio.Semaphore(self._max_concurrent)
-            evaluation_results: List[Dict[str, Any]] = []
-            tasks = [
-                task_wrapper(
-                    semaphore,
-                    self._evaluate_case_with_metric,
-                    case=case,
-                    metric=metric,
-                    evaluation_id=evaluation_id,
-                    evaluation_results=evaluation_results,
-                )
-                for metric in metrics
-                for case in cases
-            ]
 
-            # Wait for all evaluations to complete
-            await asyncio.gather(*tasks)
+            async def evaluate_case(case: LLMCaseData, metric_config: Dict[str, Any]):
+                async with semaphore:
+                    return await self._evaluate_case_with_metric(
+                        case, metric_config, evaluation_id
+                    )
+
+            # Run evaluations concurrently using TaskGroup
+            tasks: list[asyncio.Task[Any]] = []
+            async with asyncio.TaskGroup() as tg:
+                for case in cases:
+                    for metric_config in metric_configs_loaded:
+                        task = tg.create_task(evaluate_case(case, metric_config))
+                        tasks.append(task)
+
+            # Process results
+            evaluation_results: List[Dict[str, Any]] = []
+            for task in tasks:
+                try:
+                    result = await task
+                    if result:
+                        evaluation_results.append(result)
+                except Exception as e:
+                    logger.error(f"Error processing task: {e}")
 
             # Save final results
             final_result = EvaluationResult(
@@ -139,7 +159,7 @@ class EvaluationService:
                 started_at=self._active_evaluations[evaluation_id]["started_at"],
                 completed_at=datetime.now(),
                 total_cases=len(cases),
-                total_metrics=len(metrics),
+                total_metrics=len(metric_configs),
                 error=None,
             )
 
@@ -172,17 +192,14 @@ class EvaluationService:
 
     async def _evaluate_case_with_metric(
         self,
-        semaphore: asyncio.Semaphore,
-        case: LLMCase,
-        metric: BaseMetric,
+        case: LLMCaseData,
+        metric_config: Dict[str, Any],
         evaluation_id: str,
-        evaluation_results: List[Dict[str, Any]],
-    ) -> None:
+    ) -> Optional[Dict[str, Any]]:
         """
         Evaluate a single case with a single metric.
 
         Args:
-            semaphore: Concurrency control semaphore
             case: Test case to evaluate
             metric: Metric to apply
             evaluation_id: Evaluation identifier for tracking
@@ -190,40 +207,42 @@ class EvaluationService:
         Returns:
             Evaluation result dictionary or None if failed
         """
-        async with semaphore:
-            try:
-                score = await metric.compute(case)
+        try:
+            metric_case = LLMCase(
+                user_input=case.input,
+                actual_output=case.actual_output,
+                expected_output=case.expected_output,
+                context=case.context,
+                retrieval_context=case.retrieval_context,
+            )
+            metric: BaseMetric = metric_config["class"]()
+            metric_value = await metric.compute(metric_case)
 
-                result = {
-                    "case_id": case.id,
-                    "metric_name": metric.name,
-                    "score": score,
-                    "threshold": metric.threshold,
-                    "passed": metric.is_passing(),
-                    "evaluated_at": datetime.now().isoformat(),
-                }
+            result = {
+                "case_id": case.id,
+                "metric_name": metric.name,
+                "score": metric_value.score,
+                "evaluated_at": datetime.now().isoformat(),
+            }
+            # Update progress
+            if evaluation_id in self._active_evaluations:
+                self._active_evaluations[evaluation_id]["completed_cases"] += 1
 
-                # Update progress
-                if evaluation_id in self._active_evaluations:
-                    self._active_evaluations[evaluation_id]["completed_cases"] += 1
+            return result
 
-            except Exception as e:
-                logger.error(
-                    f"Failed to evaluate case {case.id} with {metric.__class__.__name__}: {e}"
-                )
-                result = {
-                    "case_id": case.id,
-                    "metric_name": metric.__class__.__name__,
-                    "score": None,
-                    "threshold": metric.threshold,
-                    "passed": False,
-                    "error": str(e),
-                    "evaluated_at": datetime.now().isoformat(),
-                }
+        except Exception as e:
+            logger.error(
+                f"Failed to evaluate case {case.id} with {metric_config['class'].__class__.__name__}: {e}"
+            )
+            return {
+                "case_id": case.id,
+                "metric_name": metric_config["class"].__class__.__name__,
+                "score": None,
+                "error": str(e),
+                "evaluated_at": datetime.now().isoformat(),
+            }
 
-            evaluation_results.append(result)
-
-    def _load_metrics(self, configs: List[Dict[str, Any]]) -> List[BaseMetric]:
+    def _load_metrics(self, configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Load metrics from configuration dictionaries.
 
@@ -237,17 +256,15 @@ class EvaluationService:
             This is a simplified implementation. In a real application,
             you would implement a metric factory or registry pattern.
         """
-        metrics: list[BaseMetric] = []
+        configs_copy = deepcopy(configs)
+        metric_factory = MetricFactory()
 
-        for config in configs:
+        for config in configs_copy:
             metric_type = config.get("type", "")
-            threshold = config.get("threshold", 0.8)
+            metric = metric_factory.create(metric_type)
+            config["class"] = metric
 
-            # Create metric using the MetricFactory
-            metric = MetricFactory.create(metric_type, threshold)
-            metrics.append(metric)
-
-        return metrics
+        return configs_copy
 
     async def get_evaluation_result(
         self, evaluation_id: str

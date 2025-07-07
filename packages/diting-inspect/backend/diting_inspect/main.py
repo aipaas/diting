@@ -5,6 +5,7 @@ Provides REST API endpoints for managing test cases and running evaluations.
 
 import io
 from typing import List, Optional, Dict, Any
+from diting_inspect.metrics import MetricOptionSchema
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -13,7 +14,7 @@ import uuid
 
 from diting_inspect.models.case_model import (
     InMemoryCaseRepository as CaseRepository,
-    LLMCase,
+    LLMCaseData,
 )
 from diting_inspect.models.evaluation_model import (
     InMemoryEvaluationRepository as EvaluationRepository,
@@ -71,8 +72,8 @@ class EvaluationRequest(BaseModel):
 
 
 # Case management endpoints
-@app.get("/api/cases", response_model=List[LLMCase])
-async def get_cases(skip: int = 0, limit: int = 100) -> List[LLMCase]:
+@app.get("/api/cases", response_model=List[LLMCaseData])
+async def get_cases(skip: int = 0, limit: int = 100) -> List[LLMCaseData]:
     """
     Retrieve paginated list of test cases.
 
@@ -89,8 +90,8 @@ async def get_cases(skip: int = 0, limit: int = 100) -> List[LLMCase]:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/cases/{case_id}", response_model=LLMCase)
-async def get_case(case_id: str) -> LLMCase:
+@app.get("/api/cases/{case_id}", response_model=LLMCaseData)
+async def get_case(case_id: str) -> LLMCaseData:
     """
     Retrieve a specific test case by ID.
 
@@ -112,8 +113,8 @@ async def get_case(case_id: str) -> LLMCase:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/api/cases", response_model=LLMCase)
-async def create_case(case_data: CaseCreateRequest) -> LLMCase:
+@app.post("/api/cases", response_model=LLMCaseData)
+async def create_case(case_data: CaseCreateRequest) -> LLMCaseData:
     """
     Create a new test case.
 
@@ -124,14 +125,14 @@ async def create_case(case_data: CaseCreateRequest) -> LLMCase:
         Created test case with generated ID
     """
     try:
-        case = LLMCase(id=str(uuid.uuid4()), **case_data.model_dump())
+        case = LLMCaseData(id=str(uuid.uuid4()), **case_data.model_dump())
         return await case_service.create_case(case)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.put("/api/cases/{case_id}", response_model=LLMCase)
-async def update_case(case_id: str, case_data: CaseUpdateRequest) -> LLMCase:
+@app.put("/api/cases/{case_id}", response_model=LLMCaseData)
+async def update_case(case_id: str, case_data: CaseUpdateRequest) -> LLMCaseData:
     """
     Update an existing test case.
 
@@ -206,10 +207,10 @@ async def import_cases(file: UploadFile = File(...)) -> Dict[str, Any]:
             )
 
         cases = await file_import_service.process_dataframe(df)
-        imported_cases: list[LLMCase] = []
+        imported_cases: list[LLMCaseData] = []
 
         for case_data in cases:
-            case = LLMCase(id=str(uuid.uuid4()), **case_data)
+            case = LLMCaseData(id=str(uuid.uuid4()), **case_data)
             imported_case = await case_service.create_case(case)
             imported_cases.append(imported_case)
 
@@ -218,6 +219,15 @@ async def import_cases(file: UploadFile = File(...)) -> Dict[str, Any]:
             "count": len(imported_cases),
             "cases": imported_cases,
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# get metrics schemas
+@app.get("/api/metrics_schemas", response_model=list[MetricOptionSchema])
+async def get_available_metrics() -> List[MetricOptionSchema]:
+    try:
+        return await evaluation_service.get_available_metrics()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

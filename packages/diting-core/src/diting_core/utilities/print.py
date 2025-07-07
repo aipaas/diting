@@ -10,7 +10,7 @@ _TEXT_COLOR_MAPPING = {
 
 
 def get_color_mapping(
-    items: list[str], excluded_colors: Optional[list] = None
+    items: list[str], excluded_colors: Optional[list[str]] = None
 ) -> dict[str, str]:
     """Get mapping for items to a support color.
 

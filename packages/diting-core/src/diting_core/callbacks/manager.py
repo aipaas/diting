@@ -18,7 +18,7 @@ from diting_core.callbacks.base import (
 )
 from diting_core.callbacks.stdout import StdOutCallbackHandler
 
-Func = TypeVar("Func", bound=Callable)
+Func = TypeVar("Func", bound=Callable[..., Any])
 
 
 def shielded(func: Func) -> Func:
@@ -363,7 +363,7 @@ async def _ahandle_event_for_handler(
             await asyncio.get_event_loop().run_in_executor(
                 None,
                 cast(
-                    Callable,
+                    Callable[..., Any],
                     functools.partial(copy_context().run, event, *args, **kwargs),
                 ),
             )

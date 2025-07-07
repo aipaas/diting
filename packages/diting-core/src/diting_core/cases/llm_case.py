@@ -1,10 +1,11 @@
-from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
+from pydantic import BaseModel
+
+from diting_core.utilities.validate import assert_fields_validity
 
 
-@dataclass
-class LLMCase:
+class LLMCase(BaseModel):
     """
     A dataclass representing a test case for evaluating language model outputs.
 
@@ -64,3 +65,38 @@ class LLMCaseParams(Enum):
     EXPECTED_OUTPUT = "expected_output"
     CONTEXT = "context"
     RETRIEVAL_CONTEXT = "retrieval_context"
+
+
+def assert_testcase_validity(
+    operator_name: str,
+    test_case: LLMCase,
+    required_params: Optional[List[LLMCaseParams]],
+) -> None:
+    """
+    Validate the test case to ensure required parameters are not None.
+
+    Parameters
+    ----------
+    operator_name : str
+        The name of the metric being validated, used for error message context.
+    test_case : LLMCase
+        The test case object to check, which should contain the required parameters as attributes.
+    required_params : Optional[List[LLMCaseParams]]
+        A list of required parameters (each with a `value` attribute) that must exist and be non-None in the test case.
+
+    Raises
+    ------
+    ValueError
+        If any required parameter is None, a ValueError is raised with a message listing the missing parameters.
+
+    Notes
+    -----
+    This function checks the presence of required parameters in the test case using `getattr(test_case, param.value)`.
+    If `required_params` is None, the validation is skipped.
+    The error message is automatically formatted based on the number of missing parameters.
+    """
+    if required_params is None:
+        return
+    required_params_str = [param.value for param in required_params]
+
+    assert_fields_validity(operator_name, test_case, required_params_str)

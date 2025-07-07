@@ -9,6 +9,7 @@ from datetime import datetime
 import logging
 from enum import Enum
 
+from diting_core.utilities.executor import task_wrapper
 from diting_inspect.models.case_model import LLMCase, CaseRepository
 from diting_inspect.models.evaluation_model import (
     EvaluationResult,
@@ -111,28 +112,22 @@ class EvaluationService:
 
             # Run evaluations concurrently
             semaphore = asyncio.Semaphore(self._max_concurrent)
-            tasks = []
-
-            for case in cases:
-                for metric in metrics:
-                    task = await self._evaluate_case_with_metric(
-                        semaphore, case, metric, evaluation_id
-                    )
-                    tasks.append(task)  # type: ignore
+            evaluation_results: List[Dict[str, Any]] = []
+            tasks = [
+                task_wrapper(
+                    semaphore,
+                    self._evaluate_case_with_metric,
+                    case=case,
+                    metric=metric,
+                    evaluation_id=evaluation_id,
+                    evaluation_results=evaluation_results,
+                )
+                for metric in metrics
+                for case in cases
+            ]
 
             # Wait for all evaluations to complete
-            results: List[Dict[str, Any]] = await asyncio.gather(
-                *tasks, return_exceptions=True
-            )  # type: ignore[misc]
-
-            # Process results
-            evaluation_results: List[Dict[str, Any]] = []
-            for result in results:
-                if isinstance(result, Exception):
-                    logger.error(f"Evaluation error: {result}")
-                    continue
-                if result:
-                    evaluation_results.append(result)
+            await asyncio.gather(*tasks)
 
             # Save final results
             final_result = EvaluationResult(
@@ -181,7 +176,8 @@ class EvaluationService:
         case: LLMCase,
         metric: BaseMetric,
         evaluation_id: str,
-    ) -> Optional[Dict[str, Any]]:
+        evaluation_results: List[Dict[str, Any]],
+    ) -> None:
         """
         Evaluate a single case with a single metric.
 
@@ -211,13 +207,11 @@ class EvaluationService:
                 if evaluation_id in self._active_evaluations:
                     self._active_evaluations[evaluation_id]["completed_cases"] += 1
 
-                return result
-
             except Exception as e:
                 logger.error(
                     f"Failed to evaluate case {case.id} with {metric.__class__.__name__}: {e}"
                 )
-                return {
+                result = {
                     "case_id": case.id,
                     "metric_name": metric.__class__.__name__,
                     "score": None,
@@ -226,6 +220,8 @@ class EvaluationService:
                     "error": str(e),
                     "evaluated_at": datetime.now().isoformat(),
                 }
+
+            evaluation_results.append(result)
 
     def _load_metrics(self, configs: List[Dict[str, Any]]) -> List[BaseMetric]:
         """

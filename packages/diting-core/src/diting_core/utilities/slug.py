@@ -3,7 +3,7 @@
 import re
 
 
-def camel_to_snake(name):
+def camel_to_snake(name: str):
     """
     Convert a camelCase string to snake_case.
     eg: HaiThere -> hai_there

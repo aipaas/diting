@@ -27,3 +27,5 @@ coverage.xml
 # IDE
 .idea
 .vscode
+# nodejs
+node_modules/

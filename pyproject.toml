@@ -84,3 +84,20 @@ exclude_lines = [
     '$\s*pass$',
     'assert False',
 ]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnnecessaryIsInstance = false
+reportUnnecessaryTypeIgnoreComment = true
+reportMissingModuleSource = false
+include = [
+    "packages",
+    # "tests",
+]
+exclude = [
+    "packages/diting-inspect/frontend",
+]
+venvPath = '.'
+venv = ".venv"

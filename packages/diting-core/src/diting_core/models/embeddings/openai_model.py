@@ -12,7 +12,7 @@ class PrivateEmbeddings(BaseModel, Embeddings):
     client: Any = Field(default=None, exclude=True)
     async_client: Any = Field(default=None, exclude=True)
 
-    def embed_query(self, text) -> List[float]:
+    def embed_query(self, text: str) -> List[float]:
         result = self.client.embeddings.create(model=self.model, input=[text])
         return result.data[0].embedding
 

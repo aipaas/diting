@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "diting-core",
+  "diting-inspect",
 ]
 
 [build-system]
@@ -25,6 +26,7 @@ only-include = ["/README.md"]
 
 [tool.uv.sources]
 diting-core = { workspace = true }
+diting-inspect = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]

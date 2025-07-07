@@ -152,7 +152,7 @@ def _assert_testcase_validity(
     """
     if required_params is None:
         return
-    missing_params = []
+    missing_params: list[str] = []
     for param in required_params:
         if getattr(test_case, param.value) is None:
             missing_params.append(f"'{param.value}'")

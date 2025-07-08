@@ -1,12 +1,22 @@
-import { useState, useEffect } from 'react';
-import { API_BASE } from '../constants';
-import MetricConfigModal from './MetricConfigModal';
+import { useEffect, useState } from "react";
+import { API_BASE } from "../constants";
+import type { EvaluationModalProps, Metric } from "../schemas";
+import MetricConfigModal from "./MetricConfigModal";
 
-const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
-	const [metricConfigs, setMetricConfigs] = useState([]);
-	const [isMetricConfigModalOpen, setIsMetricConfigModalOpen] = useState(false);
-	const [currentMetric, setCurrentMetric] = useState(null);
-	const [availableMetrics, setAvailableMetrics] = useState([]);
+const EvaluationModal = ({
+	selectedCases,
+	onClose,
+	onSuccess,
+}: EvaluationModalProps) => {
+	const [metricConfigs, setMetricConfigs] = useState<Metric[]>([]);
+	const [isMetricConfigModalOpen, setIsMetricConfigModalOpen] =
+		useState<boolean>(false);
+	const [currentMetric, setCurrentMetric] = useState<Metric>({
+		name: "",
+		threshold: null,
+		debug: null,
+	});
+	const [availableMetrics, setAvailableMetrics] = useState<Array<Metric>>([]);
 
 	const fetchAvailableMetrics = async () => {
 		try {
@@ -15,10 +25,10 @@ const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
 				const metrics = await response.json();
 				setAvailableMetrics(metrics);
 			} else {
-				console.error('Failed to fetch available metrics');
+				console.error("Failed to fetch available metrics");
 			}
 		} catch (error) {
-			console.error('Error fetching available metrics:', error);
+			console.error("Error fetching available metrics:", error);
 		}
 	};
 
@@ -26,12 +36,12 @@ const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
 		fetchAvailableMetrics();
 	}, []);
 
-	const handleSubmit = async (e) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
 			const response = await fetch(`${API_BASE}/evaluations`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					case_ids: selectedCases,
 					metric_configs: metricConfigs.map((metric) => ({
@@ -44,20 +54,24 @@ const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
 			if (response.ok) {
 				onSuccess();
 			} else {
-				alert('Failed to start evaluation');
+				alert("Failed to start evaluation");
 			}
-		} catch (error) {
-			alert('Error starting evaluation');
+		} catch (_error) {
+			alert("Error starting evaluation");
 		}
 	};
 
 	return (
 		<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
 			<div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-				<h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Run Evaluation</h3>
+				<h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+					Run Evaluation
+				</h3>
 				<form onSubmit={handleSubmit}>
 					<div className="mb-4">
-						<label className="block text-sm font-medium text-gray-700">Select Metrics</label>
+						<label className="block text-sm font-medium text-gray-700">
+							Select Metrics
+						</label>
 						{availableMetrics.map((metric) => (
 							<div key={metric.name} className="flex items-center">
 								<input
@@ -67,7 +81,9 @@ const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
 										if (e.target.checked) {
 											setMetricConfigs([...metricConfigs, metric]);
 										} else {
-											setMetricConfigs(metricConfigs.filter((m) => m.name !== metric.name));
+											setMetricConfigs(
+												metricConfigs.filter((m) => m.name !== metric.name),
+											);
 										}
 									}}
 								/>
@@ -105,7 +121,11 @@ const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
 						metric={currentMetric}
 						onClose={() => setIsMetricConfigModalOpen(false)}
 						onSave={(updatedMetric) => {
-							setMetricConfigs(metricConfigs.map((m) => (m.name === updatedMetric.name ? updatedMetric : m)));
+							setMetricConfigs(
+								metricConfigs.map((m) =>
+									m.name === updatedMetric.name ? updatedMetric : m,
+								),
+							);
 							setIsMetricConfigModalOpen(false);
 						}}
 					/>

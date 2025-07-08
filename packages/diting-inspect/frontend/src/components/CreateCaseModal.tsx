@@ -1,59 +1,71 @@
-import { useState } from 'react';
-import { API_BASE } from '../constants';
-import { Plus, Trash } from 'lucide-react';
+import { Plus, Trash } from "lucide-react";
+import { useState } from "react";
+import { API_BASE } from "../constants";
+import type { CreateCaseModalProps } from "../schemas";
 
-const CreateCaseModal = ({ onClose, onSuccess }) => {
-	const [formData, setFormData] = useState({
-		input: '',
-		actual_output: '',
-		expected_output: '',
+const CreateCaseModal = ({ onClose, onSuccess }: CreateCaseModalProps) => {
+	const [formData, setFormData] = useState<{
+		input: string;
+		actual_output: string;
+		expected_output?: string;
+		context: string[];
+		retrieval_context: string[];
+	}>({
+		input: "",
+		actual_output: "",
+		expected_output: "",
 		context: [],
 		retrieval_context: [],
 	});
 
-	const handleSubmit = async (e) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
 			const response = await fetch(`${API_BASE}/cases`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),
 			});
 			if (response.ok) {
 				onSuccess();
 			} else {
-				alert('Failed to create case');
+				alert("Failed to create case");
 			}
-		} catch (error) {
-			alert('Error creating case');
+		} catch (_error) {
+			alert("Error creating case");
 		}
 	};
 
 	const addContext = () => {
-		setFormData({ ...formData, context: [...formData.context, ''] });
+		setFormData({ ...formData, context: [...formData.context, ""] });
 	};
 
-	const removeContext = (index) => {
+	const removeContext = (index: number) => {
 		const newContext = formData.context.filter((_, i) => i !== index);
 		setFormData({ ...formData, context: newContext });
 	};
 
 	const addRetrievalContext = () => {
-		setFormData({ ...formData, retrieval_context: [...formData.retrieval_context, ''] });
+		setFormData({
+			...formData,
+			retrieval_context: [...formData.retrieval_context, ""],
+		});
 	};
 
-	const removeRetrievalContext = (index) => {
-		const newRetrievalContext = formData.retrieval_context.filter((_, i) => i !== index);
+	const removeRetrievalContext = (index: number) => {
+		const newRetrievalContext = formData.retrieval_context.filter(
+			(_, i) => i !== index,
+		);
 		setFormData({ ...formData, retrieval_context: newRetrievalContext });
 	};
 
-	const handleContextChange = (index, value) => {
+	const handleContextChange = (index: number, value: string) => {
 		const newContext = [...formData.context];
 		newContext[index] = value;
 		setFormData({ ...formData, context: newContext });
 	};
 
-	const handleRetrievalContextChange = (index, value) => {
+	const handleRetrievalContextChange = (index: number, value: string) => {
 		const newRetrievalContext = [...formData.retrieval_context];
 		newRetrievalContext[index] = value;
 		setFormData({ ...formData, retrieval_context: newRetrievalContext });
@@ -62,68 +74,104 @@ const CreateCaseModal = ({ onClose, onSuccess }) => {
 	return (
 		<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
 			<div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-				<h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">Create New Case</h3>
+				<h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+					Create New Case
+				</h3>
 				<form onSubmit={handleSubmit}>
 					<div className="mb-4">
-						<label className="block text-sm font-medium text-gray-700">Input</label>
+						<label className="block text-sm font-medium text-gray-700">
+							Input
+						</label>
 						<textarea
-							value={formData.input || ''}
-							onChange={(e) => setFormData({ ...formData, input: e.target.value })}
+							value={formData.input || ""}
+							onChange={(e) =>
+								setFormData({ ...formData, input: e.target.value })
+							}
 							className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
 							required
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="block text-sm font-medium text-gray-700">Actual Output</label>
+						<label className="block text-sm font-medium text-gray-700">
+							Actual Output
+						</label>
 						<textarea
-							value={formData.actual_output || ''}
-							onChange={(e) => setFormData({ ...formData, actual_output: e.target.value })}
+							value={formData.actual_output || ""}
+							onChange={(e) =>
+								setFormData({ ...formData, actual_output: e.target.value })
+							}
 							className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
 							required
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="block text-sm font-medium text-gray-700">Expected Output</label>
+						<label className="block text-sm font-medium text-gray-700">
+							Expected Output
+						</label>
 						<textarea
-							value={formData.expected_output || ''}
-							onChange={(e) => setFormData({ ...formData, expected_output: e.target.value })}
+							value={formData.expected_output || ""}
+							onChange={(e) =>
+								setFormData({ ...formData, expected_output: e.target.value })
+							}
 							className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
 						/>
 					</div>
 					<div className="mb-4">
-						<label className="block text-sm font-medium text-gray-700">Context</label>
+						<label className="block text-sm font-medium text-gray-700">
+							Context
+						</label>
 						{formData.context.map((ctx, index) => (
 							<div key={index} className="flex items-center mb-2">
 								<textarea
-									value={ctx || ''}
+									value={ctx || ""}
 									onChange={(e) => handleContextChange(index, e.target.value)}
 									className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
 								/>
-								<button type="button" onClick={() => removeContext(index)} className="text-red-600 ml-2">
+								<button
+									type="button"
+									onClick={() => removeContext(index)}
+									className="text-red-600 ml-2"
+								>
 									<Trash className="w-4 h-4" />
 								</button>
 							</div>
 						))}
-						<button type="button" onClick={addContext} className="text-blue-600">
+						<button
+							type="button"
+							onClick={addContext}
+							className="text-blue-600"
+						>
 							<Plus className="w-4 h-4" />
 							Add Context
 						</button>
 					</div>
 					<div className="mb-4">
-						<label className="block text-sm font-medium text-gray-700">Retrieval Context</label>
+						<label className="block text-sm font-medium text-gray-700">
+							Retrieval Context
+						</label>
 						{formData.retrieval_context.map((retrievalCtx, index) => (
 							<div key={index} className="flex items-center mb-2">
 								<textarea
-									value={retrievalCtx || ''}
-									onChange={(e) => handleRetrievalContextChange(index, e.target.value)}
+									value={retrievalCtx || ""}
+									onChange={(e) =>
+										handleRetrievalContextChange(index, e.target.value)
+									}
 									className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
 								/>
-								<button type="button" onClick={() => removeRetrievalContext(index)} className="text-red-600 ml-2">
+								<button
+									type="button"
+									onClick={() => removeRetrievalContext(index)}
+									className="text-red-600 ml-2"
+								>
 									<Trash className="w-4 h-4" />
 								</button>
 							</div>
 						))}
-						<button type="button" onClick={addRetrievalContext} className="text-blue-600">
+						<button
+							type="button"
+							onClick={addRetrievalContext}
+							className="text-blue-600"
+						>
 							<Plus className="w-4 h-4" />
 							Add Retrieval Context
 						</button>

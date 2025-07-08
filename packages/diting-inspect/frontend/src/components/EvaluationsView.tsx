@@ -1,19 +1,39 @@
-import { useState, useEffect } from 'react';
-import { Eye, Search, Trash2 } from 'lucide-react';
-import { API_BASE } from '../constants';
+import { Eye, Search, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { API_BASE } from "../constants";
+import type { EvaluationType } from "../schemas";
 
-const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
-	const [searchTerm, setSearchTerm] = useState('');
-	const [selectedEvaluations, setSelectedEvaluations] = useState([]);
-	const [autoRefreshInterval, setAutoRefreshInterval] = useState(null);
+interface EvaluationsViewProps {
+	evaluations: EvaluationType[];
+	onRefresh: () => void;
+	showNotification: (
+		message: string,
+		type?: "info" | "success" | "error",
+	) => void;
+}
 
-	const filteredEvaluations = evaluations.filter((eval_) =>
-		eval_.id.toString().includes(searchTerm) || eval_.status.toLowerCase().includes(searchTerm.toLowerCase())
+const EvaluationsView = ({
+	evaluations,
+	onRefresh,
+	showNotification,
+}: EvaluationsViewProps) => {
+	const [searchTerm, setSearchTerm] = useState<string>("");
+	const [selectedEvaluations, setSelectedEvaluations] = useState<string[]>([]);
+	const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(
+		null,
 	);
 
-	const handleSelectEvaluation = (id) => {
+	const filteredEvaluations = evaluations.filter(
+		(eval_) =>
+			eval_.id.toString().includes(searchTerm) ||
+			eval_.status.toLowerCase().includes(searchTerm.toLowerCase()),
+	);
+
+	const handleSelectEvaluation = (id: string) => {
 		if (selectedEvaluations.includes(id)) {
-			setSelectedEvaluations(selectedEvaluations.filter((selectedId) => selectedId !== id));
+			setSelectedEvaluations(
+				selectedEvaluations.filter((selectedId) => selectedId !== id),
+			);
 		} else {
 			setSelectedEvaluations([...selectedEvaluations, id]);
 		}
@@ -21,19 +41,21 @@ const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
 
 	const handleDeleteSelected = async () => {
 		try {
-			await Promise.all(selectedEvaluations.map(async (id) => {
-				const response = await fetch(`${API_BASE}/evaluations/${id}`, {
-					method: 'DELETE',
-				});
-				if (!response.ok) {
-					throw new Error(`Failed to delete evaluation with ID: ${id}`);
-				}
-			}));
-			showNotification('Selected evaluations deleted successfully!', 'success');
+			await Promise.all(
+				selectedEvaluations.map(async (id) => {
+					const response = await fetch(`${API_BASE}/evaluations/${id}`, {
+						method: "DELETE",
+					});
+					if (!response.ok) {
+						throw new Error(`Failed to delete evaluation with ID: ${id}`);
+					}
+				}),
+			);
+			showNotification("Selected evaluations deleted successfully!", "success");
 			setSelectedEvaluations([]);
 			onRefresh(); // Refresh the evaluations after deletion
 		} catch (error) {
-			showNotification(error.message, 'error');
+			showNotification(error.message, "error");
 		}
 	};
 
@@ -46,9 +68,11 @@ const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
 		}
 	}, [autoRefreshInterval, onRefresh]);
 
-	const handleAutoRefreshChange = (event) => {
+	const handleAutoRefreshChange = (
+		event: React.ChangeEvent<HTMLSelectElement>,
+	) => {
 		const value = event.target.value;
-		setAutoRefreshInterval(value === 'no' ? null : parseInt(value) * 1000);
+		setAutoRefreshInterval(value === "no" ? null : parseInt(value) * 1000);
 	};
 
 	return (
@@ -66,19 +90,24 @@ const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
 					/>
 				</div>
 				<div className="flex items-center space-x-2">
-					<select onChange={handleAutoRefreshChange} className="border border-gray-300 rounded-lg p-2">
+					<select
+						onChange={handleAutoRefreshChange}
+						className="border border-gray-300 rounded-lg p-2"
+					>
 						<option value="no">No Auto Refresh</option>
 						<option value="1">1 Second</option>
 						<option value="5">5 Seconds</option>
 						<option value="10">10 Seconds</option>
 					</select>
 					<button
+						type="button"
 						onClick={handleDeleteSelected}
 						disabled={selectedEvaluations.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedEvaluations.length > 0
-							? 'bg-red-600 text-white hover:bg-red-700'
-							: 'bg-gray-300 text-gray-500 cursor-not-allowed'
-							}`}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedEvaluations.length > 0
+								? "bg-red-600 text-white hover:bg-red-700"
+								: "bg-gray-300 text-gray-500 cursor-not-allowed"
+						}`}
 					>
 						<Trash2 className="w-5 h-5 mr-2" />
 						Delete Selected
@@ -94,21 +123,38 @@ const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								<input
 									type="checkbox"
-									checked={selectedEvaluations.length === filteredEvaluations.length && filteredEvaluations.length > 0}
+									checked={
+										selectedEvaluations.length === filteredEvaluations.length &&
+										filteredEvaluations.length > 0
+									}
 									onChange={() => {
-										if (selectedEvaluations.length === filteredEvaluations.length) {
+										if (
+											selectedEvaluations.length === filteredEvaluations.length
+										) {
 											setSelectedEvaluations([]);
 										} else {
-											setSelectedEvaluations(filteredEvaluations.map(eval_ => eval_.id));
+											setSelectedEvaluations(
+												filteredEvaluations.map((eval_) => eval_.id),
+											);
 										}
 									}}
 								/>
 							</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started At</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed At</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								ID
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Status
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Started At
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Completed At
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Actions
+							</th>
 						</tr>
 					</thead>
 					<tbody className="bg-white divide-y divide-gray-200">
@@ -123,15 +169,22 @@ const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
 										/>
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">{eval_.id}</td>
-									<td className="px-6 py-4 whitespace-nowrap">{eval_.status}</td>
+									<td className="px-6 py-4 whitespace-nowrap">
+										{eval_.status}
+									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										{new Date(eval_.started_at).toLocaleString()}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
-										{eval_.completed_at ? new Date(eval_.completed_at).toLocaleString() : 'N/A'}
+										{eval_.completed_at
+											? new Date(eval_.completed_at).toLocaleString()
+											: "N/A"}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
-										<button className="text-blue-600 hover:text-blue-800">
+										<button
+											type="button"
+											className="text-blue-600 hover:text-blue-800"
+										>
 											<Eye className="w-5 h-5" />
 										</button>
 									</td>
@@ -139,7 +192,9 @@ const EvaluationsView = ({ evaluations, onRefresh, showNotification }) => {
 							))
 						) : (
 							<tr>
-								<td colSpan="6" className="text-center py-4">No evaluations found.</td>
+								<td colSpan="6" className="text-center py-4">
+									No evaluations found.
+								</td>
 							</tr>
 						)}
 					</tbody>

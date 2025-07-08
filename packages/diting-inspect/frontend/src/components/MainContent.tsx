@@ -1,6 +1,25 @@
-import CasesView from './CasesView';
-import EvaluationsView from './EvaluationsView';
-import FileUploadView from './FileUploadView';
+import type { CaseType, EvaluationType } from "../schemas";
+import CasesView from "./CasesView";
+import EvaluationsView from "./EvaluationsView";
+import FileUploadView from "./FileUploadView";
+
+interface MainContentProps {
+	activeTab: string;
+	filteredCases: CaseType[];
+	selectedCases: string[];
+	setSelectedCases: (cases: string[]) => void;
+	evaluations: EvaluationType[];
+	searchTerm: string;
+	setSearchTerm: (term: string) => void;
+	loading: boolean;
+	fetchCases: () => Promise<void>;
+	fetchEvaluations: () => Promise<void>;
+	showNotification: (
+		message: string,
+		type?: "info" | "success" | "error",
+	) => void;
+	setShowEvaluationModal: (show: boolean) => void;
+}
 
 const MainContent = ({
 	activeTab,
@@ -15,10 +34,10 @@ const MainContent = ({
 	fetchEvaluations,
 	showNotification,
 	setShowEvaluationModal,
-}) => {
+}: MainContentProps) => {
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-			{activeTab === 'cases' && (
+			{activeTab === "cases" && (
 				<CasesView
 					cases={filteredCases}
 					selectedCases={selectedCases}
@@ -32,7 +51,7 @@ const MainContent = ({
 				/>
 			)}
 
-			{activeTab === 'evaluations' && (
+			{activeTab === "evaluations" && (
 				<EvaluationsView
 					evaluations={evaluations}
 					onRefresh={fetchEvaluations}
@@ -40,9 +59,7 @@ const MainContent = ({
 				/>
 			)}
 
-			{activeTab === 'fileupload' && (
-				<FileUploadView onSuccess={fetchCases} />
-			)}
+			{activeTab === "fileupload" && <FileUploadView onSuccess={fetchCases} />}
 		</main>
 	);
 };

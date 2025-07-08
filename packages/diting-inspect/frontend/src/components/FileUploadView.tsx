@@ -1,32 +1,44 @@
-import { useState } from 'react';
-import { API_BASE } from '../constants';
+import { useState } from "react";
+import { API_BASE } from "../constants";
+import { FileSchema } from "../schemas";
 
-const FileUploadView = ({ onSuccess }) => {
-	const [file, setFile] = useState(null);
+interface FileUploadViewProps {
+	onSuccess: () => void;
+}
 
-	const handleFileChange = (e) => {
-		setFile(e.target.files[0]);
+const FileUploadView: React.FC<FileUploadViewProps> = ({ onSuccess }) => {
+	const [file, setFile] = useState<File | null>(null);
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const selectedFile = e.target.files?.[0] || null;
+		const validation = FileSchema.safeParse({ file: selectedFile });
+
+		if (validation.success) {
+			setFile(selectedFile);
+		} else {
+			alert("Invalid file type");
+		}
 	};
 
 	const handleUpload = async () => {
 		if (!file) return;
 
 		const formData = new FormData();
-		formData.append('file', file);
+		formData.append("file", file);
 
 		try {
 			const response = await fetch(`${API_BASE}/cases/import`, {
-				method: 'POST',
+				method: "POST",
 				body: formData,
 			});
 			if (response.ok) {
 				onSuccess();
-				alert('File uploaded successfully!');
+				alert("File uploaded successfully!");
 			} else {
-				alert('Failed to upload file');
+				alert("Failed to upload file");
 			}
-		} catch (error) {
-			alert('Error uploading file');
+		} catch (_error) {
+			alert("Error uploading file");
 		}
 	};
 
@@ -34,7 +46,11 @@ const FileUploadView = ({ onSuccess }) => {
 		<div>
 			<h2 className="text-xl font-semibold mb-4">Upload Cases</h2>
 			<input type="file" onChange={handleFileChange} />
-			<button onClick={handleUpload} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded">
+			<button
+				type={"button"}
+				onClick={handleUpload}
+				className="mt-2 bg-blue-600 text-white px-4 py-2 rounded"
+			>
 				Upload
 			</button>
 		</div>

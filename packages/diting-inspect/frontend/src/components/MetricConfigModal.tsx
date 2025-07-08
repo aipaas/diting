@@ -13,7 +13,7 @@ const MetricConfigModal = ({
 	onSave,
 }: MetricConfigModalProps) => {
 	const [threshold, setThreshold] = useState(metric.threshold);
-	const [debug, setDebug] = useState(metric.debug);
+	const [debug, setDebug] = useState(metric.debug || false);
 
 	const handleSave = () => {
 		onSave({ ...metric, threshold, debug });

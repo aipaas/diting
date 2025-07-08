@@ -26,8 +26,8 @@ export const EvaluationSchema = z.object({
 	metric_configs: z.array(
 		z.object({
 			type: z.string(),
-			threshold: z.number(),
-			debug: z.boolean(),
+			threshold: z.number().nullable(),
+			debug: z.boolean().nullable(),
 		}),
 	),
 	results: z.array(

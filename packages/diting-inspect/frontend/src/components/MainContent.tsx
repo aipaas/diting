@@ -1,7 +1,8 @@
-import type { CaseType, EvaluationType } from "../schemas";
+import type { CaseType, EvaluationType, ModelManagementData } from "../schemas";
 import CasesView from "./CasesView";
 import EvaluationsView from "./EvaluationsView";
 import FileUploadView from "./FileUploadView";
+import ModelsView from "./ModelsView";
 
 interface MainContentProps {
 	activeTab: string;
@@ -9,11 +10,13 @@ interface MainContentProps {
 	selectedCases: string[];
 	setSelectedCases: (cases: string[]) => void;
 	evaluations: EvaluationType[];
+	models: ModelManagementData[];
 	searchTerm: string;
 	setSearchTerm: (term: string) => void;
 	loading: boolean;
 	fetchCases: () => Promise<void>;
 	fetchEvaluations: () => Promise<void>;
+	fetchModels: () => Promise<void>;
 	showNotification: (
 		message: string,
 		type?: "info" | "success" | "error",
@@ -27,11 +30,13 @@ const MainContent = ({
 	selectedCases,
 	setSelectedCases,
 	evaluations,
+	models,
 	searchTerm,
 	setSearchTerm,
 	loading,
 	fetchCases,
 	fetchEvaluations,
+	fetchModels,
 	showNotification,
 	setShowEvaluationModal,
 }: MainContentProps) => {
@@ -60,6 +65,14 @@ const MainContent = ({
 			)}
 
 			{activeTab === "fileupload" && <FileUploadView onSuccess={fetchCases} />}
+
+			{activeTab === "models" && (
+				<ModelsView
+					models={models}
+					onRefresh={fetchModels}
+					showNotification={showNotification}
+				/>
+			)}
 		</main>
 	);
 };

@@ -11,6 +11,7 @@ import {
 	CaseSchema,
 	EvaluationSchema,
 	NotificationSchema,
+	type ModelManagementData,
 	type CaseType,
 	type EvaluationType,
 	type NotificationType,
@@ -19,6 +20,7 @@ import {
 const App = () => {
 	const [cases, setCases] = useState<CaseType[]>([]);
 	const [evaluations, setEvaluations] = useState<EvaluationType[]>([]);
+	const [models, setModels] = useState<ModelManagementData[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [activeTab, setActiveTab] = useState<string>("cases");
 	const [selectedCases, setSelectedCases] = useState<string[]>([]);
@@ -32,6 +34,7 @@ const App = () => {
 	useEffect(() => {
 		fetchCases();
 		fetchEvaluations();
+		fetchModels();
 	}, []);
 
 	const fetchCases = async () => {
@@ -73,6 +76,20 @@ const App = () => {
 		}
 	};
 
+	const fetchModels = async () => {
+		try {
+			const response = await fetch(`${API_BASE}/models`);
+			if (response.ok) {
+				const data = await response.json();
+				setModels(data);
+			} else {
+				console.error("Failed to fetch models");
+			}
+		} catch (error) {
+			console.error("Failed to fetch models:", error);
+		}
+	};
+
 	const showNotification = (
 		message: string,
 		type: "info" | "success" | "error" = "info",
@@ -103,11 +120,13 @@ const App = () => {
 				selectedCases={selectedCases}
 				setSelectedCases={setSelectedCases}
 				evaluations={evaluations}
+				models={models}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				loading={loading}
 				fetchCases={fetchCases}
 				fetchEvaluations={fetchEvaluations}
+				fetchModels={fetchModels}
 				showNotification={showNotification}
 				setShowEvaluationModal={setShowEvaluationModal}
 			/>

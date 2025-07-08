@@ -13,8 +13,8 @@ export const CaseSchema = z.object({
 	input: z.string(),
 	actual_output: z.string(),
 	expected_output: z.string().optional(),
-	context: z.array(z.string()).optional(),
-	retrieval_context: z.array(z.string()).optional(),
+	context: z.array(z.string()).optional().nullable(),
+	retrieval_context: z.array(z.string()).optional().nullable(),
 });
 
 export type CaseType = z.infer<typeof CaseSchema>;

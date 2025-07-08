@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API_BASE } from '../constants';
 import MetricConfigModal from './MetricConfigModal';
 
@@ -6,13 +6,25 @@ const EvaluationModal = ({ selectedCases, onClose, onSuccess }) => {
 	const [metricConfigs, setMetricConfigs] = useState([]);
 	const [isMetricConfigModalOpen, setIsMetricConfigModalOpen] = useState(false);
 	const [currentMetric, setCurrentMetric] = useState(null);
+	const [availableMetrics, setAvailableMetrics] = useState([]);
 
-	const availableMetrics = [
-		{ name: 'exact_match', threshold: 1.0, debug: false },
-		{ name: 'levenshtein', threshold: 0.8, debug: false },
-		{ name: 'token_overlap', threshold: 0.7, debug: false },
-		{ name: 'length_ratio', threshold: 0.7, debug: false },
-	];
+	const fetchAvailableMetrics = async () => {
+		try {
+			const response = await fetch(`${API_BASE}/metrics_schemas`);
+			if (response.ok) {
+				const metrics = await response.json();
+				setAvailableMetrics(metrics);
+			} else {
+				console.error('Failed to fetch available metrics');
+			}
+		} catch (error) {
+			console.error('Error fetching available metrics:', error);
+		}
+	};
+
+	useEffect(() => {
+		fetchAvailableMetrics();
+	}, []);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();

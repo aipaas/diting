@@ -10,7 +10,7 @@ import asyncio
 from datetime import datetime
 
 
-class LLMCase(BaseModel):
+class LLMCaseData(BaseModel):
     """
     Represents a test case for LLM evaluation.
 
@@ -55,7 +55,7 @@ class CaseRepository(ABC):
     """
 
     @abstractmethod
-    async def get_all(self, skip: int = 0, limit: int = 100) -> List[LLMCase]:
+    async def get_all(self, skip: int = 0, limit: int = 100) -> List[LLMCaseData]:
         """
         Retrieve all test cases with pagination.
 
@@ -69,7 +69,7 @@ class CaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, case_id: str) -> Optional[LLMCase]:
+    async def get_by_id(self, case_id: str) -> Optional[LLMCaseData]:
         """
         Retrieve a test case by its ID.
 
@@ -82,7 +82,7 @@ class CaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def create(self, case: LLMCase) -> LLMCase:
+    async def create(self, case: LLMCaseData) -> LLMCaseData:
         """
         Create a new test case.
 
@@ -95,7 +95,9 @@ class CaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, case_id: str, updates: Dict[str, Any]) -> Optional[LLMCase]:
+    async def update(
+        self, case_id: str, updates: Dict[str, Any]
+    ) -> Optional[LLMCaseData]:
         """
         Update an existing test case.
 
@@ -122,7 +124,7 @@ class CaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_tags(self, tags: List[str]) -> List[LLMCase]:
+    async def get_by_tags(self, tags: List[str]) -> List[LLMCaseData]:
         """
         Retrieve test cases by tags.
 
@@ -145,10 +147,10 @@ class InMemoryCaseRepository(CaseRepository):
 
     def __init__(self):
         """Initialize empty in-memory storage."""
-        self._cases: Dict[str, LLMCase] = {}
+        self._cases: Dict[str, LLMCaseData] = {}
         self._lock = asyncio.Lock()
 
-    async def get_all(self, skip: int = 0, limit: int = 100) -> List[LLMCase]:
+    async def get_all(self, skip: int = 0, limit: int = 100) -> List[LLMCaseData]:
         """
         Retrieve all test cases with pagination.
 
@@ -165,7 +167,7 @@ class InMemoryCaseRepository(CaseRepository):
             cases.sort(key=lambda x: x.created_at, reverse=True)
             return cases[skip : skip + limit]
 
-    async def get_by_id(self, case_id: str) -> Optional[LLMCase]:
+    async def get_by_id(self, case_id: str) -> Optional[LLMCaseData]:
         """
         Retrieve a test case by its ID.
 
@@ -178,7 +180,7 @@ class InMemoryCaseRepository(CaseRepository):
         async with self._lock:
             return self._cases.get(case_id)
 
-    async def create(self, case: LLMCase) -> LLMCase:
+    async def create(self, case: LLMCaseData) -> LLMCaseData:
         """
         Create a new test case.
 
@@ -194,7 +196,9 @@ class InMemoryCaseRepository(CaseRepository):
             self._cases[case.id] = case
             return case
 
-    async def update(self, case_id: str, updates: Dict[str, Any]) -> Optional[LLMCase]:
+    async def update(
+        self, case_id: str, updates: Dict[str, Any]
+    ) -> Optional[LLMCaseData]:
         """
         Update an existing test case.
 
@@ -240,7 +244,7 @@ class InMemoryCaseRepository(CaseRepository):
                 return True
             return False
 
-    async def get_by_tags(self, tags: List[str]) -> List[LLMCase]:
+    async def get_by_tags(self, tags: List[str]) -> List[LLMCaseData]:
         """
         Retrieve test cases by tags.
 
@@ -251,7 +255,7 @@ class InMemoryCaseRepository(CaseRepository):
             List of test cases matching any of the provided tags
         """
         async with self._lock:
-            matching_cases: list[LLMCase] = []
+            matching_cases: list[LLMCaseData] = []
             for case in self._cases.values():
                 if case.tags and any(tag in case.tags for tag in tags):
                     matching_cases.append(case)

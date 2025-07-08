@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 
 from diting_core.utilities.validate import assert_fields_validity
@@ -48,6 +48,7 @@ class LLMCase(BaseModel):
     expected_output: Optional[str] = None
     context: Optional[List[str]] = None
     retrieval_context: Optional[List[str]] = None
+    metadata: Optional[Dict[str, Any]] = None
 
     def __str__(self):
         return (

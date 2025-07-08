@@ -2,28 +2,28 @@
 # -*- coding: utf-8 -*-
 import asyncio
 from dataclasses import field, dataclass
-from typing import Any, Type, List, Optional, Dict
+from typing import Any, Type, List, Optional
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.cases.llm_case import LLMCaseParams, LLMCase
 from diting_core.metrics.qa_quality.qa_quality import QAQualityMetric
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.llms.factory import llm_factory
-from diting_core.synthesis.rules.base_rule import BaseGenerateRule
-from diting_core.synthesis.rules.qa.schema import QAPairs, QAWithScore, QA
-from diting_core.synthesis.rules.qa.template import QAGenerateTemplate
 from diting_core.utilities.executor import task_wrapper
+from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer, BaseCorpus
+from diting_dataset.synthesis.qa.schema import QAPairs, QAWithScore, QA
+from diting_dataset.synthesis.qa.template import QAGenerateTemplate
 
 
 @dataclass
-class QAGenerateRule(BaseGenerateRule):
+class QASynthesizer(BaseSynthesizer):
     """
-    The QAGenerateRule uses LLM-as-a-generator to generate
+    The QASynthesizer uses LLM-as-a-generator to generate
     high quality of synthetic data.
     Attributes:
         model (BaseLLM): The language model used for generating data.
-        required_input_fields (List[str]): The list of input fields required for the rule.
-        required_output_fields (List[str]): The list of output fields expected from the rule.
+        required_input_fields (List[str]): The list of input fields required for the Synthesizer.
+        required_output_fields (List[str]): The list of output fields expected from the Synthesizer.
         generate_template (Type[QAGenerateTemplate]): The template used to build prompts for generation.
         max_generation_per_context (int): The maximum number of generations allowed per context.
         max_concurrency (int): The maximum number of concurrent generation tasks.
@@ -49,9 +49,8 @@ class QAGenerateRule(BaseGenerateRule):
     generate_template: Type[QAGenerateTemplate] = QAGenerateTemplate
 
     max_generation_per_context = 3
-    max_concurrency: int = 3
+    max_concurrency: int = 10
 
-    # todo if generate score less than threshold, retry to generate
     quality_threshold: float = 0.7
     max_quality_retries: int = 3
 
@@ -60,28 +59,30 @@ class QAGenerateRule(BaseGenerateRule):
 
     async def _apply(
         self,
-        rule_input: Dict[str, Any],
+        corpus: BaseCorpus,
         callbacks: Optional[Callbacks] = None,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
-        """Applies the QAGenerateRule to the provided input data.
+    ) -> LLMCase:
+        """Applies the QAGenerateSynthesizer to the provided input data.
 
         This method generates QA pairs based on the input context, evaluates their quality,
         and returns the best QA pair based on the quality score.
 
         Args:
-            rule_input (Dict[str, Any]): The input data for the rule, which must contain
+            corpus (BaseCorpus): The input data for the synthesizer, which must contain
                 the required fields specified in `required_input_fields`.
-            callbacks (Optional[Callbacks]): Optional callbacks to be executed during the rule application.
+            callbacks (Optional[Callbacks]): Optional callbacks to be executed during the Synthesizer application.
 
         Returns:
-            Dict[str, Any]: The output data containing the best QA pair and its quality score.
+            LLMCase: The output data containing the best QA pair and its quality score.
 
         Raises:
             Exception: If there is an error during the generation or quality evaluation.
         """
         # Generate QAPair
-        context = rule_input[LLMCaseParams.CONTEXT.value]
+        assert corpus.context, "context cannot be empty"
+
+        context = corpus.context
         prompt = self.generate_template.generate_qa(
             context, self.max_generation_per_context
         )
@@ -94,10 +95,18 @@ class QAGenerateRule(BaseGenerateRule):
         best_candidate: QAWithScore = await self.chose_with_threshold(
             context, qa_pairs, callbacks=callbacks
         )
-        rule_output = best_candidate.QA.model_dump()
-        rule_output["score"] = best_candidate.score
-        rule_output["reason"] = best_candidate.reason
-        return rule_output
+        llm_case = LLMCase(
+            user_input=best_candidate.QA.question,
+            expected_output=best_candidate.QA.answer,
+            context=context,
+            metadata={
+                "synthesizer": self.name,
+                "score": best_candidate.score,
+                "reason": best_candidate.reason,
+            },
+        )
+
+        return llm_case
 
     async def _compute_quality(
         self,

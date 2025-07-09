@@ -64,26 +64,33 @@ class BaseMetric(ABC):
         3. Executes computation
         4. Executes post-computation callbacks
         """
-        from diting_core.callbacks.base import ChainType
 
-        run_manager, grp_cb = await new_group(
-            name=self.name,
-            inputs={"test_case": test_case},
-            callbacks=kwargs.pop("callbacks", None),
-            verbose=kwargs.pop("verbose", False),
-            chain_type=ChainType.METRIC,
-            required_params=self._required_params,
-        )
+        run_manager, grp_cb = None, None
+        callbacks = kwargs.pop("callbacks", None)
+        verbose = kwargs.get("verbose", False)
+        if verbose or callbacks:
+            from diting_core.callbacks.base import ChainType
+
+            run_manager, grp_cb = await new_group(
+                name=self.name,
+                inputs={"test_case": test_case},
+                callbacks=callbacks,
+                verbose=verbose,
+                chain_type=ChainType.METRIC,
+                required_params=self._required_params,
+            )
         try:
             assert_testcase_validity(self.name, test_case, self._required_params)
             metric_value = await self._compute(
                 test_case, callbacks=grp_cb, *args, **kwargs
             )
         except Exception as e:
-            await run_manager.on_chain_error(e)
+            if run_manager:
+                await run_manager.on_chain_error(e)
             raise e
 
-        await run_manager.on_chain_end({"metric_value": metric_value})
+        if run_manager:
+            await run_manager.on_chain_end({"metric_value": metric_value})
         return metric_value
 
     @abstractmethod

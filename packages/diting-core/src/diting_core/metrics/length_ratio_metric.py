@@ -27,8 +27,6 @@ class LengthRatioExampleMetric(BaseMetric):
         LLMCaseParams.EXPECTED_OUTPUT,
         LLMCaseParams.ACTUAL_OUTPUT,
     ]
-    debug: bool = False
-    threshold: float = 1.0
 
     async def _compute(
         self, test_case: LLMCase, *args: Any, **kwargs: Any

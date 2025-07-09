@@ -216,7 +216,9 @@ class EvaluationService:
                 retrieval_context=case.retrieval_context,
             )
             metric: BaseMetric = metric_config["class"]()
-            metric_value = await metric.compute(metric_case)
+            metric_value = await metric.compute(
+                metric_case, verbose=metric_config["debug"]
+            )
 
             result = {
                 "case_id": case.id,

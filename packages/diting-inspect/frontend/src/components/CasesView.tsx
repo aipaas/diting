@@ -1,5 +1,6 @@
-import { Edit2, Play, Search, Trash2 } from "lucide-react";
+import { Download, Edit2, Play, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 import { API_BASE } from "../constants";
 import type { CaseType } from "../schemas";
 import EditCaseModal from "./EditCaseModal";
@@ -90,6 +91,30 @@ const CasesView = ({
 		setEditModalOpen(true);
 	};
 
+	const exportSelectedCases = () => {
+		const selectedData = cases
+			.filter((case_) => selectedCases.includes(case_.id))
+			.map(
+				({
+					input,
+					actual_output,
+					expected_output,
+					context,
+					retrieval_context,
+				}) => ({
+					input,
+					actual_output,
+					expected_output,
+					context: context?.join(", ") || "",
+					retrieval_context: retrieval_context?.join(", ") || "",
+				}),
+			);
+		const worksheet = XLSX.utils.json_to_sheet(selectedData);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, "Cases");
+		XLSX.writeFile(workbook, "diting_metric_cases.xlsx");
+	};
+
 	if (loading) {
 		return <div className="text-center py-8">Loading...</div>;
 	}
@@ -120,7 +145,7 @@ const CasesView = ({
 						}`}
 					>
 						<Play className="w-5 h-5 mr-2" />
-						Evaluate Selected
+						Evaluate
 					</button>
 					<button
 						type="button"
@@ -133,7 +158,20 @@ const CasesView = ({
 						}`}
 					>
 						<Trash2 className="w-5 h-5 mr-2" />
-						Delete Selected
+						Delete
+					</button>
+					<button
+						type="button"
+						onClick={exportSelectedCases}
+						disabled={selectedCases.length === 0}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedCases.length > 0
+								? "bg-green-600 text-white hover:bg-green-700"
+								: "bg-gray-300 text-gray-500 cursor-not-allowed"
+						}`}
+					>
+						<Download className="w-5 h-5 mr-2" />
+						Export
 					</button>
 				</div>
 			</div>

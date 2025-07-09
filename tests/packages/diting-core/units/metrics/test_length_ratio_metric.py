@@ -1,4 +1,5 @@
 import unittest
+from diting_core.callbacks.stdout import StdOutCallbackHandler
 from diting_core.cases.llm_case import LLMCase
 from diting_core.metrics.length_ratio_metric import LengthRatioExampleMetric
 
@@ -53,7 +54,9 @@ class TestLengthRatioExampleMetric(unittest.IsolatedAsyncioTestCase):
             context=["context1"],
             retrieval_context=["retrieval1"],
         )
-        result = await self.metric.compute(test_case)
+        result = await self.metric.compute(
+            test_case, verbose=True, callbacks=[StdOutCallbackHandler()]
+        )
         expected_ratio = 0.0  # since expected output is empty
         self.assertEqual(result.score, expected_ratio)
 

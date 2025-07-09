@@ -8,7 +8,6 @@ from diting_core.callbacks.base import Callbacks
 from diting_core.cases.llm_case import LLMCaseParams, LLMCase
 from diting_core.metrics.qa_quality.qa_quality import QAQualityMetric
 from diting_core.models.llms.base_model import BaseLLM
-from diting_core.models.llms.factory import llm_factory
 from diting_core.utilities.executor import task_wrapper
 from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer, BaseCorpus
 from diting_dataset.synthesis.qa.schema import QAPairs, QAWithScore, QA
@@ -31,7 +30,7 @@ class QASynthesizer(BaseSynthesizer):
         max_quality_retries (int): The maximum number of retries for generating high-quality data.
     """
 
-    model: BaseLLM = field(default_factory=llm_factory)
+    model: Optional[BaseLLM] = None
     required_input_fields: List[str] = field(
         default_factory=lambda: [
             LLMCaseParams.CONTEXT.value,
@@ -80,6 +79,7 @@ class QASynthesizer(BaseSynthesizer):
             Exception: If there is an error during the generation or quality evaluation.
         """
         # Generate QAPair
+        assert self.model is not None, "llm is not set"
         assert corpus.context, "context cannot be empty"
 
         context = corpus.context
@@ -143,6 +143,7 @@ class QASynthesizer(BaseSynthesizer):
         qa_pairs: List[QA],
         callbacks: Optional[Callbacks] = None,
     ) -> QAWithScore:
+        assert self.model is not None, "llm is not set"
         best_candidate = QAWithScore(QA=QA(question="", answer=""), score=0, reason="")
         for _ in range(self.max_quality_retries):
             semaphore = asyncio.Semaphore(self.max_concurrency)

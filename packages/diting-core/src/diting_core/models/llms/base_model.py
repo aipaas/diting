@@ -2,8 +2,11 @@ from abc import ABC, abstractmethod
 import typing as t
 from pydantic import BaseModel
 
+
 DictOrPydanticClass = t.Union[t.Dict[str, t.Any], t.Type[BaseModel]]
 DictOrPydantic = t.Union[t.Dict[str, t.Any], BaseModel]
+_BM = t.TypeVar("_BM", bound=BaseModel)
+PydanticClass = type[BaseModel]
 
 
 class BaseLLM(ABC):
@@ -21,7 +24,7 @@ class BaseLLM(ABC):
     async def generate_structured_output(
         self,
         prompt: str,
-        schema: t.Optional[DictOrPydanticClass] = None,  # noqa: UP006
+        schema: t.Optional[PydanticClass] = None,  # noqa: UP006
         **kwargs: t.Any,
     ) -> DictOrPydantic:
         """

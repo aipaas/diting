@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from dataclasses import field, dataclass
-from typing import Tuple, Any, List, Dict
+from typing import Tuple, Any, List, Dict, Optional
 
 from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
@@ -10,7 +10,7 @@ from diting_core.models.embeddings.base_model import BaseEmbeddings
 
 @dataclass
 class AnswerSimilarity(BaseMetric):
-    embeddings: BaseEmbeddings
+    embeddings: Optional[BaseEmbeddings] = None
     _required_params: List[LLMCaseParams] = field(
         default_factory=lambda: [
             LLMCaseParams.ACTUAL_OUTPUT,
@@ -21,6 +21,7 @@ class AnswerSimilarity(BaseMetric):
     async def _compute(
         self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
     ) -> MetricValue:
+        assert self.embeddings is not None, "embeddings is not set"
         assert test_case.actual_output
         assert test_case.expected_output
         try:

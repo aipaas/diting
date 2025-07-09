@@ -10,7 +10,6 @@ from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.metrics.qa_quality.schema import QAQualityFeedback
 from diting_core.metrics.qa_quality.template import QAQualityTemplate
 from diting_core.models.llms.base_model import BaseLLM
-from diting_core.models.llms.factory import llm_factory
 
 
 @dataclass
@@ -32,7 +31,7 @@ class QAQualityMetric(BaseMetric):
         evaluation_template (QAQualityTemplate): The prompt template using in the compute this metric
     """
 
-    model: BaseLLM = field(default_factory=llm_factory)
+    model: Optional[BaseLLM] = None
     _required_params: List[LLMCaseParams] = field(
         default_factory=lambda: [
             LLMCaseParams.USER_INPUT,
@@ -68,6 +67,7 @@ class QAQualityMetric(BaseMetric):
     async def _generate_quality_without_context(
         self, user_input: str, expected_output: str, callbacks: Callbacks
     ) -> MetricValue:
+        assert self.model is not None, "set LLM before use"
         run_mgt, grp_cb = await new_group(
             name="generate_quality_without_context",
             inputs={"user_input": user_input, "expected_output": expected_output},
@@ -119,6 +119,7 @@ class QAQualityMetric(BaseMetric):
         context: List[str],
         callbacks: Callbacks,
     ) -> MetricValue:
+        assert self.model is not None, "set LLM before use"
         run_mgt, grp_cb = await new_group(
             name="generate_quality_with_context",
             inputs={

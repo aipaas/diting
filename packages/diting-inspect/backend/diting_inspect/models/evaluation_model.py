@@ -4,6 +4,8 @@ Provides structures for storing and retrieving evaluation outcomes.
 """
 
 from typing import List, Dict, Any, Optional
+from diting_inspect.models.model_management import ModelManagementData
+from diting_inspect.models.model_pickle_persistence import PicklePersistentMixin
 from pydantic import BaseModel, Field
 from datetime import datetime
 from abc import ABC, abstractmethod
@@ -22,6 +24,9 @@ class EvaluationResult(BaseModel):
     case_ids: List[str] = Field(..., description="IDs of evaluated test cases")
     metric_configs: List[Dict[str, Any]] = Field(
         ..., description="Configuration for metrics used"
+    )
+    model_configs: Optional[List[ModelManagementData]] = Field(
+        None, description="Models configuration for evaluation used"
     )
     results: List[Dict[str, Any]] = Field(
         ..., description="Detailed evaluation results"
@@ -147,7 +152,7 @@ class EvaluationRepository(ABC):
         raise NotImplementedError
 
 
-class InMemoryEvaluationRepository(EvaluationRepository):
+class InMemoryEvaluationRepository(EvaluationRepository, PicklePersistentMixin):
     """
     In-memory implementation of EvaluationRepository.
 
@@ -155,9 +160,10 @@ class InMemoryEvaluationRepository(EvaluationRepository):
     Data is lost when application restarts.
     """
 
-    def __init__(self):
+    def __init__(self, pickle_file: str = "data/evaluations.pkl"):
         """Initialize empty in-memory storage."""
-        self._results: Dict[str, EvaluationResult] = {}
+        super().__init__(pickle_file)
+        self._results: Dict[str, EvaluationResult] = self.load_from_pickle({})
         self._lock = asyncio.Lock()
 
     async def save(self, result: EvaluationResult) -> EvaluationResult:
@@ -172,6 +178,7 @@ class InMemoryEvaluationRepository(EvaluationRepository):
         """
         async with self._lock:
             self._results[result.id] = result
+            self.save_to_pickle(self._results)
             return result
 
     async def get_by_id(self, evaluation_id: str) -> Optional[EvaluationResult]:
@@ -216,5 +223,6 @@ class InMemoryEvaluationRepository(EvaluationRepository):
         async with self._lock:
             if evaluation_id in self._results:
                 del self._results[evaluation_id]
+                self.save_to_pickle(self._results)
                 return True
             return False

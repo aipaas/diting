@@ -1,8 +1,9 @@
-import { Plus, Search, Trash2 } from "lucide-react";
+import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { API_BASE } from "../constants";
 import type { ModelManagementData } from "../schemas";
 import CreateModelModual from "./CreateModelModual";
+import EditModelModal from "./EditModelModal";
 
 interface ModelsViewProps {
 	models: ModelManagementData[];
@@ -21,6 +22,10 @@ const ModelsView = ({
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [selectedModels, setSelectedModels] = useState<string[]>([]);
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	const [isEditModalOpen, setEditModalOpen] = useState<boolean>(false);
+	const [selectedModel, setSelectedModel] = useState<
+		Partial<ModelManagementData>
+	>({ model_name: "", model_type: "inference" });
 
 	const filteredModels = models.filter(
 		(model) =>
@@ -92,6 +97,11 @@ const ModelsView = ({
 		}
 	};
 
+	const handleEditModel = (model: ModelManagementData) => {
+		setSelectedModel(model);
+		setEditModalOpen(true);
+	};
+
 	return (
 		<div>
 			{/* Search and Actions Bar */}
@@ -119,11 +129,10 @@ const ModelsView = ({
 						type="button"
 						onClick={handleDeleteSelected}
 						disabled={selectedModels.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${
-							selectedModels.length > 0
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedModels.length > 0
 								? "bg-red-600 text-white hover:bg-red-700"
 								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-						}`}
+							}`}
 					>
 						<Trash2 className="w-5 h-5 mr-2" />
 						Delete
@@ -136,6 +145,18 @@ const ModelsView = ({
 					isOpen={isModalOpen}
 					onClose={() => setIsModalOpen(false)}
 					onCreate={handleAddNewModel}
+				/>
+			)}
+
+			{isEditModalOpen && (
+				<EditModelModal
+					onClose={() => setEditModalOpen(false)}
+					onSuccess={() => {
+						setEditModalOpen(false);
+						onRefresh();
+						showNotification("Model updated successfully!", "success");
+					}}
+					modelData={selectedModel}
 				/>
 			)}
 
@@ -163,10 +184,13 @@ const ModelsView = ({
 								/>
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-								ID
+								Name
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Name
+								Model Type
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Notes
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Actions
@@ -184,23 +208,27 @@ const ModelsView = ({
 											onChange={() => handleSelectModel(model.id)}
 										/>
 									</td>
-									<td className="px-6 py-4 whitespace-nowrap">{model.id}</td>
 									<td className="px-6 py-4 whitespace-nowrap">
 										{model.model_name}
 									</td>
 									<td className="px-6 py-4 whitespace-nowrap">
+										{model.model_type}
+									</td>
+									<td className="px-6 py-4 whitespace-nowrap">{model.notes}</td>
+									<td className="px-6 py-4 whitespace-nowrap">
 										<button
 											type="button"
 											className="text-blue-600 hover:text-blue-800"
+											onClick={() => handleEditModel(model)}
 										>
-											View
+											<Edit className="w-5 h-5 mr-2" />
 										</button>
 									</td>
 								</tr>
 							))
 						) : (
 							<tr>
-								<td colSpan="4" className="text-center py-4">
+								<td colSpan="5" className="text-center py-4">
 									No models found.
 								</td>
 							</tr>

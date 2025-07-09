@@ -100,7 +100,7 @@ const CreateModelModual = ({
 						onChange={handleInputChange}
 						className="mr-2"
 					/>
-					Is Default Model
+					Is Default {newModelData.model_type} Model
 				</label>
 				<div className="flex justify-end space-x-3">
 					<button

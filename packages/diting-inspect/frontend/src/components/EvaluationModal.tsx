@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { API_BASE } from "../constants";
-import type { EvaluationModalProps, Metric } from "../schemas";
+import type {
+	EvaluationModalProps,
+	Metric,
+	ModelManagementData,
+} from "../schemas";
 import MetricConfigModal from "./MetricConfigModal";
 
 const EvaluationModal = ({
 	selectedCases,
 	onClose,
 	onSuccess,
+	modelConfigs,
 }: EvaluationModalProps) => {
 	const [metricConfigs, setMetricConfigs] = useState<Metric[]>([]);
 	const [isMetricConfigModalOpen, setIsMetricConfigModalOpen] =
@@ -17,6 +22,9 @@ const EvaluationModal = ({
 		debug: null,
 	});
 	const [availableMetrics, setAvailableMetrics] = useState<Array<Metric>>([]);
+	const [selectedModels, setSelectedModels] = useState<{
+		[key: string]: ModelManagementData;
+	}>({});
 
 	const fetchAvailableMetrics = async () => {
 		try {
@@ -49,6 +57,7 @@ const EvaluationModal = ({
 						threshold: metric.threshold,
 						debug: metric.debug,
 					})),
+					model_configs: Object.values(selectedModels),
 				}),
 			});
 			if (response.ok) {
@@ -60,6 +69,20 @@ const EvaluationModal = ({
 			alert("Error starting evaluation");
 		}
 	};
+
+	const handleModelSelection = (model_id: string, modelType: string) => {
+		const model = modelConfigs.find((model) => model.id === model_id);
+		if (model) {
+			setSelectedModels((prev) => ({
+				...prev,
+				[modelType]: model,
+			}));
+		}
+	};
+
+	const modelTypes = Array.from(
+		new Set(modelConfigs.map((model) => model.model_type)),
+	);
 
 	return (
 		<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
@@ -97,6 +120,29 @@ const EvaluationModal = ({
 								>
 									{metric.name}
 								</label>
+							</div>
+						))}
+					</div>
+					<div className="mb-4">
+						<label className="block text-sm font-medium text-gray-700">
+							Model Configs
+						</label>
+						{modelTypes.map((type) => (
+							<div key={type} className="mb-2">
+								<h4 className="font-medium text-gray-800">{type}</h4>
+								<select
+									className="border rounded-md p-2"
+									onChange={(e) => handleModelSelection(e.target.value, type)}
+								>
+									<option value="">Select a model</option>
+									{modelConfigs
+										.filter((model) => model.model_type === type)
+										.map((model) => (
+											<option key={model.id} value={model.id}>
+												{model.model_name}
+											</option>
+										))}
+								</select>
 							</div>
 						))}
 					</div>

@@ -11,6 +11,9 @@ import logging
 from enum import Enum
 
 from diting_core.cases.llm_case import LLMCase
+from diting_core.models.embeddings.factory import embedding_factory
+from diting_core.models.llms.factory import llm_factory
+from diting_core.utilities.slug import camel_to_snake
 from diting_inspect.models.case_model import LLMCaseData, CaseRepository
 from diting_inspect.models.evaluation_model import (
     EvaluationResult,
@@ -18,6 +21,8 @@ from diting_inspect.models.evaluation_model import (
 )
 from diting_core.metrics.base_metric import BaseMetric
 from diting_inspect.metrics import MetricFactory, MetricOptionSchema, discover_metrics
+from diting_inspect.models.model_management import ModelManagementData, ModelType
+from pydantic import SecretStr
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +79,7 @@ class EvaluationService:
         evaluation_id: str,
         case_ids: List[str],
         metric_configs: List[Dict[str, Any]],
+        model_configs: Optional[List[ModelManagementData]] = None,
     ) -> None:
         """
         Run evaluation on specified cases with given metrics.
@@ -98,6 +104,7 @@ class EvaluationService:
                 id=evaluation_id,
                 case_ids=case_ids,
                 metric_configs=metric_configs,
+                model_configs=model_configs,
                 results=[],
                 status=EvaluationStatus.RUNNING.value,
                 started_at=datetime.now(),
@@ -125,10 +132,14 @@ class EvaluationService:
             # Create a semaphore to limit concurrent evaluations
             semaphore = asyncio.Semaphore(self._max_concurrent)
 
-            async def evaluate_case(case: LLMCaseData, metric_config: Dict[str, Any]):
+            async def evaluate_case(
+                case: LLMCaseData,
+                metric_config: Dict[str, Any],
+                model_config: Optional[List[ModelManagementData]] = None,
+            ):
                 async with semaphore:
                     return await self._evaluate_case_with_metric(
-                        case, metric_config, evaluation_id
+                        case, metric_config, evaluation_id, model_config
                     )
 
             # Run evaluations concurrently using TaskGroup
@@ -136,7 +147,9 @@ class EvaluationService:
             async with asyncio.TaskGroup() as tg:
                 for case in cases:
                     for metric_config in metric_configs_loaded:
-                        task = tg.create_task(evaluate_case(case, metric_config))
+                        task = tg.create_task(
+                            evaluate_case(case, metric_config, model_configs)
+                        )
                         tasks.append(task)
 
             # Process results
@@ -154,6 +167,7 @@ class EvaluationService:
                 id=evaluation_id,
                 case_ids=case_ids,
                 metric_configs=metric_configs,
+                model_configs=model_configs,
                 results=evaluation_results,
                 status=EvaluationStatus.COMPLETED.value,
                 started_at=self._active_evaluations[evaluation_id]["started_at"],
@@ -195,6 +209,7 @@ class EvaluationService:
         case: LLMCaseData,
         metric_config: Dict[str, Any],
         evaluation_id: str,
+        model_configs: Optional[List[ModelManagementData]] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Evaluate a single case with a single metric.
@@ -216,6 +231,35 @@ class EvaluationService:
                 retrieval_context=case.retrieval_context,
             )
             metric: BaseMetric = metric_config["class"]()
+
+            is_model_deps = hasattr(metric, "model")
+            is_embedding_deps = hasattr(metric, "embedding_model")
+            llm_model_configs, embedding_model_configs = None, None
+            if model_configs:
+                llm_model_configs = [
+                    m for m in model_configs if m.model_type == ModelType.INFERENCE
+                ]
+                embedding_model_configs = [
+                    m for m in model_configs if m.model_type == ModelType.EMBEDDING
+                ]
+
+            if is_model_deps and llm_model_configs:
+                _model = llm_model_configs[0]
+                llm_model = llm_factory(
+                    model=_model.model_name,
+                    base_url=_model.access_endpoint,
+                    api_key=SecretStr(_model.api_key),
+                )
+                setattr(metric, "model", llm_model)
+            if is_embedding_deps and embedding_model_configs:
+                _model = embedding_model_configs[0]
+                embedding_model = embedding_factory(
+                    model=_model.model_name,
+                    base_url=_model.access_endpoint,
+                    api_key=_model.api_key,
+                )
+                setattr(metric, "embedding_model", embedding_model)
+
             metric_value = await metric.compute(
                 metric_case, verbose=metric_config["debug"]
             )
@@ -234,11 +278,11 @@ class EvaluationService:
 
         except Exception as e:
             logger.error(
-                f"Failed to evaluate case {case.id} with {metric_config['class'].__class__.__name__}: {e}"
+                f"Failed to evaluate case {case.id} with {camel_to_snake(metric_config['class'].__name__)}: {e}"
             )
             return {
                 "case_id": case.id,
-                "metric_name": metric_config["class"].__class__.__name__,
+                "metric_name": camel_to_snake(metric_config["class"].__name__),
                 "score": None,
                 "error": str(e),
                 "evaluated_at": datetime.now().isoformat(),

@@ -4,6 +4,7 @@ Provides the core data structures and persistence layer for test cases.
 """
 
 from typing import List, Optional, Dict, Any
+from diting_inspect.models.model_pickle_persistence import PicklePersistentMixin
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
 import asyncio
@@ -137,7 +138,7 @@ class CaseRepository(ABC):
         raise NotImplementedError
 
 
-class InMemoryCaseRepository(CaseRepository):
+class InMemoryCaseRepository(CaseRepository, PicklePersistentMixin):
     """
     In-memory implementation of CaseRepository for development/testing.
 
@@ -145,9 +146,10 @@ class InMemoryCaseRepository(CaseRepository):
     application restarts. Suitable for development and testing purposes.
     """
 
-    def __init__(self):
+    def __init__(self, pickle_file: str = "data/cases.pkl"):
         """Initialize empty in-memory storage."""
-        self._cases: Dict[str, LLMCaseData] = {}
+        super().__init__(pickle_file)
+        self._cases: Dict[str, LLMCaseData] = self.load_from_pickle({})
         self._lock = asyncio.Lock()
 
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[LLMCaseData]:
@@ -194,6 +196,7 @@ class InMemoryCaseRepository(CaseRepository):
             case.created_at = datetime.now()
             case.updated_at = datetime.now()
             self._cases[case.id] = case
+            self.save_to_pickle(self._cases)
             return case
 
     async def update(
@@ -226,6 +229,7 @@ class InMemoryCaseRepository(CaseRepository):
 
             case.updated_at = datetime.now()
             self._cases[case_id] = case
+            self.save_to_pickle(self._cases)
             return case
 
     async def delete(self, case_id: str) -> bool:
@@ -241,6 +245,7 @@ class InMemoryCaseRepository(CaseRepository):
         async with self._lock:
             if case_id in self._cases:
                 del self._cases[case_id]
+                self.save_to_pickle(self._cases)
                 return True
             return False
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from dataclasses import field, dataclass
-from typing import Tuple, Any, List, Dict, Optional
+from typing import Optional, Any, List
 
 from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
@@ -10,7 +10,7 @@ from diting_core.models.embeddings.base_model import BaseEmbeddings
 
 @dataclass
 class AnswerSimilarity(BaseMetric):
-    embeddings: Optional[BaseEmbeddings] = None
+    embedding_model: Optional[BaseEmbeddings] = None
     _required_params: List[LLMCaseParams] = field(
         default_factory=lambda: [
             LLMCaseParams.ACTUAL_OUTPUT,
@@ -19,9 +19,9 @@ class AnswerSimilarity(BaseMetric):
     )
 
     async def _compute(
-        self, test_case: LLMCase, *args: Tuple[Any], **kwargs: Dict[str, Any]
+        self, test_case: LLMCase, *args: Any, **kwargs: Any
     ) -> MetricValue:
-        assert self.embeddings is not None, "embeddings is not set"
+        assert self.embedding_model is not None, "embeddings is not set"
         assert test_case.actual_output
         assert test_case.expected_output
         try:
@@ -32,10 +32,10 @@ class AnswerSimilarity(BaseMetric):
             )
 
         embedding_1 = np.array(
-            await self.embeddings.embed_text(test_case.actual_output)
+            await self.embedding_model.embed_text(test_case.actual_output)
         )
         embedding_2 = np.array(
-            await self.embeddings.embed_text(test_case.expected_output)
+            await self.embedding_model.embed_text(test_case.expected_output)
         )
         # Normalization factors of the above embeddings
         norms_1 = np.linalg.norm(embedding_1, keepdims=True)

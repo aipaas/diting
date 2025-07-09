@@ -4,6 +4,7 @@ Provides REST API endpoints for managing test cases and running evaluations.
 """
 
 import io
+import os
 from typing import List, Optional, Dict, Any
 from diting_inspect.metrics import MetricOptionSchema
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
@@ -39,14 +40,13 @@ app.add_middleware(
 )
 
 # Initialize repositories and services
+os.makedirs("data", exist_ok=True)
 case_repository = CaseRepository()
 evaluation_repository = EvaluationRepository()
+model_repository = InMemoryModelRepository()
 case_service = CaseService(case_repository)
 evaluation_service = EvaluationService(evaluation_repository, case_repository)
 file_import_service = FileImportService()
-
-# Initialize model repository and service
-model_repository = InMemoryModelRepository()
 model_service = ModelService(model_repository)
 
 
@@ -76,6 +76,7 @@ class EvaluationRequest(BaseModel):
 
     case_ids: List[str]
     metric_configs: List[Dict[str, Any]]
+    model_configs: Optional[List[ModelManagementData]]
 
 
 # Case management endpoints
@@ -263,6 +264,7 @@ async def run_evaluation(
             evaluation_id,
             evaluation_request.case_ids,
             evaluation_request.metric_configs,
+            evaluation_request.model_configs,
         )
 
         return {"evaluation_id": evaluation_id, "message": "Evaluation started"}

@@ -28,7 +28,7 @@ class DataSetGenerator:
         The language model to use for the generation process.
     """
 
-    llm: BaseLLM
+    llm: t.Optional[BaseLLM]
 
     async def generate_dataset_from_langchain_docs(
         self,
@@ -134,6 +134,7 @@ class DataSetGenerator:
         """
         # callbacks.add_handler(CostCallbackHandler)
         # new group for Dataset Generation
+        assert self.llm is not None, "llm is not set"
         dataset_generation_rm, dataset_generation_grp = await new_group(
             name="generate_dataset_from_corpora",
             inputs={"corpora_size": len(corpora)},

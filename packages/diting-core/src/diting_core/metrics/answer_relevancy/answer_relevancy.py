@@ -15,7 +15,6 @@ from diting_core.metrics.answer_relevancy.schema import (
 from diting_core.metrics.answer_relevancy.template import AnswerRelevancyTemplate
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.models.llms.base_model import BaseLLM
-from diting_core.models.llms.factory import llm_factory
 
 
 def _calculate_score(verdicts: List[AnswerRelevancyVerdict]) -> float:
@@ -47,11 +46,11 @@ class AnswerRelevancyMetric(BaseMetric):
         even though they might not be used for metric calculation.
 
     Attributes:
-        model (BaseLLM): The judge model using in compute this metric.
+        model Optional[BaseLLM]: The judge model using in compute this metric.
         evaluation_template (AnswerRelevancyTemplate): The prompt template using in the compute this metric
     """
 
-    model: BaseLLM = field(default_factory=llm_factory)
+    model: Optional[BaseLLM] = None
     _required_params: List[LLMCaseParams] = field(
         default_factory=lambda: [
             LLMCaseParams.USER_INPUT,
@@ -100,6 +99,7 @@ class AnswerRelevancyMetric(BaseMetric):
         actual_output: str,
         callbacks: Optional[Callbacks] = None,
     ) -> List[str]:
+        assert self.model is not None, "llm is not set"
         prompt = self.evaluation_template.generate_statements(
             actual_output=actual_output,
         )
@@ -129,6 +129,7 @@ class AnswerRelevancyMetric(BaseMetric):
         statements: List[str],
         callbacks: Optional[Callbacks] = None,
     ) -> List[AnswerRelevancyVerdict]:
+        assert self.model is not None, "llm is not set"
         if len(statements) == 0:
             return []
 
@@ -158,6 +159,7 @@ class AnswerRelevancyMetric(BaseMetric):
     async def _a_generate_reason(
         self, user_input: str, score: float, verdicts: List[AnswerRelevancyVerdict]
     ) -> str:
+        assert self.model is not None, "llm is not set"
         irrelevant_statements: List[str] = []
         for verdict in verdicts:
             if verdict.verdict.strip().lower() == "no":

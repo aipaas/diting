@@ -7,7 +7,7 @@ from mock_embedding import MockEmbeddings
 
 class TestAnswerSimilarity(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.metric = AnswerSimilarity(embeddings=MockEmbeddings())
+        self.metric = AnswerSimilarity(embedding_model=MockEmbeddings())
 
     async def test_similarity_score_normal_case(self):
         test_case = LLMCase(

@@ -18,7 +18,7 @@ from mock_embedding import MockEmbeddings
 class TestAnswerCorrectness(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.model_mock = MockLLM()
-        self.answer_similarity = AnswerSimilarity(embeddings=MockEmbeddings())
+        self.answer_similarity = AnswerSimilarity(embedding_model=MockEmbeddings())
         self.answer_correctness = AnswerCorrectness(
             model=self.model_mock, answer_similarity=self.answer_similarity
         )

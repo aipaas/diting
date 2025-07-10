@@ -11,9 +11,9 @@ import {
 	CaseSchema,
 	EvaluationSchema,
 	NotificationSchema,
-	type ModelManagementData,
 	type CaseType,
 	type EvaluationType,
+	type ModelManagementData,
 	type NotificationType,
 } from "./schemas";
 
@@ -145,6 +145,7 @@ const App = () => {
 			{showEvaluationModal && (
 				<EvaluationModal
 					selectedCases={selectedCases}
+					modelConfigs={models}
 					onClose={() => setShowEvaluationModal(false)}
 					onSuccess={() => {
 						setShowEvaluationModal(false);

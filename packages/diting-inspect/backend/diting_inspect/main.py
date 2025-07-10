@@ -40,10 +40,13 @@ app.add_middleware(
 )
 
 # Initialize repositories and services
-os.makedirs("data", exist_ok=True)
-case_repository = CaseRepository()
-evaluation_repository = EvaluationRepository()
-model_repository = InMemoryModelRepository()
+_persistent_path = os.getenv("DT_INSPECT_DATA", "data")
+os.makedirs(_persistent_path, exist_ok=True)
+case_repository = CaseRepository(pickle_file=f"{_persistent_path}/cases.pkl")
+evaluation_repository = EvaluationRepository(
+    pickle_file=f"{_persistent_path}/evaluations.pkl"
+)
+model_repository = InMemoryModelRepository(pickle_file=f"{_persistent_path}/models.pkl")
 case_service = CaseService(case_repository)
 evaluation_service = EvaluationService(evaluation_repository, case_repository)
 file_import_service = FileImportService()
@@ -375,4 +378,4 @@ async def get_default_model() -> Dict[str, Any]:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, port=8000)

@@ -1,0 +1,44 @@
+services:
+  traefik:
+    image: mirrors.sangfor.com/traefik:v3.2.0
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "${HOST_PORT:-80}:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  diting-inspect:
+    build:
+      context: ./../
+      dockerfile: packages/diting-inspect/Dockerfile
+    pull_policy: never
+    container_name: diting-inspect
+    environment:
+      DT_INSPECT_DATA: "/app/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.diting-inspect.rule=Host(`${HOST_IP:-localhost}`) && PathPrefix(`/api`)"
+      - "traefik.http.services.diting-inspect.loadbalancer.server.port=8000"
+    volumes:
+      - data:/app/data
+
+  diting-inspect-ui:
+    build:
+      context: ./../packages/diting-inspect/frontend
+      dockerfile: Dockerfile
+    pull_policy: never
+    container_name: diting-inspect-ui
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.diting-inspect-ui.rule=Host(`${HOST_IP:-localhost}`) && PathPrefix(`/`)"
+      - "traefik.http.services.diting-inspect-ui.loadbalancer.server.port=80"
+
+volumes:
+  data:
+
+networks:
+  default:
+    name: diting

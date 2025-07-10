@@ -129,10 +129,11 @@ const ModelsView = ({
 						type="button"
 						onClick={handleDeleteSelected}
 						disabled={selectedModels.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedModels.length > 0
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedModels.length > 0
 								? "bg-red-600 text-white hover:bg-red-700"
 								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-							}`}
+						}`}
 					>
 						<Trash2 className="w-5 h-5 mr-2" />
 						Delete

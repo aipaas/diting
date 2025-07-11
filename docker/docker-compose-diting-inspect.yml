@@ -23,7 +23,7 @@ services:
       - "traefik.http.routers.diting-inspect.rule=Host(`${HOST_IP:-localhost}`) && PathPrefix(`/api`)"
       - "traefik.http.services.diting-inspect.loadbalancer.server.port=8000"
     volumes:
-      - data:/app/data
+      - inspect_data:/app/data
 
   diting-inspect-ui:
     build:
@@ -37,7 +37,8 @@ services:
       - "traefik.http.services.diting-inspect-ui.loadbalancer.server.port=80"
 
 volumes:
-  data:
+  inspect_data:
+    name: diting_inspect_data
 
 networks:
   default:

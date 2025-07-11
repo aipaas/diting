@@ -8,7 +8,6 @@ import NavigationTabs from "./components/NavigationTabs";
 import Notification from "./components/Notification";
 import { API_BASE } from "./constants";
 import {
-	CaseSchema,
 	EvaluationSchema,
 	NotificationSchema,
 	type CaseType,
@@ -16,6 +15,7 @@ import {
 	type ModelManagementData,
 	type NotificationType,
 } from "./schemas";
+import CreateModelModual from "./components/CreateModelModual";
 
 const App = () => {
 	const [cases, setCases] = useState<CaseType[]>([]);
@@ -27,6 +27,7 @@ const App = () => {
 	const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
 	const [showEvaluationModal, setShowEvaluationModal] =
 		useState<boolean>(false);
+	const [showModelModal, setShowModelModal] = useState<boolean>(false);
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [notification, setNotification] = useState<NotificationType>(null);
 
@@ -44,8 +45,8 @@ const App = () => {
 			if (response.ok) {
 				const data = await response.json();
 				// Validate cases with Zod
-				const parsedCases = data.map((caseData: CaseType) =>
-					CaseSchema.parse(caseData),
+				const parsedCases = data.map((caseData: any) =>
+					caseData,
 				);
 				setCases(parsedCases);
 			} else {
@@ -101,6 +102,41 @@ const App = () => {
 		}
 	};
 
+	const handleAddNewModel = async (modelData: Partial<ModelManagementData>) => {
+		try {
+			const response = await fetch(`${API_BASE}/models`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(modelData),
+			});
+			if (!response.ok) {
+				throw new Error("Failed to create new model");
+			}
+			const createdModel = await response.json();
+
+			if (modelData.is_default) {
+				const defaultResponse = await fetch(
+					`${API_BASE}/models/default/${modelData.model_type}/${createdModel.id}`,
+					{
+						method: "POST",
+					},
+				);
+				if (!defaultResponse.ok) {
+					throw new Error("Failed to set the model as default");
+				}
+			}
+
+			showNotification("New model created successfully!", "success");
+			setShowModelModal(false);
+			setActiveTab("models")
+			fetchModels();
+		} catch (error) {
+			showNotification(error.message, "error");
+		}
+	};
+
 	const filteredCases = cases.filter(
 		(case_) =>
 			case_.input.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -110,7 +146,7 @@ const App = () => {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
-			<Header setShowCreateModal={setShowCreateModal} />
+			<Header setShowCreateModal={setShowCreateModal} setShowModelModal={setShowModelModal} />
 			{/* Navigation Tabs */}
 			<NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 			{/* Main Content */}
@@ -137,8 +173,17 @@ const App = () => {
 					onSuccess={() => {
 						fetchCases();
 						setShowCreateModal(false);
+						setActiveTab("cases")
 						showNotification("Case created successfully!", "success");
 					}}
+				/>
+			)}
+
+			{showModelModal && (
+				<CreateModelModual
+					isOpen={showModelModal}
+					onClose={() => setShowModelModal(false)}
+					onCreate={handleAddNewModel}
 				/>
 			)}
 

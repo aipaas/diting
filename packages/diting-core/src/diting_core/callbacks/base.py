@@ -278,6 +278,8 @@ Callbacks = Optional[Union[list[BaseCallbackHandler], BaseCallbackManager]]
 class ChainType(Enum):
     METRIC = "metric"
     SYNTHETIC = "synthetic"
+    LLM = "llm"
+    CORPORA = "corpora"
     FUNC = "func"
 
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import typing as t
+
 from diting_core.models.llms.base_model import (
     BaseLLM,
-    DictOrPydanticClass,
-    DictOrPydantic,
 )
-import typing as t
 
 
 class MockLLM(BaseLLM):
@@ -17,7 +16,6 @@ class MockLLM(BaseLLM):
     async def generate_structured_output(
         self,
         prompt: str,
-        schema: t.Optional[DictOrPydanticClass] = None,  # noqa: UP006
         **kwargs: t.Any,
-    ) -> DictOrPydantic:
+    ) -> t.Dict[str, t.Any]:
         return {"testkey": "testval"}

@@ -6,6 +6,8 @@ import json_repair
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.messages import BaseMessage
 
+from diting_core.callbacks.base import ChainType
+from diting_core.callbacks.manager import new_group
 from diting_core.models.llms.base_model import (
     BaseLLM,
     DictOrPydantic,
@@ -55,30 +57,45 @@ class LangchainLLMWrapper(BaseLLM):
         schema: Optional[PydanticClass] = None,
         use_guided_json: bool = False,
         use_structured_output: bool = False,
+        **kwargs: Any,
     ) -> Any:
-        if schema is None:
-            res = await self.llm.ainvoke(prompt)
-            fmt_output = filter_model_output(res.content)  # type: ignore
-            return json_repair.loads(fmt_output)
+        run_manager, _ = await new_group(
+            name=self.__repr__(),
+            inputs={"prompt": prompt},
+            callbacks=kwargs.pop("callbacks", None),
+            verbose=kwargs.pop("verbose", False),
+            chain_type=ChainType.LLM,
+            schema=schema,
+        )
+        try:
+            if schema is None:
+                res = await self.llm.ainvoke(prompt, **kwargs)
+                fmt_output = filter_model_output(res.content)  # type: ignore
+                output_model = json_repair.loads(fmt_output)
+            elif use_guided_json:
+                json_schema = schema.model_json_schema()
+                self.llm.extra_body = {"guided_json": json_schema}  # type: ignore
+                res = await self.llm.ainvoke(prompt, **kwargs)
+                fmt_output = filter_model_output(res.content)  # type: ignore
+                json_output = json_repair.loads(fmt_output)
+                output_model = schema.model_validate(json_output)
 
-        if use_guided_json:
-            json_schema = schema.model_json_schema()
-            self.llm.extra_body = {"guided_json": json_schema}  # type: ignore
-            res = await self.llm.ainvoke(prompt)
-            fmt_output = filter_model_output(res.content)  # type: ignore
-            json_output = json_repair.loads(fmt_output)
-            return schema.model_validate(json_output)
+            elif use_structured_output:
+                # tool call
+                llm_structured = self.llm.with_structured_output(schema)  # type: ignore
+                res = await llm_structured.ainvoke(prompt, **kwargs)  # type: ignore
+                output_model = schema.model_validate(res)
+            else:
+                res = await self.llm.ainvoke(prompt, **kwargs)
+                fmt_output = filter_model_output(res.content)  # type: ignore
+                json_output = json_repair.loads(fmt_output)
+                output_model = schema.model_validate(json_output)
+        except Exception as e:
+            await run_manager.on_chain_error(e)
+            raise e
 
-        if use_structured_output:
-            # tool call
-            llm_structured = self.llm.with_structured_output(schema)  # type: ignore
-            res = await llm_structured.ainvoke(prompt)  # type: ignore
-            return schema.model_validate(res)
-
-        res = await self.llm.ainvoke(prompt)
-        fmt_output = filter_model_output(res.content)  # type: ignore
-        json_output = json_repair.loads(fmt_output)
-        return schema.model_validate(json_output)
+        await run_manager.on_chain_end(outputs={"llm_output": output_model})
+        return output_model
 
     async def generate_structured_output(
         self,
@@ -91,4 +108,5 @@ class LangchainLLMWrapper(BaseLLM):
             schema=schema,
             use_guided_json=self.is_guided_json_support,
             use_structured_output=self.is_structured_output_support,
+            **kwargs,
         )

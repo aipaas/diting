@@ -3,7 +3,8 @@
 import unittest
 from unittest.mock import patch, AsyncMock
 
-from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer, BaseCorpus
+from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer
+from diting_dataset.corpus.base_corpus import BaseCorpus
 
 
 class MockSynthesizer(BaseSynthesizer):

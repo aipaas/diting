@@ -11,7 +11,7 @@ PydanticClass = type[BaseModel]
 
 class BaseLLM(ABC):
     @abstractmethod
-    async def generate(self, *args: t.Any, **kwargs: t.Dict[str, t.Any]) -> str:
+    async def generate(self, *args: t.Any, **kwargs: t.Any) -> str:
         """
         Runs the model to output LLM response.
 

@@ -5,8 +5,11 @@ description = "DiTing Dataset Module"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0.0",
-    "datasets",
-
+    "datasets>=3.6.0",
+    "tiktoken",
+    "rapidfuzz",
+    "unstructured[md]>=0.17.2",
+    "langchain-community>=0.3.24",
 ]
 
 [build-system]

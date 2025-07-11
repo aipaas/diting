@@ -1,5 +1,5 @@
 import unittest
-from typing import Optional, Any, Tuple, Dict
+from typing import Any, Tuple, Dict
 from unittest.mock import patch
 
 from diting_core.metrics.answer_relevancy.answer_relevancy import (
@@ -15,8 +15,6 @@ from diting_core.metrics.answer_relevancy.schema import (
 )
 from diting_core.models.llms.base_model import (
     BaseLLM,
-    DictOrPydanticClass,
-    DictOrPydantic,
 )
 
 
@@ -27,9 +25,8 @@ class MockLLM(BaseLLM):
     async def generate_structured_output(
         self,
         prompt: str,
-        schema: Optional[DictOrPydanticClass] = None,
         **kwargs: Any,
-    ) -> DictOrPydantic:
+    ) -> dict[str, Any]:
         return {"testkey": "testval"}
 
 

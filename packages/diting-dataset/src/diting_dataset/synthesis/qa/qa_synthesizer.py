@@ -9,7 +9,8 @@ from diting_core.cases.llm_case import LLMCaseParams, LLMCase
 from diting_core.metrics.qa_quality.qa_quality import QAQualityMetric
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.utilities.executor import task_wrapper
-from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer, BaseCorpus
+from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer
+from diting_dataset.corpus.base_corpus import BaseCorpus
 from diting_dataset.synthesis.qa.schema import QAPairs, QAWithScore, QA
 from diting_dataset.synthesis.qa.template import QAGenerateTemplate
 
@@ -187,5 +188,7 @@ class QASynthesizer(BaseSynthesizer):
                 )
                 rewritten_qa_pairs = QAPairs.model_validate(rewritten_qa_pairs).qa_pairs
                 qa_pairs = rewritten_qa_pairs
+            else:
+                return best_candidate
 
         return best_candidate

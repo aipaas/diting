@@ -28,7 +28,7 @@ class ContextRecall(BaseMetric):
         evaluation_template (Type[ContextRecallTemplate]): The prompt template used for generating verdicts.
     """
 
-    model: BaseLLM
+    model: Optional[BaseLLM] = None
     _required_params: List[LLMCaseParams] = field(
         default_factory=lambda: [
             LLMCaseParams.USER_INPUT,
@@ -64,6 +64,7 @@ class ContextRecall(BaseMetric):
         retrieval_context: List[str],
         callbacks: Optional[Callbacks] = None,
     ) -> Verdicts:
+        assert self.model is not None, "llm is not set"
         prompt = self.evaluation_template.generate_verdicts(
             user_input=user_input,
             expected_output=expected_output,
@@ -131,6 +132,7 @@ class ContextRecall(BaseMetric):
 #         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
 #         base_url="http://10.72.1.16:3454/v1",
 #         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
+#         is_guided_json_support=True
 #     )
 #     test_case = LLMCase(
 #         user_input="你好",

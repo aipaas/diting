@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Dict, Any, Optional
+from typing import Any, Optional, List, cast
 
 import json_repair
 from langchain_core.language_models import BaseLanguageModel
+from langchain_core.prompt_values import StringPromptValue, PromptValue
 from langchain_core.messages import BaseMessage
+from langchain_openai.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain_openai.llms import AzureOpenAI, OpenAI
 
 from diting_core.callbacks.base import ChainType
 from diting_core.callbacks.manager import new_group
@@ -14,6 +17,13 @@ from diting_core.models.llms.base_model import (
     PydanticClass,
 )
 from diting_core.models.utils import filter_model_output
+
+MULTIPLE_COMPLETION_SUPPORTED = [
+    OpenAI,
+    ChatOpenAI,
+    AzureOpenAI,
+    AzureChatOpenAI,
+]
 
 
 class LangchainLLMWrapper(BaseLLM):
@@ -48,10 +58,57 @@ class LangchainLLMWrapper(BaseLLM):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(llm={self.llm.__class__.__name__}(...))"
 
-    async def generate(self, *args: Any, **kwargs: Dict[str, Any]) -> str:
-        return ""
+    @staticmethod
+    def get_temperature(n: int) -> float:
+        """Return the temperature to use for completion based on n."""
+        return 0.3 if n > 1 else 1e-8
 
-    async def _invoke_and_parse(
+    @staticmethod
+    def is_multiple_completion_supported(llm: BaseLanguageModel[BaseMessage]) -> bool:
+        """Return whether the given LLM supports n-completion."""
+        for llm_type in MULTIPLE_COMPLETION_SUPPORTED:
+            if isinstance(llm, llm_type):
+                return True
+        return False
+
+    async def generate(
+        self,
+        prompt: str,
+        n: int = 1,
+        temperature: Optional[float] = None,
+        **kwargs: Any,
+    ) -> str | List[str]:
+        old_temperature = getattr(self.llm, "temperature", None)
+        if temperature is None:
+            temperature = self.get_temperature(n=n)
+        if hasattr(self.llm, "temperature"):
+            self.llm.temperature = temperature  # type: ignore
+        prompt_value: PromptValue = StringPromptValue(text=prompt)
+        if self.is_multiple_completion_supported(self.llm):
+            result = await self.llm.agenerate_prompt(
+                prompts=[prompt_value],
+                n=n,
+            )
+        else:
+            result = await self.llm.agenerate_prompt(
+                prompts=[prompt_value] * n,
+            )
+            # make LLMResult.generation appear as if it was n_completions
+            # note that LLMResult.runs is still a list that represents each run
+            generations = [[g[0] for g in result.generations]]
+            result.generations = generations
+
+        # reset the temperature to the original value
+        if old_temperature is not None:
+            self.llm.temperature = old_temperature  # type: ignore
+        if n == 1:
+            output_string = result.generations[0][0].text
+            return output_string
+        else:
+            output_strings = [result.generations[0][i].text for i in range(n)]
+            return output_strings
+
+    async def _generate_parse(
         self,
         prompt: str,
         schema: Optional[PydanticClass] = None,
@@ -69,25 +126,24 @@ class LangchainLLMWrapper(BaseLLM):
         )
         try:
             if schema is None:
-                res = await self.llm.ainvoke(prompt, **kwargs)
-                fmt_output = filter_model_output(res.content)  # type: ignore
+                content = cast(str, await self.generate(prompt, **kwargs))
+                fmt_output = filter_model_output(content)
                 output_model = json_repair.loads(fmt_output)
             elif use_guided_json:
                 json_schema = schema.model_json_schema()
                 self.llm.extra_body = {"guided_json": json_schema}  # type: ignore
-                res = await self.llm.ainvoke(prompt, **kwargs)
-                fmt_output = filter_model_output(res.content)  # type: ignore
+                content = cast(str, await self.generate(prompt, **kwargs))
+                fmt_output = filter_model_output(content)
                 json_output = json_repair.loads(fmt_output)
                 output_model = schema.model_validate(json_output)
-
             elif use_structured_output:
                 # tool call
                 llm_structured = self.llm.with_structured_output(schema)  # type: ignore
                 res = await llm_structured.ainvoke(prompt, **kwargs)  # type: ignore
                 output_model = schema.model_validate(res)
             else:
-                res = await self.llm.ainvoke(prompt, **kwargs)
-                fmt_output = filter_model_output(res.content)  # type: ignore
+                content = cast(str, await self.generate(prompt))
+                fmt_output = filter_model_output(content)
                 json_output = json_repair.loads(fmt_output)
                 output_model = schema.model_validate(json_output)
         except Exception as e:
@@ -103,10 +159,24 @@ class LangchainLLMWrapper(BaseLLM):
         schema: Optional[PydanticClass] = None,
         **kwargs: Any,
     ) -> DictOrPydantic:
-        return await self._invoke_and_parse(
+        return await self._generate_parse(
             prompt,
             schema=schema,
             use_guided_json=self.is_guided_json_support,
             use_structured_output=self.is_structured_output_support,
             **kwargs,
         )
+
+
+# if __name__ == "__main__":
+#     from diting_core.models.llms.factory import llm_factory
+#     import asyncio
+#
+#     llm = llm_factory(
+#         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
+#         base_url="http://10.72.1.16:3454/v1",
+#         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
+#     )
+#
+#     result = asyncio.run(llm.generate("你好，你是谁"))
+#     print(result)

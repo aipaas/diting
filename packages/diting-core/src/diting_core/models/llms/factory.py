@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Optional
+from typing import Optional, Any
 from langchain_openai import ChatOpenAI
 
 from diting_core.models.llms.base_model import BaseLLM
@@ -14,11 +14,14 @@ def llm_factory(
     api_key: Optional[str] = None,
     is_guided_json_support: bool = False,
     is_structured_output_support: bool = False,
+    **kwargs: Any,
 ) -> BaseLLM:
     if api_key:
-        llm = ChatOpenAI(model=model, base_url=base_url, api_key=SecretStr(api_key))
+        llm = ChatOpenAI(
+            model=model, base_url=base_url, api_key=SecretStr(api_key), **kwargs
+        )
     else:
-        llm = ChatOpenAI(model=model, base_url=base_url)
+        llm = ChatOpenAI(model=model, base_url=base_url, **kwargs)
     return LangchainLLMWrapper(
         llm=llm,
         is_structured_output_support=is_structured_output_support,

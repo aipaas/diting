@@ -17,7 +17,8 @@ from diting_core.models.llms.base_model import BaseLLM
 @dataclass
 class AnswerCorrectness(BaseMetric):
     """
-    The AnswerCorrectness metric uses LLM-as-a-judge to evaluate the factual accuracy and semantic similarity of the actual_output compared to the expected_output in response to a given user_input.
+    The AnswerCorrectness metric uses LLM-as-a-judge to evaluate the factual accuracy and semantic similarity of the
+    actual_output compared to the expected_output in response to a given user_input.
 
     Constraints:
         To use the AnswerCorrectness metric, you'll need to provide the following arguments when creating an LLMTestCase:

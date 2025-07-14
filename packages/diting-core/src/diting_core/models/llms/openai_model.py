@@ -61,7 +61,8 @@ class LangchainLLMWrapper(BaseLLM):
     @staticmethod
     def get_temperature(n: int) -> float:
         """Return the temperature to use for completion based on n."""
-        return 0.3 if n > 1 else 1e-8
+        # return 0.3 if n > 1 else 1e-8
+        return 0.3 if n > 1 else 0.0
 
     @staticmethod
     def is_multiple_completion_supported(llm: BaseLanguageModel[BaseMessage]) -> bool:

@@ -5,6 +5,7 @@ import type { HeaderProps } from "../types/Headers";
 const CreateDropdown = ({
 	setShowCreateModal,
 	setShowModelModal,
+	setShowCreateToolConfig,
 }: HeaderProps) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef(null);
@@ -21,6 +22,12 @@ const CreateDropdown = ({
 			label: "New Model",
 			icon: <Plus className="w-4 h-4" />,
 			description: "Create a new model",
+		},
+		{
+			id: "new-tool",
+			label: "New Tool",
+			icon: <Plus className="w-4 h-4" />,
+			description: "Create a new tool",
 		},
 	];
 
@@ -53,6 +60,8 @@ const CreateDropdown = ({
 			setShowCreateModal(true);
 		} else if (item.id === "new-model") {
 			setShowModelModal(true);
+		} else if (item.id === "new-tool") {
+			setShowCreateToolConfig(true);
 		}
 		setIsOpen(false);
 	};
@@ -111,7 +120,11 @@ const CreateDropdown = ({
 	);
 };
 
-const Header = ({ setShowCreateModal, setShowModelModal }: HeaderProps) => {
+const Header = ({
+	setShowCreateModal,
+	setShowModelModal,
+	setShowCreateToolConfig,
+}: HeaderProps) => {
 	return (
 		<header className="bg-white shadow-sm">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -125,6 +138,7 @@ const Header = ({ setShowCreateModal, setShowModelModal }: HeaderProps) => {
 					<CreateDropdown
 						setShowCreateModal={setShowCreateModal}
 						setShowModelModal={setShowModelModal}
+						setShowCreateToolConfig={setShowCreateToolConfig}
 					/>
 				</div>
 			</div>

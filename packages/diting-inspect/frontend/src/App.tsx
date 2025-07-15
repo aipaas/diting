@@ -19,6 +19,9 @@ import useCreateModel from "./hooks/useCreateModel";
 import useManageModels from "./hooks/useManageModels";
 import useFetchEvaluations from "./hooks/useFetchEvaluations";
 import useFetchToolConfigs from "./hooks/useFetchToolConfigs";
+import CreateToolConfigModal from "./components/CreateToolConfigModal";
+import type { HttpToolType } from "./types/Tools";
+import useAddToolConfig from "./hooks/useAddToolConfig";
 
 const App = () => {
 	const { cases, loading: loadingCases, fetchCases } = useFetchCases();
@@ -41,6 +44,8 @@ const App = () => {
 	const [showEvaluationModal, setShowEvaluationModal] =
 		useState<boolean>(false);
 	const [showModelModal, setShowModelModal] = useState<boolean>(false);
+	const [showCreateToolConfig, setShowCreateToolConfig] =
+		useState<boolean>(false);
 	const { filteredCases, searchTerm, setSearchTerm } = useFilterCases(cases);
 	const [notification, setNotification] = useState<NotificationType>(null);
 
@@ -69,12 +74,23 @@ const App = () => {
 		}
 	};
 
+	const { addToolConfig } = useAddToolConfig(
+		fetchToolConfigs,
+		showNotification,
+	);
+	const handleAddToolModel = async (configData: Partial<HttpToolType>) => {
+		await addToolConfig(configData);
+		setShowCreateToolConfig(false);
+		setActiveTab("tools");
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
 			<Header
 				setShowCreateModal={setShowCreateModal}
 				setShowModelModal={setShowModelModal}
+				setShowCreateToolConfig={setShowCreateToolConfig}
 			/>
 			{/* Navigation Tabs */}
 			<NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -133,6 +149,15 @@ const App = () => {
 						showNotification("Evaluation started!", "success");
 						fetchEvaluations();
 					}}
+				/>
+			)}
+
+			{showCreateToolConfig && (
+				<CreateToolConfigModal
+					isOpen={showCreateToolConfig}
+					onClose={() => setShowCreateToolConfig(false)}
+					onCreate={handleAddToolModel}
+					initialTool={null}
 				/>
 			)}
 

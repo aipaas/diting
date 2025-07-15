@@ -3,6 +3,7 @@ import { Plus, Trash2, Search, Edit } from "lucide-react";
 import { API_BASE } from "../constants";
 import CreateToolConfigModal from "./CreateToolConfigModal";
 import EditToolConfigModal from "./EditToolConfigModal";
+import useAddToolConfig from "../hooks/useAddToolConfig";
 import type { HttpToolType } from "../types/Tools";
 
 interface ToolConfigsViewProps {
@@ -26,6 +27,8 @@ const ToolConfigsView = ({
 	const [selectedConfig, setSelectedConfig] = useState<Partial<HttpToolType>>(
 		{},
 	);
+
+	const { addToolConfig } = useAddToolConfig(onRefresh, showNotification);
 
 	const filteredConfigs = toolConfigs.filter((config) =>
 		config.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -65,26 +68,8 @@ const ToolConfigsView = ({
 	};
 
 	const handleAddNewConfig = async (configData: Partial<HttpToolType>) => {
-		try {
-			const response = await fetch(`${API_BASE}/toolconfigs`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(configData),
-			});
-			if (!response.ok) {
-				throw new Error("Failed to create new tool configuration");
-			}
-			showNotification(
-				"New tool configuration created successfully!",
-				"success",
-			);
-			setIsModalOpen(false);
-			onRefresh();
-		} catch (error) {
-			showNotification(error.message, "error");
-		}
+		await addToolConfig(configData);
+		setIsModalOpen(false);
 	};
 
 	const handleUpdateConfig = async (configData: Partial<HttpToolType>) => {

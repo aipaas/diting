@@ -1,4 +1,7 @@
+import os
 from jinja2 import Environment, meta, exceptions
+
+dt_persistent_path = os.getenv("DT_INSPECT_DATA", "data")
 
 
 def has_jinja2_syntax_parser(text: str):

@@ -138,10 +138,11 @@ const CasesView = ({
 						type="button"
 						onClick={onEvaluate}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedCases.length > 0
 								? "bg-blue-600 text-white hover:bg-blue-700"
 								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-							}`}
+						}`}
 					>
 						<Play className="w-5 h-5 mr-2" />
 						Evaluate
@@ -150,10 +151,11 @@ const CasesView = ({
 						type="button"
 						onClick={deleteSelectedCases}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedCases.length > 0
 								? "bg-red-600 text-white hover:bg-red-700"
 								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-							}`}
+						}`}
 					>
 						<Trash2 className="w-5 h-5 mr-2" />
 						Delete
@@ -162,10 +164,11 @@ const CasesView = ({
 						type="button"
 						onClick={exportSelectedCases}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedCases.length > 0
 								? "bg-green-600 text-white hover:bg-green-700"
 								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-							}`}
+						}`}
 					>
 						<Download className="w-5 h-5 mr-2" />
 						Export
@@ -249,7 +252,7 @@ const CasesView = ({
 										? case_.context.join().length > 10
 											? `${case_.context.join("\n").substring(0, 10)}...`
 											: case_.context.join("\n")
-										: (case_.context || "N/A")}
+										: case_.context || "N/A"}
 								</td>
 								<td className="px-6 py-4 whitespace-nowrap space-x-2">
 									<button

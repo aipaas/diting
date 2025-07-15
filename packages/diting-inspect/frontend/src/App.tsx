@@ -14,6 +14,7 @@ import {
 	type EvaluationType,
 	type ModelManagementData,
 	type NotificationType,
+	type ToolConfig,
 } from "./schemas";
 import CreateModelModual from "./components/CreateModelModual";
 
@@ -21,6 +22,7 @@ const App = () => {
 	const [cases, setCases] = useState<CaseType[]>([]);
 	const [evaluations, setEvaluations] = useState<EvaluationType[]>([]);
 	const [models, setModels] = useState<ModelManagementData[]>([]);
+	const [toolConfigs, setToolConfigs] = useState<ToolConfig[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [activeTab, setActiveTab] = useState<string>("cases");
 	const [selectedCases, setSelectedCases] = useState<string[]>([]);
@@ -28,6 +30,8 @@ const App = () => {
 	const [showEvaluationModal, setShowEvaluationModal] =
 		useState<boolean>(false);
 	const [showModelModal, setShowModelModal] = useState<boolean>(false);
+	const [showCreateToolModal, setShowCreateToolModal] =
+		useState<boolean>(false);
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [notification, setNotification] = useState<NotificationType>(null);
 
@@ -36,6 +40,7 @@ const App = () => {
 		fetchCases();
 		fetchEvaluations();
 		fetchModels();
+		fetchToolConfigs();
 	}, []);
 
 	const fetchCases = async () => {
@@ -45,9 +50,7 @@ const App = () => {
 			if (response.ok) {
 				const data = await response.json();
 				// Validate cases with Zod
-				const parsedCases = data.map((caseData: any) =>
-					caseData,
-				);
+				const parsedCases = data.map((caseData: any) => caseData);
 				setCases(parsedCases);
 			} else {
 				showNotification("Failed to fetch cases", "error");
@@ -91,6 +94,20 @@ const App = () => {
 		}
 	};
 
+	const fetchToolConfigs = async () => {
+		try {
+			const response = await fetch(`${API_BASE}/toolconfigs`);
+			if (response.ok) {
+				const data = await response.json();
+				setToolConfigs(data);
+			} else {
+				console.error("Failed to fetch tool configurations");
+			}
+		} catch (error) {
+			console.error("Failed to fetch tool configurations:", error);
+		}
+	};
+
 	const showNotification = (
 		message: string,
 		type: "info" | "success" | "error" = "info",
@@ -130,7 +147,7 @@ const App = () => {
 
 			showNotification("New model created successfully!", "success");
 			setShowModelModal(false);
-			setActiveTab("models")
+			setActiveTab("models");
 			fetchModels();
 		} catch (error) {
 			showNotification(error.message, "error");
@@ -146,7 +163,10 @@ const App = () => {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
-			<Header setShowCreateModal={setShowCreateModal} setShowModelModal={setShowModelModal} />
+			<Header
+				setShowCreateModal={setShowCreateModal}
+				setShowModelModal={setShowModelModal}
+			/>
 			{/* Navigation Tabs */}
 			<NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 			{/* Main Content */}
@@ -157,12 +177,14 @@ const App = () => {
 				setSelectedCases={setSelectedCases}
 				evaluations={evaluations}
 				models={models}
+				toolConfigs={toolConfigs}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				loading={loading}
 				fetchCases={fetchCases}
 				fetchEvaluations={fetchEvaluations}
 				fetchModels={fetchModels}
+				fetchToolConfigs={fetchToolConfigs}
 				showNotification={showNotification}
 				setShowEvaluationModal={setShowEvaluationModal}
 			/>
@@ -173,7 +195,7 @@ const App = () => {
 					onSuccess={() => {
 						fetchCases();
 						setShowCreateModal(false);
-						setActiveTab("cases")
+						setActiveTab("cases");
 						showNotification("Case created successfully!", "success");
 					}}
 				/>

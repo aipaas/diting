@@ -7,17 +7,36 @@ export const NotificationSchema = z.object({
 
 export type NotificationType = z.infer<typeof NotificationSchema> | null;
 
+const BaseID = z.object({
+	id: z.string(),
+});
+
 // Create a Zod schema for Case
 export const CaseSchema = z.object({
-	id: z.string(),
+	input: z.string().optional(),
+	actual_output: z.string().optional(),
+	expected_output: z.string().optional(),
+	context: z.array(z.string()).optional().nullable(),
+	retrieval_context: z.array(z.string()).optional().nullable(),
+});
+
+const CaseTypeData = BaseID.extend({
 	input: z.string(),
 	actual_output: z.string(),
 	expected_output: z.string().optional(),
 	context: z.array(z.string()).optional().nullable(),
 	retrieval_context: z.array(z.string()).optional().nullable(),
 });
+export type CaseType = z.infer<typeof CaseTypeData>;
 
-export type CaseType = z.infer<typeof CaseSchema>;
+// Create a Zod schema for GenericBox
+export const GenericBoxSchema = z.object({
+	input: CaseSchema,
+	tool: z.string().describe("Tool ID"),
+	output: CaseSchema,
+});
+
+export type GenericBoxType = z.infer<typeof GenericBoxSchema>;
 
 // Create a Zod schema for ModelManagementData
 export const ModelManagementDataSchema = z.object({
@@ -47,33 +66,6 @@ export type ModelManagementData = z.infer<typeof ModelManagementDataSchema>;
 
 // Create a Zod schema for Evaluation
 export const EvaluationSchema = z.any();
-// 	     z.object({
-// 	id: z.string(),
-// 	case_ids: z.array(z.string()),
-// 	metric_configs: z.array(
-// 		z.object({
-// 			type: z.string(),
-// 			threshold: z.number().nullable(),
-// 			debug: z.boolean().nullable(),
-// 		}),
-// 	),
-// 	model_configs: z.array(ModelManagementDataSchema).optional().nullable(),
-// 	results: z.array(
-// 		z.object({
-// 			case_id: z.string(),
-// 			metric_name: z.string(),
-// 			score: z.number().optional().nullable(),
-// 			evaluated_at: z.string().optional().nullable(), // ISO 8601 date string
-// 			error: z.string().optional().nullable(),
-// 		}),
-// 	).optional().nullable(),
-// 	status: z.string(),
-// 	started_at: z.string(), // ISO 8601 date string
-// 	completed_at: z.string(), // ISO 8601 date string
-// 	total_cases: z.number(),
-// 	total_metrics: z.number(),
-// 	error: z.string().nullable(),
-// });
 
 export type EvaluationType = z.infer<typeof EvaluationSchema>;
 
@@ -120,3 +112,26 @@ export type Metric = z.infer<typeof MetricSchema>;
 export const FileSchema = z.object({
 	file: z.instanceof(File).optional(),
 });
+
+// Define the Tool schema
+export const ToolSchema = z.object({
+	name: z.string().describe("Name of the tool"),
+	description: z.string().describe("Description of the tool"),
+	method: z.string().default("GET").describe("HTTP method for the tool"),
+	endpoint: z.string().describe("API endpoint for the tool"),
+	headers: z.record(z.any()).describe("Headers for the request"),
+	headersOrder: z.array(z.string()).default([]).describe("Order of headers"),
+	args: z.array(z.string()).default([]).describe("Arguments for the request"),
+	requestBody: z.string().describe("Request body for the tool"),
+	responseBody: z.string().describe("Expected response body from the tool"),
+});
+
+// Define the ToolConfig schema
+export const ToolConfigSchema = z.object({
+	name: z.string().describe("Name of the tool configuration"),
+	tools: z.array(ToolSchema).describe("List of tools in the configuration"),
+	createdAt: z.date().default(new Date()).describe("Creation timestamp"),
+	updatedAt: z.date().default(new Date()).describe("Last updated timestamp"),
+});
+
+export type ToolConfig = z.infer<typeof ToolConfigSchema>;

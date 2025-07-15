@@ -1,24 +1,27 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
 import type { HeaderProps } from "../schemas";
 
-const CreateDropdown = ({ setShowCreateModal, setShowModelModal }: HeaderProps) => {
+const CreateDropdown = ({
+	setShowCreateModal,
+	setShowModelModal,
+}: HeaderProps) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef(null);
 
 	const menuItems = [
 		{
-			id: 'new-case',
-			label: 'New Case',
+			id: "new-case",
+			label: "New Case",
 			icon: <Plus className="w-4 h-4" />,
-			description: 'Create a new case'
+			description: "Create a new case",
 		},
 		{
-			id: 'new-model',
-			label: 'New Model',
+			id: "new-model",
+			label: "New Model",
 			icon: <Plus className="w-4 h-4" />,
-			description: 'Create a new model'
-		}
+			description: "Create a new model",
+		},
 	];
 
 	useEffect(() => {
@@ -28,34 +31,34 @@ const CreateDropdown = ({ setShowCreateModal, setShowModelModal }: HeaderProps) 
 			}
 		};
 
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => document.removeEventListener('mousedown', handleClickOutside);
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
 	useEffect(() => {
 		const handleKeyDown = (event) => {
-			if (event.key === 'Escape') {
+			if (event.key === "Escape") {
 				setIsOpen(false);
 			}
 		};
 
 		if (isOpen) {
-			document.addEventListener('keydown', handleKeyDown);
-			return () => document.removeEventListener('keydown', handleKeyDown);
+			document.addEventListener("keydown", handleKeyDown);
+			return () => document.removeEventListener("keydown", handleKeyDown);
 		}
 	}, [isOpen]);
 
 	const handleItemClick = (item) => {
-		if (item.id === 'new-case') {
+		if (item.id === "new-case") {
 			setShowCreateModal(true);
-		} else if (item.id === 'new-model') {
+		} else if (item.id === "new-model") {
 			setShowModelModal(true);
 		}
 		setIsOpen(false);
 	};
 
 	return (
-		<div className="relative inline-block" ref={dropdownRef} >
+		<div className="relative inline-block" ref={dropdownRef}>
 			<button
 				onClick={() => setIsOpen(!isOpen)}
 				className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -65,12 +68,17 @@ const CreateDropdown = ({ setShowCreateModal, setShowModelModal }: HeaderProps) 
 				<Plus className="w-4 h-4" />
 				<span className="hidden sm:inline"></span>
 				<svg
-					className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+					className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
 				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						strokeWidth={2}
+						d="M19 9l-7 7-7-7"
+					/>
 				</svg>
 			</button>
 
@@ -84,9 +92,7 @@ const CreateDropdown = ({ setShowCreateModal, setShowModelModal }: HeaderProps) 
 								className="w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors"
 							>
 								<div className="flex items-start gap-3">
-									<div className="text-gray-500 mt-0.5">
-										{item.icon}
-									</div>
+									<div className="text-gray-500 mt-0.5">{item.icon}</div>
 									<div className="flex-1">
 										<div className="text-sm font-medium text-gray-900">
 											{item.label}
@@ -116,7 +122,10 @@ const Header = ({ setShowCreateModal, setShowModelModal }: HeaderProps) => {
 							DiTing Evaluation Tool
 						</h1>
 					</div>
-					<CreateDropdown setShowCreateModal={setShowCreateModal} setShowModelModal={setShowModelModal} />
+					<CreateDropdown
+						setShowCreateModal={setShowCreateModal}
+						setShowModelModal={setShowModelModal}
+					/>
 				</div>
 			</div>
 		</header>

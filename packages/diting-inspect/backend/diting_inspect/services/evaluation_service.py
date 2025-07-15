@@ -22,7 +22,6 @@ from diting_inspect.models.evaluation_model import (
 from diting_core.metrics.base_metric import BaseMetric
 from diting_inspect.metrics import MetricFactory, MetricOptionSchema, discover_metrics
 from diting_inspect.models.model_management import ModelManagementData, ModelType
-from pydantic import SecretStr
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +247,7 @@ class EvaluationService:
                 llm_model = llm_factory(
                     model=_model.model_name,
                     base_url=_model.access_endpoint,
-                    api_key=SecretStr(_model.api_key),
+                    api_key=_model.api_key,
                 )
                 setattr(metric, "model", llm_model)
             if is_embedding_deps and embedding_model_configs:

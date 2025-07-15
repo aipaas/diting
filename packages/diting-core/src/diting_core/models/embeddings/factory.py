@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import Optional
+
 import openai
 from diting_core.models.embeddings.base_model import BaseEmbeddings
 from diting_core.models.embeddings.openai_model import PrivateEmbeddings
 from diting_core.models.embeddings.openai_model import LangchainEmbeddingsWrapper
 
 
-def embedding_factory(model: str, base_url: str, api_key: str) -> BaseEmbeddings:
+def embedding_factory(
+    model: str = "bge-m3",
+    base_url: Optional[str] = None,
+    api_key: Optional[str] = None,
+) -> BaseEmbeddings:
     """
     Create and return a BaseEmbeddings instance. Used for default embeddings
     used in Diting.

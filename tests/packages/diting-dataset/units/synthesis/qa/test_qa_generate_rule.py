@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
-from diting_dataset.synthesis.base_synthesizer import BaseCorpus
+from diting_dataset.corpus.base_corpus import BaseCorpus
 from diting_dataset.synthesis.qa.qa_synthesizer import QASynthesizer
 from diting_core.models.llms.base_model import BaseLLM
 from diting_dataset.synthesis.qa.schema import QA, QAWithScore

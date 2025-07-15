@@ -3,30 +3,12 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, ConfigDict
-
 from diting_core.callbacks.manager import new_group
 from diting_core.cases.llm_case import LLMCase
 from diting_core.utilities.slug import camel_to_snake
 from diting_core.utilities.validate import assert_fields_validity
 from diting_core.models.llms.base_model import BaseLLM
-
-
-class BaseCorpus(BaseModel):
-    """
-    Base class for representing a corpus for generating LLMCase.
-
-    Attributes
-    ----------
-    context : List[str]
-        List of background information involved in the corpus.
-    scenario: Optional[str] = None
-        The scenario within the corpus
-    """
-
-    context: Optional[List[str]] = None
-    scenario: Optional[str] = None
-    model_config = ConfigDict(extra="allow")  # 允许任意额外属性
+from diting_dataset.corpus.base_corpus import BaseCorpus
 
 
 class BaseSynthesizer(ABC):

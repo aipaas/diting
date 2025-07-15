@@ -4,7 +4,7 @@ import unittest
 from typing import List
 
 from diting_core.models.embeddings.base_model import BaseEmbeddings
-from diting_dataset.knowledge_graph.graph import Node
+from diting_dataset.knowledge_graph.schema import Node
 from diting_dataset.knowledge_graph.transforms.extractors.embeddings import (
     EmbeddingExtractor,
 )

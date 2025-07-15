@@ -14,18 +14,18 @@ from diting_core.models.embeddings.factory import embedding_factory
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.llms.factory import llm_factory
 from diting_core.utilities.executor import task_wrapper
-from diting_dataset.corpus.base_corpus import BaseCorpus
-from diting_dataset.corpus.default.default_corpus_generator import (
-    DefaultCorpusGenerator,
+from diting_core.synthesis.base_corpus import BaseCorpus
+from diting_dataset.corpus.graph_corpus_generator import (
+    KnowledgeGraphCorpusGenerator,
 )
 from diting_dataset.dataset.dataset import EvaluationDataset
-from diting_dataset.knowledge_graph.graph import Node, NodeType, KnowledgeGraph
+from diting_dataset.knowledge_graph.schema import Node, NodeType, KnowledgeGraph
 from diting_dataset.knowledge_graph.transforms import (
     default_transforms,
     apply_transforms,
 )
-from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer
-from diting_dataset.synthesis.qa.qa_synthesizer import QASynthesizer
+from diting_core.synthesis import BaseSynthesizer
+from diting_core.synthesis import QASynthesizer
 
 
 @dataclass
@@ -187,7 +187,7 @@ class DataSetGenerator:
             apply_transforms(kg, transforms, max_workers=max_concurrency)
             self.knowledge_graph = kg
             # generate corpus with the knowledge graph
-            corpus_generator = DefaultCorpusGenerator(
+            corpus_generator = KnowledgeGraphCorpusGenerator(
                 kg, self.llm, max_concurrency=max_concurrency
             )
             corpora = await corpus_generator.generate_corpora(

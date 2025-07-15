@@ -4,7 +4,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph, Node
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph, Node
 from diting_dataset.knowledge_graph.transforms.relationship_builders.traditional import (
     JaccardSimilarityBuilder,
     OverlapScoreBuilder,

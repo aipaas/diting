@@ -8,7 +8,7 @@ from diting_dataset.knowledge_graph.transforms.filters import (
     CustomNodeFilter,
     QuestionPotentialOutput,
 )
-from diting_dataset.knowledge_graph.graph import Node, KnowledgeGraph, NodeType
+from diting_dataset.knowledge_graph.schema import Node, KnowledgeGraph, NodeType
 
 
 class TestCustomNodeFilter(unittest.IsolatedAsyncioTestCase):

@@ -1,35 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Sequence
 
 from pydantic import BaseModel, ConfigDict
 
 from diting_core.callbacks.manager import new_group
 from diting_core.utilities.slug import camel_to_snake
-from diting_dataset.knowledge_graph.persona import Persona
-
-
-class QueryLength(str, Enum):
-    """
-    Enumeration of query lengths. Available options are: LONG, MEDIUM, SHORT
-    """
-
-    LONG = "long"
-    MEDIUM = "medium"
-    SHORT = "short"
-
-
-class QueryStyle(str, Enum):
-    """
-    Enumeration of query styles. Available options are: MISSPELLED, PERFECT_GRAMMAR, POOR_GRAMMAR, WEB_SEARCH_LIKE
-    """
-
-    MISSPELLED = "Misspelled queries"
-    PERFECT_GRAMMAR = "Perfect grammar"
-    POOR_GRAMMAR = "Poor grammar"
-    WEB_SEARCH_LIKE = "Web search like queries"
 
 
 class BaseCorpus(BaseModel):
@@ -40,22 +17,16 @@ class BaseCorpus(BaseModel):
     ----------
     context : List[str]
         List of background information involved in the corpus.
-    scenario: Optional[str] = None
-        The scenario within the corpus
     """
 
     context: Optional[List[str]] = None
-    scenario: Optional[str] = None
-    style: Optional[QueryStyle] = None
-    length: Optional[QueryLength] = None
-    persona: Optional[Persona] = None
     model_config = ConfigDict(extra="allow")  # 允许任意额外属性
 
 
 class BaseCorpusGenerator(ABC):
     async def generate_corpora(
         self, num_corpora: int = 5, **kwargs: Any
-    ) -> List[BaseCorpus]:
+    ) -> Sequence[BaseCorpus]:
         """
         生成语料（内部流程：构建图谱→聚合节点→生成聚类子图→构造语料）
 
@@ -87,7 +58,7 @@ class BaseCorpusGenerator(ABC):
     @abstractmethod
     async def _generate_corpora(
         self, num_corpora: int, **kwargs: Any
-    ) -> List[BaseCorpus]:
+    ) -> Sequence[BaseCorpus]:
         raise NotImplementedError
 
     @property

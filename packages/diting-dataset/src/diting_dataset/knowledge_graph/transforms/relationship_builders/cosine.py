@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from diting_dataset.knowledge_graph.graph import (
+from diting_dataset.knowledge_graph.schema import (
     KnowledgeGraph,
     Relationship,
     NodeType,

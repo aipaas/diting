@@ -2,7 +2,7 @@ import re
 import typing as t
 from dataclasses import dataclass
 
-from diting_dataset.knowledge_graph.graph import Node
+from diting_dataset.knowledge_graph.schema import Node
 from diting_dataset.knowledge_graph.transforms import Extractor
 
 

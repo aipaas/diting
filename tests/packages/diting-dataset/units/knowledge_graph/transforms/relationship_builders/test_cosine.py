@@ -4,7 +4,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import numpy as np
-from diting_dataset.knowledge_graph.graph import (
+from diting_dataset.knowledge_graph.schema import (
     KnowledgeGraph,
     Node,
     NodeType,

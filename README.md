@@ -75,18 +75,10 @@ Here’s a simple evaluation workflow:
 ```
 diting/
 ├── docs
-├── src
-│   ├── diting
-│   │   ├── callbacks       回调管理，内置的handler/manager等
-│   │   ├── common          公共包，工具类等
-│   │   ├── tasks           任务管理，包括执行/进度/日志/错误等管理机制
-│   │   └── cases           评估数据，定义多种评估数据schema
-│   │   ├── dataset         评估数据集，聚合testcases并暴露导入导出接口
-│   │   ├── metrics         评估指标，定义多种维度的评估实现
-│   │   ├── evaluate        评估接口，集合cases、metrics、tasks等模块实现评估执行
-│   │   ├── models          模型客户端
-│   │   ├── synthesizers    数据合成
-│   └── support             第三方支持
+├── packages
+│   ├── diting-core         diting核心模块，包括评测case、指标算法和评测模型等
+│   └── diting-dataset      diting数据集管理，包括数据集和数据集生成
+│   └── diting-inspect      diting playground，提供gui界面用于快速体验diting
 └── tests
     ├── benchmarks
     ├── e2e

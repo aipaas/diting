@@ -9,10 +9,10 @@ from diting_core.cases.llm_case import LLMCaseParams, LLMCase
 from diting_core.metrics.qa_quality.qa_quality import QAQualityMetric
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.utilities.executor import task_wrapper
-from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer
-from diting_dataset.corpus.base_corpus import BaseCorpus
-from diting_dataset.synthesis.qa.schema import QAPairs, QAWithScore, QA
-from diting_dataset.synthesis.qa.template import QAGenerateTemplate
+from diting_core.synthesis.base_synthesizer import BaseSynthesizer
+from diting_core.synthesis.base_corpus import BaseCorpus
+from diting_core.synthesis.qa.schema import QAPairs, QAWithScore, QA
+from diting_core.synthesis.qa.template import QAGenerateTemplate
 
 
 @dataclass

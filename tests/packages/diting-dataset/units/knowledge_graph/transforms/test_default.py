@@ -13,7 +13,7 @@ from diting_dataset.knowledge_graph.transforms.default import (
 from langchain_core.documents import Document as LCDocument
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.embeddings.base_model import BaseEmbeddings
-from diting_dataset.knowledge_graph.graph import Node, NodeType
+from diting_dataset.knowledge_graph.schema import Node, NodeType
 
 
 class TestDefaultTransforms(unittest.TestCase):

@@ -8,7 +8,7 @@ from diting_core.cases.llm_case import LLMCase
 from diting_core.utilities.slug import camel_to_snake
 from diting_core.utilities.validate import assert_fields_validity
 from diting_core.models.llms.base_model import BaseLLM
-from diting_dataset.corpus.base_corpus import BaseCorpus
+from diting_core.synthesis.base_corpus import BaseCorpus
 
 
 class BaseSynthesizer(ABC):

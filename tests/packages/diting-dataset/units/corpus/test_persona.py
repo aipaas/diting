@@ -4,14 +4,14 @@ import unittest
 from unittest.mock import AsyncMock, patch
 
 from diting_core.models.llms.base_model import BaseLLM
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph, Node, NodeType
-from diting_dataset.knowledge_graph.persona import (
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph, Node, NodeType
+from diting_dataset.corpus.persona import (
     generate_personas_from_kg,
-    Persona,
     PersonaGenerationPrompt,
     default_filter,
     PersonaList,
 )
+from diting_dataset.corpus import Persona
 
 
 class TestPersonaGeneration(unittest.IsolatedAsyncioTestCase):

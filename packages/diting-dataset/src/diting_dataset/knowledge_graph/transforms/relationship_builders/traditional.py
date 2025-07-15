@@ -3,7 +3,7 @@ from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
 
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph, Relationship, Node
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph, Relationship, Node
 from diting_dataset.knowledge_graph.transforms import RelationshipBuilder
 
 

@@ -3,8 +3,8 @@
 import unittest
 from unittest.mock import patch, AsyncMock
 
-from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer
-from diting_dataset.corpus.base_corpus import BaseCorpus
+from diting_core.synthesis import BaseSynthesizer
+from diting_core.synthesis.base_corpus import BaseCorpus
 
 
 class MockSynthesizer(BaseSynthesizer):
@@ -33,7 +33,7 @@ class TestBaseSynthesizer(unittest.IsolatedAsyncioTestCase):
     async def test_apply_invalid_output(self):
         """测试输出字段不符合预期时抛出断言错误"""
         with patch(
-            "diting_dataset.synthesis.base_synthesizer.assert_fields_validity",
+            "diting_core.synthesis.base_synthesizer.assert_fields_validity",
             side_effect=Exception("Invalid output"),
         ):
             rule_input = BaseCorpus(**{"input_field": "input_value"})

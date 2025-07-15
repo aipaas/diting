@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from diting_core.models.embeddings.base_model import BaseEmbeddings
 from diting_core.models.embeddings.factory import embedding_factory
-from diting_dataset.knowledge_graph.graph import Node
+from diting_dataset.knowledge_graph.schema import Node
 from diting_dataset.knowledge_graph.transforms import Extractor
 
 

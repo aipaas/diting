@@ -3,10 +3,9 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel
 
-from diting_dataset.knowledge_graph.graph import Node
+from diting_dataset.knowledge_graph.schema import Node
 from diting_dataset.knowledge_graph.transforms.base import LLMBasedExtractor
-from diting_dataset.knowledge_graph.persona import StringIO
-from diting_dataset.knowledge_graph.pydantic_prompt import PydanticPrompt
+from diting_dataset.utilities.pydantic_prompt import PydanticPrompt, StringIO
 
 
 class TextWithExtractionLimit(BaseModel):

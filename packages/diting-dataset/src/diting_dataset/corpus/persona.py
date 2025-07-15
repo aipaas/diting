@@ -8,8 +8,9 @@ from pydantic import BaseModel
 from diting_core.callbacks.base import Callbacks
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.utilities.executor import task_wrapper
-from diting_dataset.knowledge_graph.graph import Node, KnowledgeGraph
-from diting_dataset.knowledge_graph.pydantic_prompt import PydanticPrompt
+from diting_dataset.corpus import Persona
+from diting_dataset.knowledge_graph.schema import Node, KnowledgeGraph
+from diting_dataset.utilities.pydantic_prompt import PydanticPrompt, StringIO
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +23,6 @@ def default_filter(node: Node) -> bool:
         return True
     else:
         return False
-
-
-class Persona(BaseModel):
-    name: str
-    role_description: str
-
-
-class StringIO(BaseModel):
-    text: str
-
-    def __hash__(self):
-        return hash(self.text)
 
 
 class PersonaGenerationPrompt(PydanticPrompt[StringIO, Persona]):

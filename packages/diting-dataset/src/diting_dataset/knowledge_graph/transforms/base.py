@@ -9,7 +9,7 @@ from tiktoken.core import Encoding
 
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.llms.factory import llm_factory
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph, Node, Relationship
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph, Node, Relationship
 
 DEFAULT_TOKENIZER = tiktoken.get_encoding("o200k_base")
 

@@ -5,11 +5,9 @@
 import unittest
 from typing import Any
 from unittest.mock import AsyncMock
-from diting_dataset.corpus.base_corpus import (
+from diting_core.synthesis.base_corpus import (
     BaseCorpus,
     BaseCorpusGenerator,
-    QueryLength,
-    QueryStyle,
 )
 
 
@@ -64,13 +62,9 @@ class TestBaseCorpus(unittest.TestCase):
         corpus = BaseCorpus(
             context=["test context"],
             scenario="test scenario",
-            style=QueryStyle.PERFECT_GRAMMAR,
-            length=QueryLength.LONG,
         )
         self.assertEqual(corpus.context, ["test context"])
         self.assertEqual(corpus.scenario, "test scenario")
-        self.assertEqual(corpus.style, QueryStyle.PERFECT_GRAMMAR)
-        self.assertEqual(corpus.length, QueryLength.LONG)
 
     def test_base_corpus_with_extra_fields(self):
         """测试BaseCorpus允许额外字段"""

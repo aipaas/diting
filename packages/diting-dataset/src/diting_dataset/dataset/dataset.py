@@ -26,24 +26,20 @@ class EvaluationDataset:
 
     Methods
     -------
-    validate_testcases(testcases)
-        Validates that all testcases are of the same type.
-    get_testcase_type()
-        Returns the type of the testcases in the dataset.
     to_hf_dataset()
         Converts the dataset to a Hugging Face Dataset.
     to_pandas()
         Converts the dataset to a pandas DataFrame.
-    features()
-        Returns the features of the testcases.
-    from_list(mapping)
-        Creates an EvaluationDataset from a list of dictionaries.
-    from_dict(mapping)
-        Creates an EvaluationDataset from a dictionary.
     to_csv(path)
         Converts the dataset to a CSV file.
     to_jsonl(path)
         Converts the dataset to a JSONL file.
+    from_hf_dataset(HFDataset)
+        Creates an EvaluationDataset from a HFDataset.
+    from_pandas(PandasDataframe)
+        Creates an EvaluationDataset from a PandasDataframe.
+    from_list(mapping)
+        Creates an EvaluationDataset from a list of dictionaries.
     from_jsonl(path)
         Creates an EvaluationDataset from a JSONL file.
     """
@@ -71,6 +67,18 @@ class EvaluationDataset:
         with open(path, "r") as jsonlfile:
             data = [json.loads(line) for line in jsonlfile]
         return cls.from_list(data)
+
+    def to_pandas(self) -> PandasDataframe:
+        """Converts the dataset to a pandas DataFrame."""
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError(
+                "pandas is not installed. Please install it to use this function."
+            )
+
+        data = self.to_list()
+        return pd.DataFrame(data)
 
     def to_list(self) -> t.List[t.Dict[str, t.Any]]:
         rows = [testcase.model_dump() for testcase in self.testcases]

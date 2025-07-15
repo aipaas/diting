@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import AsyncMock
 
 from diting_core.models.llms.base_model import BaseLLM
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph, Node, Relationship
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph, Node, Relationship
 from diting_dataset.knowledge_graph.transforms.base import (
     Extractor,
     Splitter,

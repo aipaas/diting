@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph
 from diting_dataset.knowledge_graph.transforms import BaseGraphTransformation
 from diting_dataset.knowledge_graph.transforms.engine import (
     Parallel,

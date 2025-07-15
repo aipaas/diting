@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import CreateCaseModal from "./components/CreateCaseModal";
 import EvaluationModal from "./components/EvaluationModal";
@@ -6,106 +6,43 @@ import Header from "./components/Header";
 import MainContent from "./components/MainContent";
 import NavigationTabs from "./components/NavigationTabs";
 import Notification from "./components/Notification";
-import { API_BASE } from "./constants";
 import CreateModelModual from "./components/CreateModelModual";
-import type { CaseType } from "./types/Cases";
-import { EvaluationSchema, type EvaluationType } from "./types/Evaluations";
 import type { ModelManagementData } from "./types/Models";
 import {
 	NotificationSchema,
 	type NotificationType,
 } from "./types/Notification";
-import type { HttpToolType } from "./types/Tools";
+import useFetchCases from "./hooks/useFetchCases";
+import useFilterCases from "./hooks/useFilterCases";
+import useFetchModels from "./hooks/useFetchModels";
+import useCreateModel from "./hooks/useCreateModel";
+import useManageModels from "./hooks/useManageModels";
+import useFetchEvaluations from "./hooks/useFetchEvaluations";
+import useFetchToolConfigs from "./hooks/useFetchToolConfigs";
 
 const App = () => {
-	const [cases, setCases] = useState<CaseType[]>([]);
-	const [evaluations, setEvaluations] = useState<EvaluationType[]>([]);
-	const [models, setModels] = useState<ModelManagementData[]>([]);
-	const [toolConfigs, setToolConfigs] = useState<HttpToolType[]>([]);
-	const [loading, setLoading] = useState<boolean>(false);
+	const { cases, loading: loadingCases, fetchCases } = useFetchCases();
+	const { models, loading: loadingModels, fetchModels } = useFetchModels();
+	const {
+		evaluations,
+		loading: loadingEvaluations,
+		fetchEvaluations,
+	} = useFetchEvaluations();
+	const { createModel } = useCreateModel();
+	const { setDefaultModel } = useManageModels();
+	const {
+		toolConfigs,
+		loading: loadingToolConfigs,
+		fetchToolConfigs,
+	} = useFetchToolConfigs();
 	const [activeTab, setActiveTab] = useState<string>("cases");
 	const [selectedCases, setSelectedCases] = useState<string[]>([]);
 	const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
 	const [showEvaluationModal, setShowEvaluationModal] =
 		useState<boolean>(false);
 	const [showModelModal, setShowModelModal] = useState<boolean>(false);
-	const [showCreateToolModal, setShowCreateToolModal] =
-		useState<boolean>(false);
-	const [searchTerm, setSearchTerm] = useState<string>("");
+	const { filteredCases, searchTerm, setSearchTerm } = useFilterCases(cases);
 	const [notification, setNotification] = useState<NotificationType>(null);
-
-	// Fetch data on component mount
-	useEffect(() => {
-		fetchCases();
-		fetchEvaluations();
-		fetchModels();
-		fetchToolConfigs();
-	}, []);
-
-	const fetchCases = async () => {
-		try {
-			setLoading(true);
-			const response = await fetch(`${API_BASE}/cases`);
-			if (response.ok) {
-				const data = await response.json();
-				// Validate cases with Zod
-				const parsedCases = data.map((caseData: any) => caseData);
-				setCases(parsedCases);
-			} else {
-				showNotification("Failed to fetch cases", "error");
-			}
-		} catch (_error) {
-			showNotification("Failed to fetch cases", "error");
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const fetchEvaluations = async () => {
-		try {
-			const response = await fetch(`${API_BASE}/evaluations`);
-			if (response.ok) {
-				const data = await response.json();
-				// Validate evaluations with Zod
-				const parsedEvaluations = data.map((evaluationData: EvaluationType) =>
-					EvaluationSchema.parse(evaluationData),
-				);
-				setEvaluations(parsedEvaluations);
-			} else {
-				console.error("Failed to fetch evaluations");
-			}
-		} catch (error) {
-			console.error("Failed to fetch evaluations:", error);
-		}
-	};
-
-	const fetchModels = async () => {
-		try {
-			const response = await fetch(`${API_BASE}/models`);
-			if (response.ok) {
-				const data = await response.json();
-				setModels(data);
-			} else {
-				console.error("Failed to fetch models");
-			}
-		} catch (error) {
-			console.error("Failed to fetch models:", error);
-		}
-	};
-
-	const fetchToolConfigs = async () => {
-		try {
-			const response = await fetch(`${API_BASE}/toolconfigs`);
-			if (response.ok) {
-				const data = await response.json();
-				setToolConfigs(data);
-			} else {
-				console.error("Failed to fetch tool configurations");
-			}
-		} catch (error) {
-			console.error("Failed to fetch tool configurations:", error);
-		}
-	};
 
 	const showNotification = (
 		message: string,
@@ -119,45 +56,18 @@ const App = () => {
 	};
 
 	const handleAddNewModel = async (modelData: Partial<ModelManagementData>) => {
-		try {
-			const response = await fetch(`${API_BASE}/models`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(modelData),
-			});
-			if (!response.ok) {
-				throw new Error("Failed to create new model");
-			}
-			const createdModel = await response.json();
-
+		const createdModel = await createModel(modelData);
+		if (createdModel) {
 			if (modelData.is_default) {
-				const defaultResponse = await fetch(
-					`${API_BASE}/models/default/${modelData.model_type}/${createdModel.id}`,
-					{
-						method: "POST",
-					},
-				);
-				if (!defaultResponse.ok) {
-					throw new Error("Failed to set the model as default");
-				}
+				await setDefaultModel(createdModel);
 			}
-
 			showNotification("New model created successfully!", "success");
 			setShowModelModal(false);
 			setActiveTab("models");
-			fetchModels();
-		} catch (error) {
-			showNotification(error.message, "error");
+		} else {
+			showNotification("Failed to create new model", "error");
 		}
 	};
-
-	const filteredCases = cases.filter(
-		(case_) =>
-			case_.input.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			case_.actual_output.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
 
 	return (
 		<div className="min-h-screen bg-gray-50">
@@ -179,7 +89,12 @@ const App = () => {
 				toolConfigs={toolConfigs}
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
-				loading={loading}
+				loading={
+					loadingCases ||
+					loadingModels ||
+					loadingEvaluations ||
+					loadingToolConfigs
+				}
 				fetchCases={fetchCases}
 				fetchEvaluations={fetchEvaluations}
 				fetchModels={fetchModels}

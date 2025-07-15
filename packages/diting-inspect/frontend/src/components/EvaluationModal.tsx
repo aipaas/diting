@@ -7,6 +7,7 @@ import {
 	type ModelManagementData,
 } from "../types/Models";
 import type { Metric } from "../types/Metrics";
+import useCreateEvaluation from "../hooks/useCreateEvaluation";
 
 const EvaluationModalPropsSchema = z.object({
 	selectedCases: z.array(z.string()),
@@ -35,6 +36,7 @@ const EvaluationModal = ({
 	const [selectedModels, setSelectedModels] = useState<{
 		[key: string]: ModelManagementData;
 	}>({});
+	const { createEvaluation, error } = useCreateEvaluation();
 
 	const fetchAvailableMetrics = async () => {
 		try {
@@ -56,27 +58,20 @@ const EvaluationModal = ({
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		try {
-			const response = await fetch(`${API_BASE}/evaluations`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					case_ids: selectedCases,
-					metric_configs: metricConfigs.map((metric) => ({
-						type: metric.name,
-						threshold: metric.threshold,
-						debug: metric.debug,
-					})),
-					model_configs: Object.values(selectedModels),
-				}),
-			});
-			if (response.ok) {
-				onSuccess();
-			} else {
-				alert("Failed to start evaluation");
-			}
-		} catch (_error) {
-			alert("Error starting evaluation");
+		const evaluationData = {
+			case_ids: selectedCases,
+			metric_configs: metricConfigs.map((metric) => ({
+				type: metric.name,
+				threshold: metric.threshold,
+				debug: metric.debug,
+			})),
+			model_configs: Object.values(selectedModels),
+		};
+		const result = await createEvaluation(evaluationData);
+		if (result) {
+			onSuccess();
+		} else {
+			alert(error || "Failed to start evaluation");
 		}
 	};
 

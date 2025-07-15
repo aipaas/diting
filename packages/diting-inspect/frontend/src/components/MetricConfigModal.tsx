@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Metric } from "../schemas";
+import type { Metric } from "../types/Metrics";
 
 interface MetricConfigModalProps {
 	metric: Metric;

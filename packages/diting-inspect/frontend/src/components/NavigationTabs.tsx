@@ -1,4 +1,11 @@
-import type { NavigationTabsProps } from "../schemas";
+import { z } from "zod";
+
+const NavigationTabsPropsSchema = z.object({
+	activeTab: z.string(),
+	setActiveTab: z.function().args(z.string()).returns(z.void()),
+});
+
+export type NavigationTabsProps = z.infer<typeof NavigationTabsPropsSchema>;
 
 const NavigationTabs = ({ activeTab, setActiveTab }: NavigationTabsProps) => {
 	return (

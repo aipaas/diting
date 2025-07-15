@@ -1,11 +1,21 @@
+import { z } from "zod";
 import { useEffect, useState } from "react";
 import { API_BASE } from "../constants";
-import type {
-	EvaluationModalProps,
-	Metric,
-	ModelManagementData,
-} from "../schemas";
 import MetricConfigModal from "./MetricConfigModal";
+import {
+	ModelManagementDataSchema,
+	type ModelManagementData,
+} from "../types/Models";
+import type { Metric } from "../types/Metrics";
+
+const EvaluationModalPropsSchema = z.object({
+	selectedCases: z.array(z.string()),
+	onClose: z.function().args().returns(z.void()),
+	onSuccess: z.function().args().returns(z.void()),
+	modelConfigs: z.array(ModelManagementDataSchema),
+});
+
+export type EvaluationModalProps = z.infer<typeof EvaluationModalPropsSchema>;
 
 const EvaluationModal = ({
 	selectedCases,

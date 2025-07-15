@@ -7,22 +7,21 @@ import MainContent from "./components/MainContent";
 import NavigationTabs from "./components/NavigationTabs";
 import Notification from "./components/Notification";
 import { API_BASE } from "./constants";
-import {
-	EvaluationSchema,
-	NotificationSchema,
-	type CaseType,
-	type EvaluationType,
-	type ModelManagementData,
-	type NotificationType,
-	type ToolConfig,
-} from "./schemas";
 import CreateModelModual from "./components/CreateModelModual";
+import type { CaseType } from "./types/Cases";
+import { EvaluationSchema, type EvaluationType } from "./types/Evaluations";
+import type { ModelManagementData } from "./types/Models";
+import {
+	NotificationSchema,
+	type NotificationType,
+} from "./types/Notification";
+import type { HttpToolType } from "./types/Tools";
 
 const App = () => {
 	const [cases, setCases] = useState<CaseType[]>([]);
 	const [evaluations, setEvaluations] = useState<EvaluationType[]>([]);
 	const [models, setModels] = useState<ModelManagementData[]>([]);
-	const [toolConfigs, setToolConfigs] = useState<ToolConfig[]>([]);
+	const [toolConfigs, setToolConfigs] = useState<HttpToolType[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [activeTab, setActiveTab] = useState<string>("cases");
 	const [selectedCases, setSelectedCases] = useState<string[]>([]);

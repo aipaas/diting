@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { API_BASE } from "../constants";
-import type { ModelManagementData } from "../schemas";
+import type { ModelManagementData } from "../types/Models";
 
 interface EditModelModalProps {
 	onClose: () => void;

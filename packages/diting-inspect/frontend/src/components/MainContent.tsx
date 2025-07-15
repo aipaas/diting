@@ -1,9 +1,7 @@
-import type {
-	CaseType,
-	EvaluationType,
-	ModelManagementData,
-	ToolConfig,
-} from "../schemas";
+import type { CaseType } from "../types/Cases";
+import type { EvaluationType } from "../types/Evaluations";
+import type { ModelManagementData } from "../types/Models";
+import type { HttpToolType } from "../types/Tools";
 import CasesView from "./CasesView";
 import EvaluationsView from "./EvaluationsView";
 import FileUploadView from "./FileUploadView";
@@ -17,7 +15,7 @@ interface MainContentProps {
 	setSelectedCases: (cases: string[]) => void;
 	evaluations: EvaluationType[];
 	models: ModelManagementData[];
-	toolConfigs: ToolConfig[];
+	toolConfigs: HttpToolType[];
 	searchTerm: string;
 	setSearchTerm: (term: string) => void;
 	loading: boolean;

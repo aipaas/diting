@@ -2,8 +2,8 @@ import { Download, Edit2, Play, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { API_BASE } from "../constants";
-import type { CaseType } from "../schemas";
 import EditCaseModal from "./EditCaseModal";
+import type { CaseType } from "../types/Cases";
 
 interface CasesViewProps {
 	cases: CaseType[];

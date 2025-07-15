@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
-import type { HeaderProps } from "../schemas";
+import type { HeaderProps } from "../types/Headers";
 
 const CreateDropdown = ({
 	setShowCreateModal,

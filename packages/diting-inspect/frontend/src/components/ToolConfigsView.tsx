@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Plus, Trash2, Search, Edit } from "lucide-react";
 import { API_BASE } from "../constants";
 import CreateToolConfigModal from "./CreateToolConfigModal";
-import type { HttpToolType } from "../types/tools";
 import EditToolConfigModal from "./EditToolConfigModal";
+import type { HttpToolType } from "../types/Tools";
 
 interface ToolConfigsViewProps {
 	toolConfigs: HttpToolType[];

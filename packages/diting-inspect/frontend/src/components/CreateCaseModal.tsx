@@ -1,7 +1,14 @@
+import { z } from "zod";
 import { Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { API_BASE } from "../constants";
-import type { CreateCaseModalProps } from "../schemas";
+
+const CreateCaseModalPropsSchema = z.object({
+	onClose: z.function().args().returns(z.void()),
+	onSuccess: z.function().args().returns(z.void()),
+});
+
+export type CreateCaseModalProps = z.infer<typeof CreateCaseModalPropsSchema>;
 
 const CreateCaseModal = ({ onClose, onSuccess }: CreateCaseModalProps) => {
 	const [formData, setFormData] = useState<{

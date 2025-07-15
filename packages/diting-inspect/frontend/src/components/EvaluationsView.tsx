@@ -1,7 +1,7 @@
 import { Eye, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { API_BASE } from "../constants";
-import type { EvaluationType } from "../schemas";
+import type { EvaluationType } from "../types/Evaluations";
 
 interface EvaluationsViewProps {
 	evaluations: EvaluationType[];

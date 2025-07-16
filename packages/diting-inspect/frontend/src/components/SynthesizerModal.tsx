@@ -7,6 +7,7 @@ import {
 import MetricConfigModal from "./MetricConfigModal";
 import type { Synthesizer } from "../types/Synthesizers";
 import useFetchAvailableSynthesizers from "../hooks/useFetchAvailableSynthesizers";
+import useCreateSynthesizer from "../hooks/useCreateSynthesizer";
 
 const SynthesizerModalPropsSchema = z.object({
 	selectedCases: z.array(z.string()),
@@ -23,7 +24,9 @@ const SynthesizerModal = ({
 	onSuccess,
 	modelConfigs,
 }: SynthesizerModalProps) => {
-	const [synthesizerConfigs, setSynthesizerConfigs] = useState<Synthesizer[]>([]);
+	const [synthesizerConfigs, setSynthesizerConfigs] = useState<Synthesizer[]>(
+		[],
+	);
 	const [isSynthesizerConfigModalOpen, setIsSynthesizerConfigModalOpen] =
 		useState<boolean>(false);
 	const [currentSynthesizer, setCurrentSynthesizer] = useState<Synthesizer>({
@@ -34,19 +37,20 @@ const SynthesizerModal = ({
 		[key: string]: ModelManagementData;
 	}>({});
 	const { availableSynthesizers } = useFetchAvailableSynthesizers();
+	const { createSynthesizer, error } = useCreateSynthesizer();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const evaluationData = {
+		const synthesizerData = {
 			case_ids: selectedCases,
-			metric_configs: synthesizerConfigs.map((metric) => ({
-				type: metric.name,
-				debug: metric.debug,
+			synthesizer_configs: synthesizerConfigs.map((synthesizer) => ({
+				type: synthesizer.name,
+				debug: synthesizer.debug,
 			})),
 			model_configs: Object.values(selectedModels),
 		};
 		// Assuming createSynthesizer is a function to handle synthesizer creation
-		const result = await createSynthesizer(evaluationData);
+		const result = await createSynthesizer(synthesizerData);
 		if (result) {
 			onSuccess();
 		} else {
@@ -86,10 +90,15 @@ const SynthesizerModal = ({
 									id={synthesizer.name}
 									onChange={(e) => {
 										if (e.target.checked) {
-											setSynthesizerConfigs([...synthesizerConfigs, synthesizer]);
+											setSynthesizerConfigs([
+												...synthesizerConfigs,
+												synthesizer,
+											]);
 										} else {
 											setSynthesizerConfigs(
-												synthesizerConfigs.filter((m) => m.name !== synthesizer.name),
+												synthesizerConfigs.filter(
+													(m) => m.name !== synthesizer.name,
+												),
 											);
 										}
 									}}
@@ -97,10 +106,10 @@ const SynthesizerModal = ({
 								<label
 									htmlFor={synthesizer.name}
 									className="ml-2 cursor-pointer"
-								// onClick={() => {
-								// 	setCurrentSynthesizer(synthesizer);
-								// 	setIsSynthesizerConfigModalOpen(true);
-								// }}
+									onClick={() => {
+										setCurrentSynthesizer(synthesizer);
+										setIsSynthesizerConfigModalOpen(true);
+									}}
 								>
 									{synthesizer.name}
 								</label>
@@ -146,24 +155,22 @@ const SynthesizerModal = ({
 						</button>
 					</div>
 				</form>
-				{
-					isSynthesizerConfigModalOpen && (
-						<MetricConfigModal
-							metric={currentSynthesizer}
-							onClose={() => setIsSynthesizerConfigModalOpen(false)}
-							onSave={(updatedMetric) => {
-								setSynthesizerConfigs(
-									synthesizerConfigs.map((m) =>
-										m.name === updatedMetric.name ? updatedMetric : m,
-									),
-								);
-								setIsSynthesizerConfigModalOpen(false);
-							}}
-						/>
-					)
-				}
-			</div >
-		</div >
+				{isSynthesizerConfigModalOpen && (
+					<MetricConfigModal
+						metric={currentSynthesizer}
+						onClose={() => setIsSynthesizerConfigModalOpen(false)}
+						onSave={(updatedMetric) => {
+							setSynthesizerConfigs(
+								synthesizerConfigs.map((m) =>
+									m.name === updatedMetric.name ? updatedMetric : m,
+								),
+							);
+							setIsSynthesizerConfigModalOpen(false);
+						}}
+					/>
+				)}
+			</div>
+		</div>
 	);
 };
 

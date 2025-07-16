@@ -122,7 +122,8 @@ async def update_case(case_id: str, case_data: CaseUpdateRequest) -> LLMCaseData
         HTTPException: If case not found
     """
     try:
-        case = await case_service.update_case(case_id, case_data.model_dump())
+        case_update: LLMCaseData = LLMCaseData(id=case_id, **case_data.model_dump())
+        case = await case_service.update_case(case_id, case_update)
         if not case:
             raise HTTPException(status_code=404, detail="Case not found")
         return case
@@ -154,7 +155,7 @@ async def delete_case(case_id: str) -> Dict[str, str]:
 
 
 # File import endpoints
-@router.post("/api/cases/import")
+@router.post("/import")
 async def import_cases(file: UploadFile = File(...)) -> Dict[str, Any]:
     """
     Import test cases from CSV or XLSX file.

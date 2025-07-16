@@ -6,7 +6,7 @@ from diting_core.synthesis.base_synthesizer import BaseSynthesizer
 from diting_core.utilities.slug import camel_to_snake
 from pydantic import BaseModel, Field
 
-_diting_synthesizer_module_name = "diting_dataset.synthesis"
+_diting_synthesizer_module_name = "diting_core.synthesis"
 
 
 class SynthesizerSchema(BaseModel):

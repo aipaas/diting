@@ -42,7 +42,7 @@ class TestQASynthesizer(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.mock_model = MockLLM()
         self.rule = QASynthesizer(model=self.mock_model)
-        self.rule.metric = MockQAQualityMetric()  # Mock the QAQualityMetric
+        self.rule._metric = MockQAQualityMetric()  # Mock the QAQualityMetric
 
     async def test_apply_success(self):
         """测试正常情况下的_apply方法"""

@@ -53,7 +53,9 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
             ):
                 result = (
                     await self.dataset_generator.generate_dataset_from_langchain_docs(
-                        documents=mock_documents, synthesizers=mock_synthesizers
+                        documents=mock_documents,
+                        dataset_size=5,
+                        synthesizers=mock_synthesizers,
                     )
                 )
                 self.assertIsInstance(result, EvaluationDataset)
@@ -63,7 +65,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
         mock_synthesizers = [MagicMock(spec=BaseSynthesizer)]
 
         with patch(
-            "langchain_community.document_loaders.DirectoryLoader.aload",
+            "langchain_community.document_loaders.UnstructuredMarkdownLoader.aload",
             new_callable=AsyncMock,
         ) as mock_load_wrapper:
             with patch(
@@ -91,6 +93,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
                     mock_corpus_generator.return_value = [MagicMock(spec=BaseCorpus)]
                     result = await self.dataset_generator.generate_dataset_from_docs(
                         document_paths=mock_document_paths,
+                        dataset_size=5,
                         synthesizers=mock_synthesizers,
                     )
                     self.assertIsInstance(result, EvaluationDataset)
@@ -113,7 +116,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
     async def test_generate_dataset_from_langchain_docs_no_documents(self):
         with self.assertRaises(ValueError):
             await self.dataset_generator.generate_dataset_from_langchain_docs(
-                documents=[], synthesizers=[]
+                documents=[], dataset_size=5, synthesizers=[]
             )
 
     async def test_generate_dataset_from_langchain_docs_run_except(self):
@@ -132,6 +135,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(ValueError):
                 await self.dataset_generator.generate_dataset_from_langchain_docs(
                     documents=mock_documents,
+                    dataset_size=5,
                     synthesizers=mock_synthesizers,
                     verbose=True,
                 )
@@ -139,7 +143,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
     async def test_generate_dataset_from_docs_no_document_paths(self):
         with self.assertRaises(ValueError):
             await self.dataset_generator.generate_dataset_from_docs(
-                document_paths=[], synthesizers=[]
+                document_paths=[], dataset_size=5, synthesizers=[]
             )
 
     async def test_generate_dataset_from_docs_run_except(self):
@@ -147,13 +151,14 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
         mock_synthesizers = [MagicMock(spec=BaseSynthesizer)]
 
         with patch(
-            "langchain_community.document_loaders.DirectoryLoader.aload",
+            "langchain_community.document_loaders.UnstructuredMarkdownLoader.aload",
             new_callable=AsyncMock,
         ) as mock_load_wrapper:
             mock_load_wrapper.side_effect = ValueError("test")
             with self.assertRaises(ValueError):
                 await self.dataset_generator.generate_dataset_from_docs(
                     document_paths=mock_document_paths,
+                    dataset_size=5,
                     synthesizers=mock_synthesizers,
                     verbose=True,
                 )

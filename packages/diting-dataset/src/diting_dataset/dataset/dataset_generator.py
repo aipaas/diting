@@ -46,6 +46,7 @@ class DataSetGenerator:
     async def generate_dataset_from_docs(
         self,
         document_paths: t.Sequence[t.Union[str, Path]],
+        dataset_size: int,
         synthesizers: t.Sequence[BaseSynthesizer],
         max_concurrency: int = 10,
         **kwargs: t.Any,
@@ -57,6 +58,8 @@ class DataSetGenerator:
         ----------
         document_paths : Sequence[Path]
             A sequence of documents path to use as source material
+        dataset_size : int
+            The number of test cases to generate
         synthesizers : Sequence[BaseSynthesizer]
             Custom synthesizers to apply to the documents, by default BaseCorpus only
         max_concurrency: int
@@ -109,7 +112,7 @@ class DataSetGenerator:
             await asyncio.gather(*tasks)
 
             dataset = await self.generate_dataset_from_langchain_docs(
-                documents, synthesizers, callbacks=dataset_generation_grp
+                documents, dataset_size, synthesizers, callbacks=dataset_generation_grp
             )
             await dataset_generation_rm.on_chain_end({"dataset": dataset})
             return dataset
@@ -121,6 +124,7 @@ class DataSetGenerator:
     async def generate_dataset_from_langchain_docs(
         self,
         documents: t.Sequence[LCDocument],
+        dataset_size: int,
         synthesizers: t.Sequence[BaseSynthesizer],
         max_concurrency: int = 10,
         **kwargs: t.Any,
@@ -132,6 +136,8 @@ class DataSetGenerator:
         ----------
         documents : Sequence[LCDocument]
             A sequence of Langchain documents to use as source material
+        dataset_size : int
+            The number of test cases to generate
         synthesizers : Sequence[BaseSynthesizer]
             Custom synthesizers to apply to the documents, by default BaseCorpus only
         max_concurrency: int
@@ -190,8 +196,10 @@ class DataSetGenerator:
             corpus_generator = KnowledgeGraphCorpusGenerator(
                 kg, self.llm, max_concurrency=max_concurrency
             )
+
+            num_corpora = int(dataset_size / (len(synthesizers) or 1))
             corpora = await corpus_generator.generate_corpora(
-                callbacks=dataset_generation_grp
+                num_corpora=num_corpora, callbacks=dataset_generation_grp
             )
             dataset = await self.generate_dataset_from_corpora(
                 corpora,
@@ -296,9 +304,9 @@ async def _load_wrapper(
         verbose=kwargs.pop("verbose", False),
     )
     try:
-        from langchain_community.document_loaders import DirectoryLoader
+        from langchain_community.document_loaders import UnstructuredMarkdownLoader
 
-        loader = DirectoryLoader(
+        loader = UnstructuredMarkdownLoader(
             document_path, max_concurrency=max_concurrency, use_multithreading=True
         )
         docs = await loader.aload()

@@ -54,8 +54,13 @@ class QASynthesizer(BaseSynthesizer):
     quality_threshold: float = 0.7
     max_quality_retries: int = 3
 
-    def __post_init__(self):
-        self.metric = QAQualityMetric(model=self.model)
+    _metric: Optional[QAQualityMetric] = None
+
+    @property
+    def metric(self):
+        if self._metric is None:
+            self._metric = QAQualityMetric(model=self.model)
+        return self._metric
 
     async def _apply(
         self,

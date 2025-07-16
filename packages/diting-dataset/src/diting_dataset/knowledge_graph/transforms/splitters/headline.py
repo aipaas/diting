@@ -5,38 +5,76 @@ from diting_dataset.knowledge_graph.schema import Node, Relationship, NodeType
 from diting_dataset.knowledge_graph.transforms import Splitter
 
 
-# todo replace the chunk_token count using num_tokens_from_string or jieba
+def _jieba_cut(chunk: str) -> t.List[str]:
+    import rjieba
+
+    chunk_tokens = rjieba.cut(chunk.strip())  # type:ignore
+    return t.cast(t.List[str], chunk_tokens)
+
+
+def _calc_chunk_tokens(language: str, chunk: str) -> int:
+    chunk_tokens: t.List[str]
+    if language == "en":
+        chunk_tokens = chunk.split()
+    elif language == "zh":
+        chunk_tokens = _jieba_cut(chunk)
+    else:
+        raise ValueError(f"invalid language {language}")
+    return len(chunk_tokens)
+
+
+def _join_chunks(language: str, current: str, chunks: t.List[str]) -> str:
+    if language == "en":
+        current += " ".join(chunks)
+    elif language == "zh":
+        current += "".join(chunks)
+    else:
+        raise ValueError(f"invalid language {language}")
+    return current
+
+
 @dataclass
 class HeadlineSplitter(Splitter):
     min_tokens: int = 300
     max_tokens: int = 1000
+    language: t.Literal["zh", "en"] = "en"
 
     def adjust_chunks(self, chunks: t.List[str]) -> t.List[str]:
         adjusted_chunks: t.List[str] = []
         current_chunk = ""
 
         for chunk in chunks:
-            chunk_tokens = chunk.split()
+            if self.language == "en":
+                chunk_tokens = chunk.split()
+            else:
+                chunk_tokens = _jieba_cut(chunk)
 
             # Split chunks that are over max_tokens
             while len(chunk_tokens) > self.max_tokens:
-                adjusted_chunks.append(" ".join(chunk_tokens[: self.max_tokens]))
+                adjusted_chunks.append(
+                    _join_chunks(self.language, "", chunk_tokens[: self.max_tokens])
+                )
                 chunk_tokens = chunk_tokens[self.max_tokens :]
 
             # Handle chunks that are under min_tokens
             if len(chunk_tokens) < self.min_tokens:
                 if current_chunk:
-                    current_chunk += " " + " ".join(chunk_tokens)
-                    if len(current_chunk.split()) >= self.min_tokens:
+                    current_chunk = _join_chunks(
+                        self.language, current_chunk, chunk_tokens
+                    )
+                    if (
+                        _calc_chunk_tokens(self.language, current_chunk)
+                        >= self.min_tokens
+                    ):
                         adjusted_chunks.append(current_chunk)
                         current_chunk = ""
                 else:
-                    current_chunk = " ".join(chunk_tokens)
+                    current_chunk = _join_chunks(self.language, "", chunk_tokens)
             else:
                 if current_chunk:
                     adjusted_chunks.append(current_chunk)
                     current_chunk = ""
-                adjusted_chunks.append(" ".join(chunk_tokens))
+                adjusted_chunks.append(_join_chunks(self.language, "", chunk_tokens))
 
         # Append any remaining chunk
         if current_chunk:
@@ -53,7 +91,7 @@ class HeadlineSplitter(Splitter):
         if headlines is None:
             raise ValueError("'headlines' property not found in this node")
 
-        if len(text.split()) < self.min_tokens:
+        if _calc_chunk_tokens(self.language, text) < self.min_tokens:
             return [node], []
         # create the chunks for the different sections
         indices = [0]

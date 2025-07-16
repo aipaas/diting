@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from diting_dataset.knowledge_graph.graph import Node
+from diting_dataset.knowledge_graph.schema import Node
 from diting_dataset.knowledge_graph.transforms.splitters.headline import (
     HeadlineSplitter,
 )

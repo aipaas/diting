@@ -33,6 +33,11 @@ diting-dataset = { workspace = true }
 [tool.uv.workspace]
 members = ["packages/*"]
 
+[project.optional-dependencies]
+all = [
+  "diting-dataset[all]",
+]
+
 [dependency-groups]
 dev = [
     "coverage>=7.9.1",

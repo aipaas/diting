@@ -2,7 +2,7 @@ import os
 
 os.environ.setdefault(
     "TIKTOKEN_CACHE_DIR",
-    "D:/codes/qcc/diting/packages/diting-dataset/src/diting_dataset/knowledge_graph/tokenizer",
+    os.path.dirname(os.path.abspath(__file__)) + "/tokenizer",
 )
 
 from diting_dataset.knowledge_graph.transforms.base import (
@@ -34,7 +34,7 @@ from diting_dataset.knowledge_graph.transforms.relationship_builders.traditional
     JaccardSimilarityBuilder,
     OverlapScoreBuilder,
 )
-from .splitters import HeadlineSplitter
+from diting_dataset.knowledge_graph.transforms.splitters import HeadlineSplitter
 
 __all__ = [
     # base

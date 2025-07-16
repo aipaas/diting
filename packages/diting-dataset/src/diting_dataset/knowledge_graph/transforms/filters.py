@@ -4,10 +4,9 @@ from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
 
-from diting_dataset.knowledge_graph.graph import Node, KnowledgeGraph
-from diting_dataset.knowledge_graph.graph_queries import get_parent_nodes
+from diting_dataset.knowledge_graph.schema import Node, KnowledgeGraph, get_parent_nodes
 from diting_dataset.knowledge_graph.transforms.base import LLMBasedNodeFilter
-from diting_dataset.knowledge_graph.pydantic_prompt import PydanticPrompt
+from diting_dataset.utilities.pydantic_prompt import PydanticPrompt
 
 logger = logging.getLogger(__name__)
 

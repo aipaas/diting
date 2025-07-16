@@ -109,3 +109,10 @@ class PydanticPrompt(t.Generic[InputModel, OutputModel]):
             callbacks=callbacks,
         )
         return self.output_model.model_validate(output)
+
+
+class StringIO(BaseModel):
+    text: str
+
+    def __hash__(self):
+        return hash(self.text)

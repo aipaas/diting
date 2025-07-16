@@ -10,11 +10,11 @@ from langchain_core.documents import Document as LCDocument
 from diting_core.cases.llm_case import LLMCase
 from diting_core.models.embeddings.base_model import BaseEmbeddings
 from diting_core.models.llms.base_model import BaseLLM
-from diting_dataset.corpus.base_corpus import BaseCorpus
+from diting_core.synthesis.base_corpus import BaseCorpus
 from diting_dataset.dataset.dataset import EvaluationDataset
 from diting_dataset.dataset.dataset_generator import DataSetGenerator
 from diting_dataset.knowledge_graph.transforms import BaseGraphTransformation
-from diting_dataset.synthesis.base_synthesizer import BaseSynthesizer
+from diting_core.synthesis import BaseSynthesizer
 
 
 class MockSynthesizer(BaseSynthesizer):
@@ -48,7 +48,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
             mock_default_transforms,
         ):
             with patch(
-                "diting_dataset.dataset.dataset_generator.DefaultCorpusGenerator.generate_corpora",
+                "diting_dataset.dataset.dataset_generator.KnowledgeGraphCorpusGenerator.generate_corpora",
                 mock_corpus_generator,
             ):
                 result = (
@@ -71,7 +71,7 @@ class TestDataSetGenerator(unittest.IsolatedAsyncioTestCase):
                 new_callable=MagicMock,
             ) as mock_default_transforms:
                 with patch(
-                    "diting_dataset.dataset.dataset_generator.DefaultCorpusGenerator.generate_corpora",
+                    "diting_dataset.dataset.dataset_generator.KnowledgeGraphCorpusGenerator.generate_corpora",
                     new_callable=AsyncMock,
                 ) as mock_corpus_generator:
                     mock_documents = [

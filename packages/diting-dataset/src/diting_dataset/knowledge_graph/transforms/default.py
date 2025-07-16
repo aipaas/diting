@@ -23,7 +23,7 @@ from diting_dataset.knowledge_graph.transforms.extractors.llm_based import (
     ThemesExtractor,
     NERExtractor,
 )
-from diting_dataset.knowledge_graph.graph import NodeType, Node
+from diting_dataset.knowledge_graph.schema import NodeType, Node
 
 import tiktoken
 

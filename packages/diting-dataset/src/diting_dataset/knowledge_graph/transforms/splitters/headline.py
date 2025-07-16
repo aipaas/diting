@@ -1,7 +1,7 @@
 import typing as t
 from dataclasses import dataclass
 
-from diting_dataset.knowledge_graph.graph import Node, Relationship, NodeType
+from diting_dataset.knowledge_graph.schema import Node, Relationship, NodeType
 from diting_dataset.knowledge_graph.transforms import Splitter
 
 

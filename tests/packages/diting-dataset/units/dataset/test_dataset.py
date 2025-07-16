@@ -28,6 +28,12 @@ class TestEvaluationDataset(unittest.TestCase):
 
         self.assertEqual(len(dataset.testcases), 1)
 
+    def test_to_pandas(self):
+        mock_case = MagicMock(model_dump=lambda: {"key": "value"})
+        self.dataset = EvaluationDataset(testcases=[mock_case])
+        df = self.dataset.to_pandas()
+        self.assertEqual(df.to_dict(), {"key": {0: "value"}})
+
     @patch("datasets.Dataset")
     def test_from_hf_dataset(self, mock_hf_dataset):
         mock_hf_dataset.to_list.return_value = [{"key": "value"}]

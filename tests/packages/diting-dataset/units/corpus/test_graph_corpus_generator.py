@@ -5,18 +5,20 @@
 import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from diting_dataset.corpus.base_corpus import BaseCorpus, QueryStyle, QueryLength
-from diting_dataset.corpus.default.default_corpus_generator import (
-    DefaultCorpusGenerator,
+from diting_core.synthesis.base_corpus import (
+    BaseCorpus,
 )
-from diting_dataset.corpus.default.template import PersonaThemesMapping
-from diting_dataset.knowledge_graph.graph import (
+from diting_dataset.corpus import QueryLength, QueryStyle, Persona
+from diting_dataset.corpus.graph_corpus_generator import (
+    KnowledgeGraphCorpusGenerator,
+)
+from diting_dataset.corpus.template import PersonaThemesMapping
+from diting_dataset.knowledge_graph.schema import (
     KnowledgeGraph,
     Node,
     NodeType,
     Relationship,
 )
-from diting_dataset.knowledge_graph.persona import Persona
 
 
 class TestDefaultCorpusGenerator(unittest.IsolatedAsyncioTestCase):
@@ -39,7 +41,7 @@ class TestDefaultCorpusGenerator(unittest.IsolatedAsyncioTestCase):
             relationships=[relationship12, relationship23, relationship24],
         )
         self.llm = MagicMock()
-        self.generator = DefaultCorpusGenerator(
+        self.generator = KnowledgeGraphCorpusGenerator(
             knowledge_graph=self.knowledge_graph, llm=self.llm
         )
 
@@ -47,7 +49,9 @@ class TestDefaultCorpusGenerator(unittest.IsolatedAsyncioTestCase):
         """测试初始化时没有节点时抛出异常"""
         self.knowledge_graph.nodes = []
         with self.assertRaises(ValueError):
-            DefaultCorpusGenerator(knowledge_graph=self.knowledge_graph, llm=self.llm)
+            KnowledgeGraphCorpusGenerator(
+                knowledge_graph=self.knowledge_graph, llm=self.llm
+            )
 
     def test_get_node_clusters(self):
         """测试获取节点集群的功能"""
@@ -61,7 +65,7 @@ class TestDefaultCorpusGenerator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(clusters[0], node2)
 
     @patch(
-        "diting_dataset.corpus.default.default_corpus_generator.generate_personas_from_kg",
+        "diting_dataset.corpus.graph_corpus_generator.generate_personas_from_kg",
         new_callable=AsyncMock,
     )
     async def test_generate_corpora(self, mock_gen_persona):

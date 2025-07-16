@@ -107,6 +107,7 @@ input: {{
 }}
 Output: """
 
+
 # if __name__ == "__main__":
 #     faithfulness = FaithfulnessTemplate()
 #     print(faithfulness.generate_statements(

@@ -4,8 +4,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 from unittest.mock import AsyncMock
-from diting_dataset.knowledge_graph.graph import Node
-from diting_dataset.knowledge_graph.persona import StringIO
+from diting_dataset.knowledge_graph.schema import Node
+from diting_dataset.utilities.pydantic_prompt import StringIO
 from diting_dataset.knowledge_graph.transforms.extractors.llm_based import (
     SummaryExtractor,
     KeyphrasesExtractor,

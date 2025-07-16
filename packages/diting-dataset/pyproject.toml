@@ -2,14 +2,30 @@
 name = "diting-dataset"
 version = "0.1.0"
 description = "DiTing Dataset Module"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pydantic>=2.0.0",
+    "diting-core",
+]
+
+[project.optional-dependencies]
+all = [
+    "datasets>=3.6.0",  # Hugging Face数据集支持
+    "tiktoken",  # 令牌计数工具
+    "rapidfuzz",  # 模糊匹配/字符串相似度计算
+    "unstructured[md]>=0.17.2",  # 非结构化文本处理（markdown支持）
+    "langchain-community>=0.3.24",  # LangChain生态集成
+]
+# Hugging Face数据集交互依赖
+hf = [
     "datasets>=3.6.0",
+]
+# 文本处理工具依赖
+docs-gen = [
     "tiktoken",
+    "langchain-community>=0.3.24",
     "rapidfuzz",
     "unstructured[md]>=0.17.2",
-    "langchain-community>=0.3.24",
 ]
 
 [build-system]

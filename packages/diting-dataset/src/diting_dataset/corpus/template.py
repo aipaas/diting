@@ -3,8 +3,8 @@
 import typing as t
 from pydantic import BaseModel
 
-from diting_dataset.knowledge_graph.persona import Persona
-from diting_dataset.knowledge_graph.pydantic_prompt import PydanticPrompt
+from diting_dataset.corpus import Persona
+from diting_dataset.utilities.pydantic_prompt import PydanticPrompt
 
 
 class ThemesPersonasInput(BaseModel):

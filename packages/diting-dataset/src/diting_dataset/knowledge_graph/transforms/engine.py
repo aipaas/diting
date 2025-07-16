@@ -6,7 +6,7 @@ import typing as t
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.utilities.executor import as_completed, is_event_loop_running
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph
 from diting_dataset.knowledge_graph.transforms import BaseGraphTransformation
 
 logger = logging.getLogger(__name__)

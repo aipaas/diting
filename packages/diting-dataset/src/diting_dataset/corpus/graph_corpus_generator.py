@@ -9,30 +9,27 @@ import numpy as np
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.models.llms.base_model import BaseLLM
-from diting_dataset.corpus.base_corpus import (
+from diting_core.synthesis.base_corpus import (
     BaseCorpusGenerator,
-    BaseCorpus,
-    QueryStyle,
-    QueryLength,
 )
-from diting_dataset.knowledge_graph.persona import (
+from diting_dataset.corpus import QueryLength, QueryStyle, Persona, GraphBasedCorpus
+from diting_dataset.corpus.persona import (
     generate_personas_from_kg,
-    Persona,
     PersonaList,
 )
-from diting_dataset.corpus.default.template import (
+from diting_dataset.corpus.template import (
     ThemesPersonasMatchingPrompt,
     ThemesPersonasInput,
     PersonaThemesMapping,
 )
-from diting_dataset.knowledge_graph.graph import KnowledgeGraph, Node
-from diting_dataset.knowledge_graph.pydantic_prompt import PydanticPrompt
+from diting_dataset.knowledge_graph.schema import KnowledgeGraph, Node
+from diting_dataset.utilities.pydantic_prompt import PydanticPrompt
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class DefaultCorpusGenerator(BaseCorpusGenerator):
+class KnowledgeGraphCorpusGenerator(BaseCorpusGenerator):
     knowledge_graph: KnowledgeGraph
     llm: BaseLLM
     theme_persona_matching_prompt: PydanticPrompt[
@@ -84,7 +81,7 @@ class DefaultCorpusGenerator(BaseCorpusGenerator):
         num_personas: int = 3,
         callbacks: t.Optional[Callbacks] = None,
         **kwargs: t.Any,
-    ) -> t.List[BaseCorpus]:
+    ) -> t.Sequence[GraphBasedCorpus]:
         """
         Generates a list of corpora on type SingleHop
         Steps to generate corpora:
@@ -108,7 +105,7 @@ class DefaultCorpusGenerator(BaseCorpusGenerator):
         nodes = self.nodes
         samples_per_node = int(np.ceil(num_corpora / len(nodes)))
 
-        corpora: t.List[BaseCorpus] = []
+        corpora: t.List[GraphBasedCorpus] = []
         for node in nodes:
             if len(corpora) >= num_corpora:
                 break
@@ -186,10 +183,10 @@ class DefaultCorpusGenerator(BaseCorpusGenerator):
 
         return [self.convert_to_corpus(sample) for sample in selected_samples]
 
-    def convert_to_corpus(self, data: t.Dict[str, t.Any]) -> BaseCorpus:
+    def convert_to_corpus(self, data: t.Dict[str, t.Any]) -> GraphBasedCorpus:
         node = t.cast(Node, data["node"])
         context = node.properties.get("page_content", "")
-        return BaseCorpus(
+        return GraphBasedCorpus(
             scenario=data["term"],
             context=[context],
             persona=data["persona"],

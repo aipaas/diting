@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { API_BASE } from "../constants";
-import { FileSchema } from "../schemas";
+import { FileSchema } from "../types/Files";
 
 interface FileUploadViewProps {
 	onSuccess: () => void;

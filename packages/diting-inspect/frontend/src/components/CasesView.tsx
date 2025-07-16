@@ -2,8 +2,8 @@ import { Download, Edit2, Play, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { API_BASE } from "../constants";
-import type { CaseType } from "../schemas";
 import EditCaseModal from "./EditCaseModal";
+import type { CaseType } from "../types/Cases";
 
 interface CasesViewProps {
 	cases: CaseType[];
@@ -181,7 +181,7 @@ const CasesView = ({
 				<table className="min-w-full divide-y divide-gray-200">
 					<thead className="bg-gray-50">
 						<tr>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								<input
 									type="checkbox"
 									checked={
@@ -190,7 +190,7 @@ const CasesView = ({
 									onChange={handleSelectAll}
 								/>
 							</th>
-							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+							<th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								#
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -203,6 +203,9 @@ const CasesView = ({
 								Expected Output
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Context
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Actions
 							</th>
 						</tr>
@@ -210,14 +213,16 @@ const CasesView = ({
 					<tbody className="bg-white divide-y divide-gray-200">
 						{cases.map((case_, index) => (
 							<tr key={case_.id}>
-								<td className="px-6 py-4 whitespace-nowrap">
+								<td className="px-2 py-4 whitespace-nowrap">
 									<input
 										type="checkbox"
 										checked={selectedCases.includes(case_.id)}
 										onChange={() => handleSelectCase(case_.id)}
 									/>
 								</td>
-								<td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
+								<td className="px-2 py-4 whitespace-nowrap text-sm">
+									{index + 1}
+								</td>
 								<td className="px-6 py-4 whitespace-nowrap" title={case_.input}>
 									{case_.input.length > 10
 										? `${case_.input.substring(0, 10)}...`
@@ -238,6 +243,16 @@ const CasesView = ({
 									{(case_.expected_output || "N/A").length > 10
 										? `${(case_.expected_output || "N/A").substring(0, 10)}...`
 										: case_.expected_output || "N/A"}
+								</td>
+								<td
+									className="px-6 py-4 whitespace-nowrap"
+									title={case_.context || "N/A"}
+								>
+									{Array.isArray(case_.context)
+										? case_.context.join().length > 10
+											? `${case_.context.join("\n").substring(0, 10)}...`
+											: case_.context.join("\n")
+										: case_.context || "N/A"}
 								</td>
 								<td className="px-6 py-4 whitespace-nowrap space-x-2">
 									<button

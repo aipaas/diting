@@ -35,7 +35,7 @@ wheels = [
 
 [[package]]
 name = "aiohttp"
-version = "3.12.13"
+version = "3.12.14"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "aiohappyeyeballs" },
@@ -46,59 +46,59 @@ dependencies = [
     { name = "propcache" },
     { name = "yarl" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13.tar.gz", hash = "sha256:47e2da578528264a12e4e3dd8dd72a7289e5f812758fe086473fab037a10fcce" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14.tar.gz", hash = "sha256:6e06e120e34d93100de448fd941522e11dafa78ef1a893c179901b7d66aa29f2" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:7c229b1437aa2576b99384e4be668af1db84b31a45305d02f61f5497cfa6f60c" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:04076d8c63471e51e3689c93940775dc3d12d855c0c80d18ac5a1c68f0904358" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:55683615813ce3601640cfaa1041174dc956d28ba0511c8cbd75273eb0587014" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:921bc91e602d7506d37643e77819cb0b840d4ebb5f8d6408423af3d3bf79a7b7" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:e72d17fe0974ddeae8ed86db297e23dba39c7ac36d84acdbb53df2e18505a013" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:0653d15587909a52e024a261943cf1c5bdc69acb71f411b0dd5966d065a51a47" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:a77b48997c66722c65e157c06c74332cdf9c7ad00494b85ec43f324e5c5a9b9a" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d6946bae55fd36cfb8e4092c921075cde029c71c7cb571d72f1079d1e4e013bc" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4f95db8c8b219bcf294a53742c7bda49b80ceb9d577c8e7aa075612b7f39ffb7" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:03d5eb3cfb4949ab4c74822fb3326cd9655c2b9fe22e4257e2100d44215b2e2b" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-musllinux_1_2_armv7l.whl", hash = "sha256:6383dd0ffa15515283c26cbf41ac8e6705aab54b4cbb77bdb8935a713a89bee9" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:6548a411bc8219b45ba2577716493aa63b12803d1e5dc70508c539d0db8dbf5a" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-musllinux_1_2_ppc64le.whl", hash = "sha256:81b0fcbfe59a4ca41dc8f635c2a4a71e63f75168cc91026c61be665945739e2d" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-musllinux_1_2_s390x.whl", hash = "sha256:6a83797a0174e7995e5edce9dcecc517c642eb43bc3cba296d4512edf346eee2" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:a5734d8469a5633a4e9ffdf9983ff7cdb512524645c7a3d4bc8a3de45b935ac3" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-win32.whl", hash = "sha256:fef8d50dfa482925bb6b4c208b40d8e9fa54cecba923dc65b825a72eed9a5dbd" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp311-cp311-win_amd64.whl", hash = "sha256:9a27da9c3b5ed9d04c36ad2df65b38a96a37e9cfba6f1381b842d05d98e6afe9" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:0aa580cf80558557285b49452151b9c69f2fa3ad94c5c9e76e684719a8791b73" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:b103a7e414b57e6939cc4dece8e282cfb22043efd0c7298044f6594cf83ab347" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:78f64e748e9e741d2eccff9597d09fb3cd962210e5b5716047cbb646dc8fe06f" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:29c955989bf4c696d2ededc6b0ccb85a73623ae6e112439398935362bacfaaf6" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:d640191016763fab76072c87d8854a19e8e65d7a6fcfcbf017926bdbbb30a7e5" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4dc507481266b410dede95dd9f26c8d6f5a14315372cc48a6e43eac652237d9b" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:8a94daa873465d518db073bd95d75f14302e0208a08e8c942b2f3f1c07288a75" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:177f52420cde4ce0bb9425a375d95577fe082cb5721ecb61da3049b55189e4e6" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0f7df1f620ec40f1a7fbcb99ea17d7326ea6996715e78f71a1c9a021e31b96b8" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:3062d4ad53b36e17796dce1c0d6da0ad27a015c321e663657ba1cc7659cfc710" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-musllinux_1_2_armv7l.whl", hash = "sha256:8605e22d2a86b8e51ffb5253d9045ea73683d92d47c0b1438e11a359bdb94462" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:54fbbe6beafc2820de71ece2198458a711e224e116efefa01b7969f3e2b3ddae" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-musllinux_1_2_ppc64le.whl", hash = "sha256:050bd277dfc3768b606fd4eae79dd58ceda67d8b0b3c565656a89ae34525d15e" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-musllinux_1_2_s390x.whl", hash = "sha256:2637a60910b58f50f22379b6797466c3aa6ae28a6ab6404e09175ce4955b4e6a" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:e986067357550d1aaa21cfe9897fa19e680110551518a5a7cf44e6c5638cb8b5" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-win32.whl", hash = "sha256:ac941a80aeea2aaae2875c9500861a3ba356f9ff17b9cb2dbfb5cbf91baaf5bf" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp312-cp312-win_amd64.whl", hash = "sha256:671f41e6146a749b6c81cb7fd07f5a8356d46febdaaaf07b0e774ff04830461e" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:d4a18e61f271127465bdb0e8ff36e8f02ac4a32a80d8927aa52371e93cd87938" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:532542cb48691179455fab429cdb0d558b5e5290b033b87478f2aa6af5d20ace" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:d7eea18b52f23c050ae9db5d01f3d264ab08f09e7356d6f68e3f3ac2de9dfabb" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ad7c8e5c25f2a26842a7c239de3f7b6bfb92304593ef997c04ac49fb703ff4d7" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:6af355b483e3fe9d7336d84539fef460120c2f6e50e06c658fe2907c69262d6b" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:a95cf9f097498f35c88e3609f55bb47b28a5ef67f6888f4390b3d73e2bac6177" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b8ed8c38a1c584fe99a475a8f60eefc0b682ea413a84c6ce769bb19a7ff1c5ef" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7a0b9170d5d800126b5bc89d3053a2363406d6e327afb6afaeda2d19ee8bb103" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:372feeace612ef8eb41f05ae014a92121a512bd5067db8f25101dd88a8db11da" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:a946d3702f7965d81f7af7ea8fb03bb33fe53d311df48a46eeca17e9e0beed2d" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-musllinux_1_2_armv7l.whl", hash = "sha256:a0c4725fae86555bbb1d4082129e21de7264f4ab14baf735278c974785cd2041" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:9b28ea2f708234f0a5c44eb6c7d9eb63a148ce3252ba0140d050b091b6e842d1" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-musllinux_1_2_ppc64le.whl", hash = "sha256:d4f5becd2a5791829f79608c6f3dc745388162376f310eb9c142c985f9441cc1" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-musllinux_1_2_s390x.whl", hash = "sha256:60f2ce6b944e97649051d5f5cc0f439360690b73909230e107fd45a359d3e911" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:69fc1909857401b67bf599c793f2183fbc4804717388b0b888f27f9929aa41f3" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-win32.whl", hash = "sha256:7d7e68787a2046b0e44ba5587aa723ce05d711e3a3665b6b7545328ac8e3c0dd" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.13/aiohttp-3.12.13-cp313-cp313-win_amd64.whl", hash = "sha256:5a178390ca90419bfd41419a809688c368e63c86bd725e1186dd97f6b89c2706" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:f4552ff7b18bcec18b60a90c6982049cdb9dac1dba48cf00b97934a06ce2e597" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:8283f42181ff6ccbcf25acaae4e8ab2ff7e92b3ca4a4ced73b2c12d8cd971393" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:040afa180ea514495aaff7ad34ec3d27826eaa5d19812730fe9e529b04bb2179" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b413c12f14c1149f0ffd890f4141a7471ba4b41234fe4fd4a0ff82b1dc299dbb" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:1d6f607ce2e1a93315414e3d448b831238f1874b9968e1195b06efaa5c87e245" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:565e70d03e924333004ed101599902bba09ebb14843c8ea39d657f037115201b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4699979560728b168d5ab63c668a093c9570af2c7a78ea24ca5212c6cdc2b641" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ad5fdf6af93ec6c99bf800eba3af9a43d8bfd66dce920ac905c817ef4a712afe" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4ac76627c0b7ee0e80e871bde0d376a057916cb008a8f3ffc889570a838f5cc7" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:798204af1180885651b77bf03adc903743a86a39c7392c472891649610844635" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-musllinux_1_2_armv7l.whl", hash = "sha256:4f1205f97de92c37dd71cf2d5bcfb65fdaed3c255d246172cce729a8d849b4da" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:76ae6f1dd041f85065d9df77c6bc9c9703da9b5c018479d20262acc3df97d419" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-musllinux_1_2_ppc64le.whl", hash = "sha256:a194ace7bc43ce765338ca2dfb5661489317db216ea7ea700b0332878b392cab" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-musllinux_1_2_s390x.whl", hash = "sha256:16260e8e03744a6fe3fcb05259eeab8e08342c4c33decf96a9dad9f1187275d0" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:8c779e5ebbf0e2e15334ea404fcce54009dc069210164a244d2eac8352a44b28" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-win32.whl", hash = "sha256:a289f50bf1bd5be227376c067927f78079a7bdeccf8daa6a9e65c38bae14324b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp311-cp311-win_amd64.whl", hash = "sha256:0b8a69acaf06b17e9c54151a6c956339cf46db4ff72b3ac28516d0f7068f4ced" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:a0ecbb32fc3e69bc25efcda7d28d38e987d007096cbbeed04f14a6662d0eee22" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:0400f0ca9bb3e0b02f6466421f253797f6384e9845820c8b05e976398ac1d81a" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:a56809fed4c8a830b5cae18454b7464e1529dbf66f71c4772e3cfa9cbec0a1ff" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:27f2e373276e4755691a963e5d11756d093e346119f0627c2d6518208483fb6d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:ca39e433630e9a16281125ef57ece6817afd1d54c9f1bf32e901f38f16035869" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:9c748b3f8b14c77720132b2510a7d9907a03c20ba80f469e58d5dfd90c079a1c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f0a568abe1b15ce69d4cc37e23020720423f0728e3cb1f9bcd3f53420ec3bfe7" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9888e60c2c54eaf56704b17feb558c7ed6b7439bca1e07d4818ab878f2083660" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3006a1dc579b9156de01e7916d38c63dc1ea0679b14627a37edf6151bc530088" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:aa8ec5c15ab80e5501a26719eb48a55f3c567da45c6ea5bb78c52c036b2655c7" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-musllinux_1_2_armv7l.whl", hash = "sha256:39b94e50959aa07844c7fe2206b9f75d63cc3ad1c648aaa755aa257f6f2498a9" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:04c11907492f416dad9885d503fbfc5dcb6768d90cad8639a771922d584609d3" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-musllinux_1_2_ppc64le.whl", hash = "sha256:88167bd9ab69bb46cee91bd9761db6dfd45b6e76a0438c7e884c3f8160ff21eb" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-musllinux_1_2_s390x.whl", hash = "sha256:791504763f25e8f9f251e4688195e8b455f8820274320204f7eafc467e609425" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:2785b112346e435dd3a1a67f67713a3fe692d288542f1347ad255683f066d8e0" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-win32.whl", hash = "sha256:15f5f4792c9c999a31d8decf444e79fcfd98497bf98e94284bf390a7bb8c1729" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp312-cp312-win_amd64.whl", hash = "sha256:3b66e1a182879f579b105a80d5c4bd448b91a57e8933564bf41665064796a338" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:3143a7893d94dc82bc409f7308bc10d60285a3cd831a68faf1aa0836c5c3c767" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:3d62ac3d506cef54b355bd34c2a7c230eb693880001dfcda0bf88b38f5d7af7e" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:48e43e075c6a438937c4de48ec30fa8ad8e6dfef122a038847456bfe7b947b63" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:077b4488411a9724cecc436cbc8c133e0d61e694995b8de51aaf351c7578949d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:d8c35632575653f297dcbc9546305b2c1133391089ab925a6a3706dfa775ccab" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:6b8ce87963f0035c6834b28f061df90cf525ff7c9b6283a8ac23acee6502afd4" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f0a2cf66e32a2563bb0766eb24eae7e9a269ac0dc48db0aae90b575dc9583026" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cdea089caf6d5cde975084a884c72d901e36ef9c2fd972c9f51efbbc64e96fbd" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8a7865f27db67d49e81d463da64a59365ebd6b826e0e4847aa111056dcb9dc88" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:0ab5b38a6a39781d77713ad930cb5e7feea6f253de656a5f9f281a8f5931b086" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-musllinux_1_2_armv7l.whl", hash = "sha256:9b3b15acee5c17e8848d90a4ebc27853f37077ba6aec4d8cb4dbbea56d156933" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:e4c972b0bdaac167c1e53e16a16101b17c6d0ed7eac178e653a07b9f7fad7151" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-musllinux_1_2_ppc64le.whl", hash = "sha256:7442488b0039257a3bdbc55f7209587911f143fca11df9869578db6c26feeeb8" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-musllinux_1_2_s390x.whl", hash = "sha256:f68d3067eecb64c5e9bab4a26aa11bd676f4c70eea9ef6536b0a4e490639add3" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:f88d3704c8b3d598a08ad17d06006cb1ca52a1182291f04979e305c8be6c9758" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-win32.whl", hash = "sha256:a3c99ab19c7bf375c4ae3debd91ca5d394b98b6089a03231d4c580ef3c2ae4c5" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/aiohttp/3.12.14/aiohttp-3.12.14-cp313-cp313-win_amd64.whl", hash = "sha256:3f8aad695e12edc9d571f878c62bedc91adf30c760c8632f09663e5f564f4baa" },
 ]
 
 [[package]]
@@ -170,11 +170,11 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2025.6.15"
+version = "2025.7.9"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/certifi/2025.6.15/certifi-2025.6.15.tar.gz", hash = "sha256:d747aa5a8b9bbbb1bb8c22bb13e22bd1f18e9796defa16bab421f7f7a317323b" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/certifi/2025.7.9/certifi-2025.7.9.tar.gz", hash = "sha256:c1d2ec05395148ee10cf672ffc28cd37ea0ab0d99f9cc74c43e588cbd111b079" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/certifi/2025.6.15/certifi-2025.6.15-py3-none-any.whl", hash = "sha256:2e0c7ce7cb5d8f8634ca55d2ba7e6ec2689a2fd6537d8dec1296a477a4910057" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/certifi/2025.7.9/certifi-2025.7.9-py3-none-any.whl", hash = "sha256:d842783a14f8fdd646895ac26f719a061408834473cfc10203f6a575beb15d39" },
 ]
 
 [[package]]
@@ -419,7 +419,7 @@ wheels = [
 
 [[package]]
 name = "datasets"
-version = "3.6.0"
+version = "4.0.0"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "dill" },
@@ -436,9 +436,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "xxhash" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/datasets/3.6.0/datasets-3.6.0.tar.gz", hash = "sha256:1b2bf43b19776e2787e181cfd329cb0ca1a358ea014780c3581e0f276375e041" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/datasets/4.0.0/datasets-4.0.0.tar.gz", hash = "sha256:9657e7140a9050db13443ba21cb5de185af8af944479b00e7ff1e00a61c8dbf1" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/datasets/3.6.0/datasets-3.6.0-py3-none-any.whl", hash = "sha256:25000c4a2c0873a710df127d08a202a06eab7bf42441a6bc278b499c2f72cd1b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/datasets/4.0.0/datasets-4.0.0-py3-none-any.whl", hash = "sha256:7ef95e62025fd122882dbce6cb904c8cd3fbc829de6669a5eb939c77d50e203d" },
 ]
 
 [[package]]
@@ -478,6 +478,11 @@ dependencies = [
     { name = "diting-inspect" },
 ]
 
+[package.optional-dependencies]
+all = [
+    { name = "diting-dataset", extra = ["all"] },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
@@ -494,8 +499,10 @@ lint = [
 requires-dist = [
     { name = "diting-core", editable = "packages/diting-core" },
     { name = "diting-dataset", editable = "packages/diting-dataset" },
+    { name = "diting-dataset", extras = ["all"], marker = "extra == 'all'", editable = "packages/diting-dataset" },
     { name = "diting-inspect", editable = "packages/diting-inspect" },
 ]
+provides-extras = ["all"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -537,23 +544,42 @@ name = "diting-dataset"
 version = "0.1.0"
 source = { editable = "packages/diting-dataset" }
 dependencies = [
+    { name = "diting-core" },
+]
+
+[package.optional-dependencies]
+all = [
     { name = "datasets" },
     { name = "langchain-community" },
-    { name = "pydantic" },
     { name = "rapidfuzz" },
     { name = "tiktoken" },
     { name = "unstructured", extra = ["md"] },
 ]
+docs-gen = [
+    { name = "langchain-community" },
+    { name = "rapidfuzz" },
+    { name = "tiktoken" },
+    { name = "unstructured", extra = ["md"] },
+]
+hf = [
+    { name = "datasets" },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "datasets", specifier = ">=3.6.0" },
-    { name = "langchain-community", specifier = ">=0.3.24" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "rapidfuzz" },
-    { name = "tiktoken" },
-    { name = "unstructured", extras = ["md"], specifier = ">=0.17.2" },
+    { name = "datasets", marker = "extra == 'all'", specifier = ">=3.6.0" },
+    { name = "datasets", marker = "extra == 'hf'", specifier = ">=3.6.0" },
+    { name = "diting-core", editable = "packages/diting-core" },
+    { name = "langchain-community", marker = "extra == 'all'", specifier = ">=0.3.24" },
+    { name = "langchain-community", marker = "extra == 'docs-gen'", specifier = ">=0.3.24" },
+    { name = "rapidfuzz", marker = "extra == 'all'" },
+    { name = "rapidfuzz", marker = "extra == 'docs-gen'" },
+    { name = "tiktoken", marker = "extra == 'all'" },
+    { name = "tiktoken", marker = "extra == 'docs-gen'" },
+    { name = "unstructured", extras = ["md"], marker = "extra == 'all'", specifier = ">=0.17.2" },
+    { name = "unstructured", extras = ["md"], marker = "extra == 'docs-gen'", specifier = ">=0.17.2" },
 ]
+provides-extras = ["all", "hf", "docs-gen"]
 
 [[package]]
 name = "diting-inspect"
@@ -562,6 +588,8 @@ source = { editable = "packages/diting-inspect" }
 dependencies = [
     { name = "diting-core" },
     { name = "fastapi" },
+    { name = "httpx" },
+    { name = "jinja2" },
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "python-multipart" },
@@ -572,6 +600,8 @@ dependencies = [
 requires-dist = [
     { name = "diting-core", editable = "packages/diting-core" },
     { name = "fastapi", specifier = ">=0.115.14" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "python-multipart", specifier = ">=0.0.20" },
@@ -598,16 +628,16 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.115.14"
+version = "0.116.0"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/fastapi/0.115.14/fastapi-0.115.14.tar.gz", hash = "sha256:b1de15cdc1c499a4da47914db35d0e4ef8f1ce62b624e94e0e5824421df99739" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/fastapi/0.116.0/fastapi-0.116.0.tar.gz", hash = "sha256:80dc0794627af0390353a6d1171618276616310d37d24faba6648398e57d687a" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/fastapi/0.115.14/fastapi-0.115.14-py3-none-any.whl", hash = "sha256:6c0c8bf9420bd58f565e585036d971872472b4f7d3f6c73b698e10cffdefb3ca" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/fastapi/0.116.0/fastapi-0.116.0-py3-none-any.whl", hash = "sha256:fdcc9ed272eaef038952923bef2b735c02372402d1203ee1210af4eea7a78d2b" },
 ]
 
 [[package]]
@@ -882,6 +912,18 @@ wheels = [
 ]
 
 [[package]]
+name = "jinja2"
+version = "3.1.6"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+dependencies = [
+    { name = "markupsafe" },
+]
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/jinja2/3.1.6/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/jinja2/3.1.6/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67" },
+]
+
+[[package]]
 name = "jiter"
 version = "0.10.0"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
@@ -1076,7 +1118,7 @@ sdist = { url = "http://mirrors.sangfor.org/pypi/packages/langdetect/1.0.9/langd
 
 [[package]]
 name = "langsmith"
-version = "0.4.4"
+version = "0.4.5"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "httpx" },
@@ -1087,9 +1129,9 @@ dependencies = [
     { name = "requests-toolbelt" },
     { name = "zstandard" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/langsmith/0.4.4/langsmith-0.4.4.tar.gz", hash = "sha256:70c53bbff24a7872e88e6fa0af98270f4986a6e364f9e85db1cc5636defa4d66" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/langsmith/0.4.5/langsmith-0.4.5.tar.gz", hash = "sha256:49444bd8ccd4e46402f1b9ff1d686fa8e3a31b175e7085e72175ab8ec6164a34" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/langsmith/0.4.4/langsmith-0.4.4-py3-none-any.whl", hash = "sha256:014c68329bd085bd6c770a6405c61bb6881f82eb554ce8c4d1984b0035fd1716" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/langsmith/0.4.5/langsmith-0.4.5-py3-none-any.whl", hash = "sha256:4167717a2cccc4dff5809dbddc439628e836f6fd13d4fdb31ea013bc8d5cfaf5" },
 ]
 
 [[package]]
@@ -1153,6 +1195,54 @@ source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 sdist = { url = "http://mirrors.sangfor.org/pypi/packages/markdown/3.8.2/markdown-3.8.2.tar.gz", hash = "sha256:247b9a70dd12e27f67431ce62523e675b866d254f900c4fe75ce3dda62237c45" }
 wheels = [
     { url = "http://mirrors.sangfor.org/pypi/packages/markdown/3.8.2/markdown-3.8.2-py3-none-any.whl", hash = "sha256:5c83764dbd4e00bdd94d85a19b8d55ccca20fe35b2e678a1422b380324dd5f24" },
+]
+
+[[package]]
+name = "markupsafe"
+version = "3.0.2"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/markupsafe-3.0.2.tar.gz", hash = "sha256:ee55d3edf80167e48ea11a923c7386f4669df67d7994554387f84e7d8b0a2bf0" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:9025b4018f3a1314059769c7bf15441064b2207cb3f065e6ea1e7359cb46db9d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:93335ca3812df2f366e80509ae119189886b0f3c2b81325d39efdb84a1e2ae93" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2cb8438c3cbb25e220c2ab33bb226559e7afb3baec11c4f218ffa7308603c832" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a123e330ef0853c6e822384873bef7507557d8e4a082961e1defa947aa59ba84" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:1e084f686b92e5b83186b07e8a17fc09e38fff551f3602b249881fec658d3eca" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:d8213e09c917a951de9d09ecee036d5c7d36cb6cb7dbaece4c71a60d79fb9798" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:5b02fb34468b6aaa40dfc198d813a641e3a63b98c2b05a16b9f80b7ec314185e" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:0bff5e0ae4ef2e1ae4fdf2dfd5b76c75e5c2fa4132d05fc1b0dabcd20c7e28c4" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-win32.whl", hash = "sha256:6c89876f41da747c8d3677a2b540fb32ef5715f97b66eeb0c6b66f5e3ef6f59d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp311-cp311-win_amd64.whl", hash = "sha256:70a87b411535ccad5ef2f1df5136506a10775d267e197e4cf531ced10537bd6b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:9778bd8ab0a994ebf6f84c2b949e65736d5575320a17ae8984a77fab08db94cf" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:846ade7b71e3536c4e56b386c2a47adf5741d2d8b94ec9dc3e92e5e1ee1e2225" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1c99d261bd2d5f6b59325c92c73df481e05e57f19837bdca8413b9eac4bd8028" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e17c96c14e19278594aa4841ec148115f9c7615a47382ecb6b82bd8fea3ab0c8" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:88416bd1e65dcea10bc7569faacb2c20ce071dd1f87539ca2ab364bf6231393c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:2181e67807fc2fa785d0592dc2d6206c019b9502410671cc905d132a92866557" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:52305740fe773d09cffb16f8ed0427942901f00adedac82ec8b67752f58a1b22" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:ad10d3ded218f1039f11a75f8091880239651b52e9bb592ca27de44eed242a48" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-win32.whl", hash = "sha256:0f4ca02bea9a23221c0182836703cbf8930c5e9454bacce27e767509fa286a30" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp312-cp312-win_amd64.whl", hash = "sha256:8e06879fc22a25ca47312fbe7c8264eb0b662f6db27cb2d3bbbc74b1df4b9b87" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:ba9527cdd4c926ed0760bc301f6728ef34d841f405abf9d4f959c478421e4efd" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:f8b3d067f2e40fe93e1ccdd6b2e1d16c43140e76f02fb1319a05cf2b79d99430" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:569511d3b58c8791ab4c2e1285575265991e6d8f8700c7be0e88f86cb0672094" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:15ab75ef81add55874e7ab7055e9c397312385bd9ced94920f2802310c930396" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f3818cb119498c0678015754eba762e0d61e5b52d34c8b13d770f0719f7b1d79" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:cdb82a876c47801bb54a690c5ae105a46b392ac6099881cdfb9f6e95e4014c6a" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:cabc348d87e913db6ab4aa100f01b08f481097838bdddf7c7a84b7575b7309ca" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:444dcda765c8a838eaae23112db52f1efaf750daddb2d9ca300bcae1039adc5c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-win32.whl", hash = "sha256:bcf3e58998965654fdaff38e58584d8937aa3096ab5354d493c77d1fdd66d7a1" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313-win_amd64.whl", hash = "sha256:e6a2a455bd412959b57a172ce6328d2dd1f01cb2135efda2e4576e8a23fa3b0f" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-macosx_10_13_universal2.whl", hash = "sha256:b5a6b3ada725cea8a5e634536b1b01c30bcdcd7f9c6fff4151548d5bf6b3a36c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:a904af0a6162c73e3edcb969eeeb53a63ceeb5d8cf642fade7d39e7963a22ddb" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4aa4e5faecf353ed117801a068ebab7b7e09ffb6e1d5e412dc852e0da018126c" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c0ef13eaeee5b615fb07c9a7dadb38eac06a0608b41570d8ade51c56539e509d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d16a81a06776313e817c951135cf7340a3e91e8c1ff2fac444cfd75fffa04afe" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:6381026f158fdb7c72a168278597a5e3a5222e83ea18f543112b2662a9b699c5" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:3d79d162e7be8f996986c064d1c7c817f6df3a77fe3d6859f6f9e7be4b8c213a" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:131a3c7689c85f5ad20f9f6fb1b866f402c445b220c19fe4308c0b147ccd2ad9" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-win32.whl", hash = "sha256:ba8062ed2cf21c07a9e295d5b8a2a5ce678b913b45fdf68c32d95d6c1291e0b6" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/markupsafe/3.0.2/MarkupSafe-3.0.2-cp313-cp313t-win_amd64.whl", hash = "sha256:e444a31f8db13eb18ada366ab3cf45fd4b31e4db1236a4448f68778c1d1a5a2f" },
 ]
 
 [[package]]
@@ -1407,7 +1497,7 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "1.93.0"
+version = "1.95.0"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1419,9 +1509,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/openai/1.93.0/openai-1.93.0.tar.gz", hash = "sha256:988f31ade95e1ff0585af11cc5a64510225e4f5cd392698c675d0a9265b8e337" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/openai/1.95.0/openai-1.95.0.tar.gz", hash = "sha256:54bc42df9f7142312647dd485d34cca5df20af825fa64a30ca55164be2cf4cc9" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/openai/1.93.0/openai-1.93.0-py3-none-any.whl", hash = "sha256:3d746fe5498f0dd72e0d9ab706f26c91c0f646bf7459e5629af8ba7c9dbdf090" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/openai/1.95.0/openai-1.95.0-py3-none-any.whl", hash = "sha256:a7afc9dca7e7d616371842af8ea6dbfbcb739a85d183f5f664ab1cc311b9ef18" },
 ]
 
 [[package]]
@@ -1500,7 +1590,7 @@ wheels = [
 
 [[package]]
 name = "pandas"
-version = "2.3.0"
+version = "2.3.1"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "numpy" },
@@ -1508,35 +1598,35 @@ dependencies = [
     { name = "pytz" },
     { name = "tzdata" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0.tar.gz", hash = "sha256:34600ab34ebf1131a7613a260a61dbe8b62c188ec0ea4c296da7c9a06b004133" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1.tar.gz", hash = "sha256:0a95b9ac964fe83ce317827f80304d37388ea77616b1425f0ae41c9d2d0d7bb2" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:8adff9f138fc614347ff33812046787f7d43b3cef7c0f0171b3340cae333f6ca" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e5f08eb9a445d07720776df6e641975665c9ea12c9d8a331e0f6890f2dcd76ef" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fa35c266c8cd1a67d75971a1912b185b492d257092bdd2709bbdebe574ed228d" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14a0cc77b0f089d2d2ffe3007db58f170dae9b9f54e569b299db871a3ab5bf46" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:c06f6f144ad0a1bf84699aeea7eff6068ca5c63ceb404798198af7eb86082e33" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:ed16339bc354a73e0a609df36d256672c7d296f3f767ac07257801aa064ff73c" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp311-cp311-win_amd64.whl", hash = "sha256:fa07e138b3f6c04addfeaf56cc7fdb96c3b68a3fe5e5401251f231fce40a0d7a" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:2eb4728a18dcd2908c7fccf74a982e241b467d178724545a48d0caf534b38ebf" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b9d8c3187be7479ea5c3d30c32a5d73d62a621166675063b2edd21bc47614027" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9ff730713d4c4f2f1c860e36c005c7cefc1c7c80c21c0688fd605aa43c9fcf09" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ba24af48643b12ffe49b27065d3babd52702d95ab70f50e1b34f71ca703e2c0d" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:404d681c698e3c8a40a61d0cd9412cc7364ab9a9cc6e144ae2992e11a2e77a20" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:6021910b086b3ca756755e86ddc64e0ddafd5e58e076c72cb1585162e5ad259b" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp312-cp312-win_amd64.whl", hash = "sha256:094e271a15b579650ebf4c5155c05dcd2a14fd4fdd72cf4854b2f7ad31ea30be" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:2c7e2fc25f89a49a11599ec1e76821322439d90820108309bf42130d2f36c983" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:c6da97aeb6a6d233fb6b17986234cc723b396b50a3c6804776351994f2a658fd" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bb32dc743b52467d488e7a7c8039b821da2826a9ba4f85b89ea95274f863280f" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:213cd63c43263dbb522c1f8a7c9d072e25900f6975596f883f4bebd77295d4f3" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:1d2b33e68d0ce64e26a4acc2e72d747292084f4e8db4c847c6f5f6cbe56ed6d8" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:430a63bae10b5086995db1b02694996336e5a8ac9a96b4200572b413dfdfccb9" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313-win_amd64.whl", hash = "sha256:4930255e28ff5545e2ca404637bcc56f031893142773b3468dc021c6c32a1390" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-macosx_10_13_x86_64.whl", hash = "sha256:f925f1ef673b4bd0271b1809b72b3270384f2b7d9d14a189b12b7fc02574d575" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:e78ad363ddb873a631e92a3c063ade1ecfb34cae71e9a2be6ad100f875ac1042" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:951805d146922aed8357e4cc5671b8b0b9be1027f0619cea132a9f3f65f2f09c" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1a881bc1309f3fce34696d07b00f13335c41f5f5a8770a33b09ebe23261cfc67" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:e1991bbb96f4050b09b5f811253c4f3cf05ee89a589379aa36cd623f21a31d6f" },
-    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.0/pandas-2.3.0-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:bb3be958022198531eb7ec2008cfc78c5b1eed51af8600c6c5d9160d89d8d249" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:2b0540963d83431f5ce8870ea02a7430adca100cec8a050f0811f8e31035541b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:fe7317f578c6a153912bd2292f02e40c1d8f253e93c599e82620c7f69755c74f" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e6723a27ad7b244c0c79d8e7007092d7c8f0f11305770e2f4cd778b3ad5f9f85" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3462c3735fe19f2638f2c3a40bd94ec2dc5ba13abbb032dd2fa1f540a075509d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:98bcc8b5bf7afed22cc753a28bc4d9e26e078e777066bc53fac7904ddef9a678" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:4d544806b485ddf29e52d75b1f559142514e60ef58a832f74fb38e48d757b299" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp311-cp311-win_amd64.whl", hash = "sha256:b3cd4273d3cb3707b6fffd217204c52ed92859533e31dc03b7c5008aa933aaab" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:689968e841136f9e542020698ee1c4fbe9caa2ed2213ae2388dc7b81721510d3" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:025e92411c16cbe5bb2a4abc99732a6b132f439b8aab23a59fa593eb00704232" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9b7ff55f31c4fcb3e316e8f7fa194566b286d6ac430afec0d461163312c5841e" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7dcb79bf373a47d2a40cf7232928eb7540155abbc460925c2c96d2d30b006eb4" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:56a342b231e8862c96bdb6ab97170e203ce511f4d0429589c8ede1ee8ece48b8" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:ca7ed14832bce68baef331f4d7f294411bed8efd032f8109d690df45e00c4679" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp312-cp312-win_amd64.whl", hash = "sha256:ac942bfd0aca577bef61f2bc8da8147c4ef6879965ef883d8e8d5d2dc3e744b8" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:9026bd4a80108fac2239294a15ef9003c4ee191a0f64b90f170b40cfb7cf2d22" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:6de8547d4fdb12421e2d047a2c446c623ff4c11f47fddb6b9169eb98ffba485a" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:782647ddc63c83133b2506912cc6b108140a38a37292102aaa19c81c83db2928" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2ba6aff74075311fc88504b1db890187a3cd0f887a5b10f5525f8e2ef55bfdb9" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:e5635178b387bd2ba4ac040f82bc2ef6e6b500483975c4ebacd34bec945fda12" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:6f3bf5ec947526106399a9e1d26d40ee2b259c66422efdf4de63c848492d91bb" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313-win_amd64.whl", hash = "sha256:1c78cf43c8fde236342a1cb2c34bcff89564a7bfed7e474ed2fffa6aed03a956" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313t-macosx_10_13_x86_64.whl", hash = "sha256:8dfc17328e8da77be3cf9f47509e5637ba8f137148ed0e9b5241e1baf526e20a" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:ec6c851509364c59a5344458ab935e6451b31b818be467eb24b0fe89bd05b6b9" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:911580460fc4884d9b05254b38a6bfadddfcc6aaef856fb5859e7ca202e45275" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2f4d6feeba91744872a600e6edbbd5b033005b431d5ae8379abee5bcfa479fab" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:fe37e757f462d31a9cd7580236a82f353f5713a80e059a29753cf938c6775d96" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pandas/2.3.1/pandas-2.3.1-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:5db9637dbc24b631ff3707269ae4559bce4b7fd75c1c4d7e13f40edc42df4444" },
 ]
 
 [[package]]
@@ -1837,15 +1927,15 @@ wheels = [
 
 [[package]]
 name = "pyright"
-version = "1.1.402"
+version = "1.1.403"
 source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
 dependencies = [
     { name = "nodeenv" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "http://mirrors.sangfor.org/pypi/packages/pyright/1.1.402/pyright-1.1.402.tar.gz", hash = "sha256:85a33c2d40cd4439c66aa946fd4ce71ab2f3f5b8c22ce36a623f59ac22937683" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/pyright/1.1.403/pyright-1.1.403.tar.gz", hash = "sha256:3ab69b9f41c67fb5bbb4d7a36243256f0d549ed3608678d381d5f51863921104" }
 wheels = [
-    { url = "http://mirrors.sangfor.org/pypi/packages/pyright/1.1.402/pyright-1.1.402-py3-none-any.whl", hash = "sha256:2c721f11869baac1884e846232800fe021c33f1b4acb3929cff321f7ea4e2982" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/pyright/1.1.403/pyright-1.1.403-py3-none-any.whl", hash = "sha256:c0eeca5aa76cbef3fcc271259bbd785753c7ad7bcac99a9162b4c4c7daed23b3" },
 ]
 
 [[package]]

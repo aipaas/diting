@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ModelManagementData } from "../schemas";
+import type { ModelManagementData } from "../types/Models";
 
 interface CreateModelModalProps {
 	isOpen: boolean;

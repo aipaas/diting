@@ -1,9 +1,9 @@
 import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { API_BASE } from "../constants";
-import type { ModelManagementData } from "../schemas";
 import CreateModelModual from "./CreateModelModual";
 import EditModelModal from "./EditModelModal";
+import type { ModelManagementData } from "../types/Models";
 
 interface ModelsViewProps {
 	models: ModelManagementData[];

@@ -2,7 +2,7 @@ import { Plus, Trash } from "lucide-react";
 import type { FormEvent, MouseEvent } from "react";
 import { useState } from "react";
 import { API_BASE } from "../constants";
-import type { CaseType } from "../schemas";
+import type { CaseType } from "../types/Cases";
 
 interface EditCaseModalProps {
 	onClose: () => void;

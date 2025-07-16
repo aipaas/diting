@@ -1,8 +1,12 @@
-import type { CaseType, EvaluationType, ModelManagementData } from "../schemas";
+import type { CaseType } from "../types/Cases";
+import type { EvaluationType } from "../types/Evaluations";
+import type { ModelManagementData } from "../types/Models";
+import type { HttpToolType } from "../types/Tools";
 import CasesView from "./CasesView";
 import EvaluationsView from "./EvaluationsView";
 import FileUploadView from "./FileUploadView";
 import ModelsView from "./ModelsView";
+import ToolConfigsView from "./ToolConfigsView";
 
 interface MainContentProps {
 	activeTab: string;
@@ -11,12 +15,14 @@ interface MainContentProps {
 	setSelectedCases: (cases: string[]) => void;
 	evaluations: EvaluationType[];
 	models: ModelManagementData[];
+	toolConfigs: HttpToolType[];
 	searchTerm: string;
 	setSearchTerm: (term: string) => void;
 	loading: boolean;
 	fetchCases: () => Promise<void>;
 	fetchEvaluations: () => Promise<void>;
 	fetchModels: () => Promise<void>;
+	fetchToolConfigs: () => Promise<void>;
 	showNotification: (
 		message: string,
 		type?: "info" | "success" | "error",
@@ -31,12 +37,14 @@ const MainContent = ({
 	setSelectedCases,
 	evaluations,
 	models,
+	toolConfigs,
 	searchTerm,
 	setSearchTerm,
 	loading,
 	fetchCases,
 	fetchEvaluations,
 	fetchModels,
+	fetchToolConfigs,
 	showNotification,
 	setShowEvaluationModal,
 }: MainContentProps) => {
@@ -70,6 +78,14 @@ const MainContent = ({
 				<ModelsView
 					models={models}
 					onRefresh={fetchModels}
+					showNotification={showNotification}
+				/>
+			)}
+
+			{activeTab === "tools" && (
+				<ToolConfigsView
+					toolConfigs={toolConfigs}
+					onRefresh={fetchToolConfigs}
 					showNotification={showNotification}
 				/>
 			)}

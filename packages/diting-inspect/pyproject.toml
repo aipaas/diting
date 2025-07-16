@@ -6,11 +6,13 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "diting-core",
+    "httpx>=0.28.1",
     "fastapi>=0.115.14",
     "openpyxl>=3.1.5",
     "pandas>=2.3.0",
     "python-multipart>=0.0.20",
-    "uvicorn>=0.35.0",  
+    "uvicorn>=0.35.0",
+    "jinja2>=3.1.6",
 ]
 
 

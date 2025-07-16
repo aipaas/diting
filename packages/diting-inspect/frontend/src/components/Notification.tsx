@@ -1,4 +1,4 @@
-import type { NotificationType } from "../schemas";
+import type { NotificationType } from "../types/Notification";
 
 interface NotificationProps {
 	notification: NotificationType | null;

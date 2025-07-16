@@ -93,12 +93,12 @@ class CaseService:
         if not case_id or not case_id.strip():
             return None
 
-        # Validate updates if they contain critical fields
-        if "input" in updates and not updates["input"].strip():
-            raise ValueError("Input cannot be empty")
+        # # Validate updates if they contain critical fields
+        # if "input" in updates and not updates["input"].strip():
+        #     raise ValueError("Input cannot be empty")
 
-        if "actual_output" in updates and not updates["actual_output"].strip():
-            raise ValueError("Actual output cannot be empty")
+        # if "actual_output" in updates and not updates["actual_output"].strip():
+        #     raise ValueError("Actual output cannot be empty")
 
         return await self._repository.update(case_id.strip(), updates)
 

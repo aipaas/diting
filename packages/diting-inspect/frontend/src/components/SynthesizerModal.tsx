@@ -1,59 +1,56 @@
 import { useState } from "react";
 import { z } from "zod";
-import useCreateEvaluation from "../hooks/useCreateEvaluation";
-import useFetchAvailableMetrics from "../hooks/useFetchAvailableMetrics";
-import type { Metric } from "../types/Metrics";
 import {
 	ModelManagementDataSchema,
 	type ModelManagementData,
 } from "../types/Models";
 import MetricConfigModal from "./MetricConfigModal";
+import type { Synthesizer } from "../types/Synthesizers";
+import useFetchAvailableSynthesizers from "../hooks/useFetchAvailableSynthesizers";
 
-const EvaluationModalPropsSchema = z.object({
+const SynthesizerModalPropsSchema = z.object({
 	selectedCases: z.array(z.string()),
 	onClose: z.function().args().returns(z.void()),
 	onSuccess: z.function().args().returns(z.void()),
 	modelConfigs: z.array(ModelManagementDataSchema),
 });
 
-export type EvaluationModalProps = z.infer<typeof EvaluationModalPropsSchema>;
+export type SynthesizerModalProps = z.infer<typeof SynthesizerModalPropsSchema>;
 
-const EvaluationModal = ({
+const SynthesizerModal = ({
 	selectedCases,
 	onClose,
 	onSuccess,
 	modelConfigs,
-}: EvaluationModalProps) => {
-	const [metricConfigs, setMetricConfigs] = useState<Metric[]>([]);
-	const [isMetricConfigModalOpen, setIsMetricConfigModalOpen] =
+}: SynthesizerModalProps) => {
+	const [synthesizerConfigs, setSynthesizerConfigs] = useState<Synthesizer[]>([]);
+	const [isSynthesizerConfigModalOpen, setIsSynthesizerConfigModalOpen] =
 		useState<boolean>(false);
-	const [currentMetric, setCurrentMetric] = useState<Metric>({
+	const [currentSynthesizer, setCurrentSynthesizer] = useState<Synthesizer>({
 		name: "",
-		threshold: null,
 		debug: null,
 	});
 	const [selectedModels, setSelectedModels] = useState<{
 		[key: string]: ModelManagementData;
 	}>({});
-	const { createEvaluation, error } = useCreateEvaluation();
-	const { availableMetrics } = useFetchAvailableMetrics();
+	const { availableSynthesizers } = useFetchAvailableSynthesizers();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const evaluationData = {
 			case_ids: selectedCases,
-			metric_configs: metricConfigs.map((metric) => ({
+			metric_configs: synthesizerConfigs.map((metric) => ({
 				type: metric.name,
-				threshold: metric.threshold,
 				debug: metric.debug,
 			})),
 			model_configs: Object.values(selectedModels),
 		};
-		const result = await createEvaluation(evaluationData);
+		// Assuming createSynthesizer is a function to handle synthesizer creation
+		const result = await createSynthesizer(evaluationData);
 		if (result) {
 			onSuccess();
 		} else {
-			alert(error || "Failed to start evaluation");
+			alert("Failed to start synthesizer");
 		}
 	};
 
@@ -75,37 +72,37 @@ const EvaluationModal = ({
 		<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
 			<div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
 				<h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-					Run Evaluation
+					Run Synthesizer
 				</h3>
 				<form onSubmit={handleSubmit}>
 					<div className="mb-4">
 						<label className="block text-sm font-medium text-gray-700">
-							Select Metrics
+							Select Synthesizers
 						</label>
-						{availableMetrics.map((metric) => (
-							<div key={metric.name} className="flex items-center">
+						{availableSynthesizers.map((synthesizer) => (
+							<div key={synthesizer.name} className="flex items-center">
 								<input
 									type="checkbox"
-									id={metric.name}
+									id={synthesizer.name}
 									onChange={(e) => {
 										if (e.target.checked) {
-											setMetricConfigs([...metricConfigs, metric]);
+											setSynthesizerConfigs([...synthesizerConfigs, synthesizer]);
 										} else {
-											setMetricConfigs(
-												metricConfigs.filter((m) => m.name !== metric.name),
+											setSynthesizerConfigs(
+												synthesizerConfigs.filter((m) => m.name !== synthesizer.name),
 											);
 										}
 									}}
 								/>
 								<label
-									htmlFor={metric.name}
+									htmlFor={synthesizer.name}
 									className="ml-2 cursor-pointer"
-									onClick={() => {
-										setCurrentMetric(metric);
-										setIsMetricConfigModalOpen(true);
-									}}
+								// onClick={() => {
+								// 	setCurrentSynthesizer(synthesizer);
+								// 	setIsSynthesizerConfigModalOpen(true);
+								// }}
 								>
-									{metric.name}
+									{synthesizer.name}
 								</label>
 							</div>
 						))}
@@ -145,27 +142,29 @@ const EvaluationModal = ({
 							type="submit"
 							className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
 						>
-							Start Evaluation
+							Start Synthesizer
 						</button>
 					</div>
 				</form>
-				{isMetricConfigModalOpen && (
-					<MetricConfigModal
-						metric={currentMetric}
-						onClose={() => setIsMetricConfigModalOpen(false)}
-						onSave={(updatedMetric) => {
-							setMetricConfigs(
-								metricConfigs.map((m) =>
-									m.name === updatedMetric.name ? updatedMetric : m,
-								),
-							);
-							setIsMetricConfigModalOpen(false);
-						}}
-					/>
-				)}
-			</div>
-		</div>
+				{
+					isSynthesizerConfigModalOpen && (
+						<MetricConfigModal
+							metric={currentSynthesizer}
+							onClose={() => setIsSynthesizerConfigModalOpen(false)}
+							onSave={(updatedMetric) => {
+								setSynthesizerConfigs(
+									synthesizerConfigs.map((m) =>
+										m.name === updatedMetric.name ? updatedMetric : m,
+									),
+								);
+								setIsSynthesizerConfigModalOpen(false);
+							}}
+						/>
+					)
+				}
+			</div >
+		</div >
 	);
 };
 
-export default EvaluationModal;
+export default SynthesizerModal;

@@ -1,5 +1,10 @@
 from typing import List, Optional, Dict, Any
 from diting_inspect.metrics import MetricOptionSchema
+from diting_inspect.models.synthesizer_model import (
+    InMemorySynthesizerRepository,
+)
+from diting_inspect.services.synthesizer_service import SynthesizerService
+from diting_inspect.synthesizers import SynthesizerSchema
 from diting_inspect.utils import dt_persistent_path
 from fastapi import (
     APIRouter,
@@ -27,11 +32,23 @@ class EvaluationRequest(BaseModel):
     model_configs: Optional[List[ModelManagementData]]
 
 
+class SynthesizeRequest(BaseModel):
+    """Request model for running synthesizers."""
+
+    case_ids: List[str]
+    synthesizer_configs: List[Dict[str, Any]]
+    model_configs: Optional[List[ModelManagementData]]
+
+
 case_repository = CaseRepository(pickle_file=f"{dt_persistent_path}/cases.pkl")
 evaluation_repository = EvaluationRepository(
     pickle_file=f"{dt_persistent_path}/evaluations.pkl"
 )
+synthesizer_repository = InMemorySynthesizerRepository(
+    pickle_file=f"{dt_persistent_path}/synthesizers.pkl"
+)
 evaluation_service = EvaluationService(evaluation_repository, case_repository)
+synthesizer_service = SynthesizerService(synthesizer_repository, case_repository)
 
 router = APIRouter(prefix="/api", tags=["evaluations"])
 
@@ -64,6 +81,37 @@ async def run_evaluation(
         )
 
         return {"evaluation_id": evaluation_id, "message": "Evaluation started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/synthesizers")
+async def run_synthesizer(
+    synthesize_request: SynthesizeRequest, background_tasks: BackgroundTasks
+) -> Dict[str, str]:
+    """
+    Run synthesizer on specified test cases.
+
+    Args:
+        synthesize_request: Synthesizer configuration
+        background_tasks: FastAPI background tasks
+
+    Returns:
+        Synthesizer job ID for tracking progress
+    """
+    try:
+        synthesizer_id = str(uuid.uuid4())
+
+        # Start synthesizer in background
+        background_tasks.add_task(
+            synthesizer_service.run_synthesizer,
+            synthesizer_id,
+            synthesize_request.case_ids,
+            synthesize_request.synthesizer_configs,
+            synthesize_request.model_configs,
+        )
+
+        return {"synthesizer_id": synthesizer_id, "message": "Synthesizer started"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -119,5 +167,13 @@ async def delete_evaluation(evaluation_id: str) -> Dict[str, str]:
 async def get_available_metrics() -> list[MetricOptionSchema]:
     try:
         return await evaluation_service.get_available_metrics()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/synthesizers_schemas", response_model=list[SynthesizerSchema])
+async def get_available_synthesizers() -> list[SynthesizerSchema]:
+    try:
+        return await evaluation_service.get_available_synthesizers()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -22,6 +22,7 @@ from diting_inspect.models.evaluation_model import (
 from diting_core.metrics.base_metric import BaseMetric
 from diting_inspect.metrics import MetricFactory, MetricOptionSchema, discover_metrics
 from diting_inspect.models.model_management import ModelManagementData, ModelType
+from diting_inspect.synthesizers import SynthesizerSchema, discover_synthesizers
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,15 @@ class EvaluationService:
                 debug=getattr(v, "debug", None),
             )
             for k, v in metrics.items()
+        ]
+
+    async def get_available_synthesizers(self) -> list[SynthesizerSchema]:
+        synthesizers = discover_synthesizers()
+        return [
+            SynthesizerSchema(
+                name=k,
+            )
+            for k, _ in synthesizers.items()
         ]
 
     async def run_evaluation(

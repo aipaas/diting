@@ -256,7 +256,7 @@ class HeadlinesExtractor(LLMBasedExtractor):
     prompt: PydanticPrompt[TextWithExtractionLimit, Headlines] = (
         HeadlinesExtractorPrompt()
     )
-    max_num: int = 5
+    max_num: int = 10
 
     async def extract(self, node: Node) -> t.Tuple[str, t.Any]:
         node_text = node.get_property("page_content")

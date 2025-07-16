@@ -36,6 +36,33 @@ class TestHeadlineSplitter(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("with more than five tokens.", adjusted[1])
         self.assertEqual("Another short chunk.", adjusted[2])
 
+    def test_adjust_chunks_over_max_tokens_zh(self):
+        chunks = ["这是一个测试Trunk超过了5个token."]
+        self.splitter.language = "zh"
+        adjusted = self.splitter.adjust_chunks(chunks)
+        self.assertEqual(len(adjusted), 2)
+        self.assertEqual(adjusted[0], "这是一个测试Trunk超过")
+        self.assertEqual(adjusted[1], "了5个token.")
+
+    def test_adjust_chunks_under_min_tokens_zh(self):
+        chunks = ["这是一个测试"]
+        self.splitter.language = "zh"
+        adjusted = self.splitter.adjust_chunks(chunks)
+        self.assertEqual(len(adjusted), 1)
+        self.assertEqual(adjusted[0], "这是一个测试")
+
+    def test_adjust_chunks_combined_zh(self):
+        chunks = [
+            "这是一个测试Trunk超过了5个token.",
+            "另外一个Trunk.",
+        ]
+        self.splitter.language = "zh"
+        adjusted = self.splitter.adjust_chunks(chunks)
+        self.assertEqual(len(adjusted), 3)
+        self.assertEqual("这是一个测试Trunk超过", adjusted[0])
+        self.assertEqual("了5个token.", adjusted[1])
+        self.assertEqual("另外一个Trunk.", adjusted[2])
+
     async def test_split_valid(self):
         node = Node(
             properties={

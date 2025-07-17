@@ -3,7 +3,7 @@ Data models and repository for LLM test cases.
 Provides the core data structures and persistence layer for test cases.
 """
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from diting_inspect.models.model_pickle_persistence import PicklePersistentMixin
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
@@ -39,6 +39,9 @@ class LLMCaseData(BaseModel):
     )
     tags: Optional[List[str]] = Field(
         None, description="Tags for categorizing test cases"
+    )
+    metadata: Optional[Dict[str, Any]] = Field(
+        None, description="Metadata of test cases"
     )
 
     class Config:
@@ -218,6 +221,8 @@ class InMemoryCaseRepository(CaseRepository, PicklePersistentMixin):
             case.expected_output = updates.expected_output
             case.context = updates.context
             case.retrieval_context = updates.retrieval_context
+            case.tags = updates.tags
+            case.metadata = updates.metadata
             # # Filter out None values and update only provided fields
             # filtered_updates = {
             #     k: v for k, v in updates.items() if v is not None and hasattr(case, k)

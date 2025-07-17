@@ -1,4 +1,5 @@
 from typing import List, Optional, Dict, Any
+from diting_core.cases.llm_case import LLMCaseParams
 from diting_inspect.metrics import MetricOptionSchema
 from diting_inspect.synthesizers import SynthesizerSchema
 from fastapi import (
@@ -13,6 +14,7 @@ from diting_inspect.models.model_management import ModelManagementData
 from diting_inspect.models.repository_service import (
     evaluation_service,
     synthesizer_service,
+    toolconfig_service,
 )
 
 
@@ -30,6 +32,15 @@ class SynthesizeRequest(BaseModel):
     case_ids: List[str]
     synthesizer_configs: List[Dict[str, Any]]
     model_configs: Optional[List[ModelManagementData]]
+
+
+class ExecuteToolRequest(BaseModel):
+    """Request model for executing a tool."""
+
+    input: LLMCaseParams
+    tool_id: str
+    output: LLMCaseParams
+    case_ids: List[str]
 
 
 router = APIRouter(prefix="/api", tags=["evaluations"])
@@ -94,6 +105,42 @@ async def run_synthesizer(
         )
 
         return {"synthesizer_id": synthesizer_id, "message": "Synthesizer started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/toolconfigs/execute")
+async def execute_tool(
+    execute_tool_request: ExecuteToolRequest, background_tasks: BackgroundTasks
+) -> Dict[str, str]:
+    """
+    Execute a tool on specified test cases.
+
+    Args:
+        execute_tool_request: Tool execution configuration
+        background_tasks: FastAPI background tasks
+
+    Returns:
+        Tool execution job ID for tracking progress
+    """
+    try:
+        tool_execution_id = str(uuid.uuid4())
+
+        # Start tool execution in background
+        background_tasks.add_task(
+            # Assuming a function exists to handle tool execution
+            toolconfig_service.run_tool,
+            tool_execution_id,
+            execute_tool_request.input,
+            execute_tool_request.tool_id,
+            execute_tool_request.output,
+            execute_tool_request.case_ids,
+        )
+
+        return {
+            "tool_execution_id": tool_execution_id,
+            "message": "Tool execution started",
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

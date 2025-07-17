@@ -3,9 +3,17 @@ Business logic service for managing tool configurations.
 Provides high-level operations and encapsulates business rules.
 """
 
+import asyncio
+from datetime import datetime
 import json
 from typing import Any, List, Optional
+from diting_core.cases.llm_case import LLMCaseParams
+from diting_inspect.models.case_model import CaseRepository, LLMCaseData
 from diting_inspect.models.toolconfig_repository import Tool, ToolConfigRepository
+from diting_inspect.models.toolexecution_model import (
+    ToolExecutionRepository,
+    ToolExecutionResult,
+)
 from diting_inspect.utils import has_jinja2_syntax_parser
 import httpx
 from jinja2 import Template, TemplateError
@@ -19,7 +27,13 @@ class ToolConfigService:
     tool configuration management operations. Separates business rules from data access.
     """
 
-    def __init__(self, repository: ToolConfigRepository):
+    def __init__(
+        self,
+        repository: ToolConfigRepository,
+        case_repository: Optional[CaseRepository] = None,
+        toolexecution_repository: Optional[ToolExecutionRepository] = None,
+        max_concurrent_evaluations: int = 10,
+    ):
         """
         Initialize service with repository dependency.
 
@@ -27,6 +41,9 @@ class ToolConfigService:
             repository: Tool configuration repository for data persistence
         """
         self._repository = repository
+        self._case_repository = case_repository
+        self._toolexecute_repository = toolexecution_repository
+        self._max_concurrent = max_concurrent_evaluations
 
     async def get_tool_configs(self, skip: int = 0, limit: int = 100) -> List[Tool]:
         """
@@ -237,3 +254,139 @@ class ToolConfigService:
         """
         if not config.name or not config.name.strip():
             raise ValueError("Tool configuration name is required and cannot be empty")
+
+    async def run_tool(
+        self,
+        tool_execution_id: str,
+        input: LLMCaseParams,
+        tool_id: str,
+        output: LLMCaseParams,
+        case_ids: List[str],
+    ):
+        """
+        Run tool execution on specified cases with given tool.
+
+        Args:
+            tool_execution_id: Unique identifier for this tool execution
+            input: Input parameters for the tool
+            tool_id: Unique identifier for the tool
+            output: Expected output parameters for the tool
+            case_ids: List of test case IDs to evaluate
+        """
+        started_at = datetime.now()
+        try:
+            # Initialize tracking
+            initial_result = ToolExecutionResult(
+                id=tool_execution_id,
+                case_ids=case_ids,
+                results=[],
+                status="in_progress",
+                started_at=started_at,
+                completed_at=None,
+                error=None,
+            )
+            if self._toolexecute_repository:
+                await self._toolexecute_repository.save(initial_result)
+
+            # Get test cases
+            cases: list[LLMCaseData] = []
+            if self._case_repository:
+                for case_id in case_ids:
+                    case = await self._case_repository.get_by_id(case_id)
+                    if case:
+                        cases.append(case)
+
+            if not cases:
+                raise ValueError("No valid test cases found")
+
+            # Create a semaphore to limit concurrent evaluations
+            semaphore = asyncio.Semaphore(self._max_concurrent)
+
+            async def execute_case(case: LLMCaseData):
+                async with semaphore:
+                    print("execute case:", case)
+                    func_input: str = ""
+                    match input:
+                        case LLMCaseParams.USER_INPUT:
+                            func_input = case.input
+                        case LLMCaseParams.ACTUAL_OUTPUT:
+                            func_input = case.actual_output
+                        case LLMCaseParams.EXPECTED_OUTPUT:
+                            func_input = case.expected_output or ""
+                        case LLMCaseParams.CONTEXT:
+                            func_input = " ".join(case.context) if case.context else ""
+                        case LLMCaseParams.RETRIEVAL_CONTEXT:
+                            func_input = (
+                                " ".join(case.retrieval_context)
+                                if case.retrieval_context
+                                else ""
+                            )
+                    func_input_format = f'{{ "{input.value}": "{func_input}" }}'
+                    func_return: str | dict[str, Any] = await self.input_tool_output(
+                        tool_id, func_input_format
+                    )
+                    func_output: str = ""
+                    if isinstance(func_return, str):
+                        func_output = func_return
+                    elif isinstance(func_return, dict):
+                        func_output = func_return.get("body", "")
+                    match output:
+                        case LLMCaseParams.USER_INPUT:
+                            case.input = func_output
+                        case LLMCaseParams.ACTUAL_OUTPUT:
+                            case.actual_output = func_output
+                        case LLMCaseParams.EXPECTED_OUTPUT:
+                            case.expected_output = func_output
+                        case LLMCaseParams.CONTEXT:
+                            case.context = list(func_output)
+                        case LLMCaseParams.RETRIEVAL_CONTEXT:
+                            case.retrieval_context = list(func_output)
+                    if self._case_repository:
+                        await self._case_repository.update(case.id, case)
+                    return func_return
+
+            # Run tool executions concurrently using TaskGroup
+            tasks: list[asyncio.Task[Any]] = []
+            async with asyncio.TaskGroup() as tg:
+                for case in cases:
+                    task = tg.create_task(execute_case(case))
+                    tasks.append(task)
+
+            # Process results
+            tool_results: List[Any] = []
+            for task in tasks:
+                try:
+                    result = await task
+                    if result:
+                        tool_results.append(result)
+                except Exception as e:
+                    print(f"Error processing task: {e}")
+
+            # Save final results
+            final_result = ToolExecutionResult(
+                id=tool_execution_id,
+                case_ids=case_ids,
+                results=tool_results,
+                status="completed",
+                started_at=started_at,
+                completed_at=datetime.now(),
+                error=None,
+            )
+            if self._toolexecute_repository:
+                await self._toolexecute_repository.save(final_result)
+
+        except Exception as e:
+            print(f"Tool execution {tool_execution_id} failed: {e}")
+
+            # Save failure result
+            final_result = ToolExecutionResult(
+                id=tool_execution_id,
+                case_ids=case_ids,
+                results=[],
+                status="failed",
+                started_at=started_at,
+                completed_at=datetime.now(),
+                error=str(e),
+            )
+            if self._toolexecute_repository:
+                await self._toolexecute_repository.save(final_result)

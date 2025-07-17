@@ -1,6 +1,5 @@
 import io
 from typing import List, Optional, Dict, Any
-from diting_inspect.utils import dt_persistent_path
 from fastapi import (
     APIRouter,
     UploadFile,
@@ -11,18 +10,10 @@ from pydantic import BaseModel
 import pandas as pd
 import uuid
 
-from diting_inspect.models.case_model import (
-    InMemoryCaseRepository as CaseRepository,
-    LLMCaseData,
-)
-from diting_inspect.services.case_service import CaseService
-from diting_inspect.services.file_import_service import FileImportService
+from diting_inspect.models.case_model import LLMCaseData
+from diting_inspect.models.repository_service import case_service, file_import_service
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
-
-case_repository = CaseRepository(pickle_file=f"{dt_persistent_path}/cases.pkl")
-case_service = CaseService(case_repository)
-file_import_service = FileImportService()
 
 
 # Request/Response models

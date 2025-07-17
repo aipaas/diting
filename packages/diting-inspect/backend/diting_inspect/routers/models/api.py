@@ -1,18 +1,13 @@
 from typing import List, Dict, Any
-from diting_inspect.utils import dt_persistent_path
 from fastapi import (
     APIRouter,
     HTTPException,
 )
 
 from diting_inspect.models.model_management import ModelManagementData, ModelType
-from diting_inspect.models.model_repository import InMemoryModelRepository
-from diting_inspect.services.model_service import ModelService
 
-model_repository = InMemoryModelRepository(
-    pickle_file=f"{dt_persistent_path}/models.pkl"
-)
-model_service = ModelService(model_repository)
+from diting_inspect.models.repository_service import model_service
+
 router = APIRouter(prefix="/api/models", tags=["models"])
 
 

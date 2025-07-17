@@ -1,20 +1,12 @@
 import json
 from typing import List, Any
-from diting_inspect.models.toolconfig_repository import (
-    InMemoryToolConfigRepository,
-    Tool,
-)
-from diting_inspect.services.toolconfig_service import ToolConfigService
-from diting_inspect.utils import has_jinja2_syntax_parser, dt_persistent_path
+from diting_inspect.models.toolconfig_repository import Tool
+from diting_inspect.utils import has_jinja2_syntax_parser
 from fastapi import APIRouter, HTTPException, Request
 import httpx
 from jinja2 import Template, TemplateError
+from diting_inspect.models.repository_service import toolconfig_service
 
-
-toolconfig_repository = InMemoryToolConfigRepository(
-    pickle_file=f"{dt_persistent_path}/toolconfigs.pkl"
-)
-toolconfig_service = ToolConfigService(toolconfig_repository)
 router = APIRouter(prefix="/api", tags=["tools"])
 
 

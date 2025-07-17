@@ -270,13 +270,15 @@ class EvaluationService:
                 setattr(metric, "embedding_model", embedding_model)
 
             metric_value = await metric.compute(
-                metric_case, verbose=metric_config["debug"]
+                metric_case, verbose=metric_config.get("debug", False)
             )
 
             result = {
                 "case_id": case.id,
                 "metric_name": metric.name,
                 "score": metric_value.score,
+                "reason": metric_value.reason,
+                "run_logs": metric_value.run_logs,
                 "evaluated_at": datetime.now().isoformat(),
             }
             # Update progress

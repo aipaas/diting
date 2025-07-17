@@ -2,6 +2,7 @@ import { Eye, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { API_BASE } from "../constants";
 import type { EvaluationType } from "../types/Evaluations";
+import EvaluationReportModal from "./EvaluationReportModal"; 
 
 interface EvaluationsViewProps {
 	evaluations: EvaluationType[];
@@ -19,9 +20,9 @@ const EvaluationsView = ({
 }: EvaluationsViewProps) => {
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [selectedEvaluations, setSelectedEvaluations] = useState<string[]>([]);
-	const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(
-		null,
-	);
+	const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(null);
+	const [selectedEvaluation, setSelectedEvaluation] = useState<EvaluationType | null>(null); // 新增状态管理
+	const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // 控制模态框的打开和关闭
 
 	const filteredEvaluations = evaluations.filter(
 		(eval_) =>
@@ -73,6 +74,16 @@ const EvaluationsView = ({
 	) => {
 		const value = event.target.value;
 		setAutoRefreshInterval(value === "no" ? null : parseInt(value) * 1000);
+	};
+
+	const handleViewReport = (eval_) => {
+		setSelectedEvaluation(eval_); // 设置选中的评估
+		setIsModalOpen(true); // 打开模态框
+	};
+
+	const closeModal = () => {
+		setIsModalOpen(false); // 关闭模态框
+		setSelectedEvaluation(null); // 清空选中的评估
 	};
 
 	return (
@@ -184,6 +195,7 @@ const EvaluationsView = ({
 										<button
 											type="button"
 											className="text-blue-600 hover:text-blue-800"
+											onClick={() => handleViewReport(eval_)} // 点击时打开模态框
 										>
 											<Eye className="w-5 h-5" />
 										</button>
@@ -200,6 +212,9 @@ const EvaluationsView = ({
 					</tbody>
 				</table>
 			</div>
+
+			{/* 模态框 */}
+			<EvaluationReportModal isOpen={isModalOpen} onClose={closeModal} evaluation={selectedEvaluation} />
 		</div>
 	);
 };

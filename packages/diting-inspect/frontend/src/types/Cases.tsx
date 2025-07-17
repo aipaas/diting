@@ -18,5 +18,7 @@ const CaseTypeData = BaseID.extend({
 	expected_output: z.string().optional(),
 	context: z.array(z.string()).optional().nullable(),
 	retrieval_context: z.array(z.string()).optional().nullable(),
+	tags: z.array(z.string()).optional().nullable(),
+	metadata: z.record(z.any()).optional().nullable(),
 });
 export type CaseType = z.infer<typeof CaseTypeData>;

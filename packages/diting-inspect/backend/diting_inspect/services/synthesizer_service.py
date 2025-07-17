@@ -85,16 +85,17 @@ class SynthesizerService:
                 setattr(synthesizer, "model", llm_model)
 
             llm_case = await synthesizer.apply(
-                synthesizer_case, verbose=synthesizer_config["debug"]
+                synthesizer_case, verbose=synthesizer_config.get("debug", False)
             )
             # generate case input, expected_output
             llm_case_data = LLMCaseData(
                 id=case.id.strip(),
-                input=llm_case.user_input or "",
-                actual_output=llm_case.actual_output or "",
-                expected_output=llm_case.expected_output,
-                context=llm_case.context,
-                retrieval_context=llm_case.retrieval_context,
+                input=llm_case.user_input or case.input or "",
+                actual_output=llm_case.actual_output or case.actual_output or "",
+                expected_output=llm_case.expected_output or case.expected_output,
+                context=llm_case.context or case.context,
+                retrieval_context=llm_case.retrieval_context or case.retrieval_context,
+                metadata=llm_case.metadata,
                 created_at=case.created_at,
                 tags=case.tags,
             )
@@ -104,7 +105,7 @@ class SynthesizerService:
                 "case_id": case.id,
                 "synthesizer_name": synthesizer.name,
                 "case": llm_case,
-                "evaluated_at": datetime.now().isoformat(),
+                "synthesis_at": datetime.now().isoformat(),
             }
             # Update progress
             if synthesizer_id in self._active_synthesizers:
@@ -118,10 +119,12 @@ class SynthesizerService:
             )
             return {
                 "case_id": case.id,
-                "metric_name": camel_to_snake(synthesizer_config["class"].__name__),
-                "score": None,
+                "synthesizer_name": camel_to_snake(
+                    synthesizer_config["class"].__name__
+                ),
+                "case": case,
                 "error": str(e),
-                "evaluated_at": datetime.now().isoformat(),
+                "synthesis_at": datetime.now().isoformat(),
             }
 
     def _load_synthesizers(self, configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

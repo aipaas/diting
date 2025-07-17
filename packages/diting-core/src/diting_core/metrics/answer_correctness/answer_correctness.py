@@ -76,7 +76,6 @@ class AnswerCorrectness(BaseMetric):
         prompt = self.evaluation_template.generate_statements(
             user_input=user_input, text=text
         )
-        print(f"callbacks in _a_generate_statements:{callbacks}")
         run_mgt, grp_cb = await new_group(
             name="generate_statements",
             inputs={"user_input": user_input, "text": text},

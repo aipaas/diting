@@ -140,11 +140,10 @@ const CasesView = ({
 						type="button"
 						onClick={onEvaluate}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${
-							selectedCases.length > 0
-								? "bg-blue-600 text-white hover:bg-blue-700"
-								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-						}`}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+							? "bg-blue-600 text-white hover:bg-blue-700"
+							: "bg-gray-300 text-gray-500 cursor-not-allowed"
+							}`}
 					>
 						<Play className="w-5 h-5 mr-2" />
 						Evaluate
@@ -153,11 +152,10 @@ const CasesView = ({
 						type="button"
 						onClick={onSynthesize}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${
-							selectedCases.length > 0
-								? "bg-yellow-600 text-white hover:bg-yellow-700"
-								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-						}`}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+							? "bg-yellow-600 text-white hover:bg-yellow-700"
+							: "bg-gray-300 text-gray-500 cursor-not-allowed"
+							}`}
 					>
 						<Play className="w-5 h-5 mr-2" />
 						Synthesize
@@ -167,11 +165,10 @@ const CasesView = ({
 						type="button"
 						onClick={deleteSelectedCases}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${
-							selectedCases.length > 0
-								? "bg-red-600 text-white hover:bg-red-700"
-								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-						}`}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+							? "bg-red-600 text-white hover:bg-red-700"
+							: "bg-gray-300 text-gray-500 cursor-not-allowed"
+							}`}
 					>
 						<Trash2 className="w-5 h-5 mr-2" />
 						Delete
@@ -180,11 +177,10 @@ const CasesView = ({
 						type="button"
 						onClick={exportSelectedCases}
 						disabled={selectedCases.length === 0}
-						className={`inline-flex items-center px-4 py-2 rounded-lg ${
-							selectedCases.length > 0
-								? "bg-green-600 text-white hover:bg-green-700"
-								: "bg-gray-300 text-gray-500 cursor-not-allowed"
-						}`}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${selectedCases.length > 0
+							? "bg-green-600 text-white hover:bg-green-700"
+							: "bg-gray-300 text-gray-500 cursor-not-allowed"
+							}`}
 					>
 						<Download className="w-5 h-5 mr-2" />
 						Export
@@ -220,6 +216,12 @@ const CasesView = ({
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Context
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Tag
+							</th>
+							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Metadata
 							</th>
 							<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Actions
@@ -265,10 +267,27 @@ const CasesView = ({
 									title={case_.context || "N/A"}
 								>
 									{Array.isArray(case_.context)
-										? case_.context.join().length > 10
-											? `${case_.context.join("\n").substring(0, 10)}...`
-											: case_.context.join("\n")
+										? case_.context.join(", ").length > 10
+											? `${case_.context.join(", ").substring(0, 10)}...`
+											: case_.context.join(", ")
 										: case_.context || "N/A"}
+								</td>
+								<td
+									className="px-6 py-4 whitespace-nowrap"
+									title={case_.tags || "N/A"}
+								>
+									{Array.isArray(case_.tags)
+										? case_.tags.join(", ").length > 10
+											? `${case_.tags.join(", ").substring(0, 10)}...`
+											: case_.tags.join(", ")
+										: case_.tags || "N/A"}
+								</td>
+								<td
+									className="px-6 py-4 whitespace-nowrap"
+									title={JSON.stringify(case_.metadata) || "N/A"}
+								>
+									{case_.metadata ? JSON.stringify(case_.metadata)
+										: "N/A"}
 								</td>
 								<td className="px-6 py-4 whitespace-nowrap space-x-2">
 									<button

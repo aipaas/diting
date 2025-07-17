@@ -3,7 +3,7 @@ Data models and repository for LLM test cases.
 Provides the core data structures and persistence layer for test cases.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from diting_inspect.models.model_pickle_persistence import PicklePersistentMixin
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
@@ -96,9 +96,7 @@ class CaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(
-        self, case_id: str, updates: Dict[str, Any]
-    ) -> Optional[LLMCaseData]:
+    async def update(self, case_id: str, updates: LLMCaseData) -> Optional[LLMCaseData]:
         """
         Update an existing test case.
 
@@ -199,9 +197,7 @@ class InMemoryCaseRepository(CaseRepository, PicklePersistentMixin):
             self.save_to_pickle(self._cases)
             return case
 
-    async def update(
-        self, case_id: str, updates: Dict[str, Any]
-    ) -> Optional[LLMCaseData]:
+    async def update(self, case_id: str, updates: LLMCaseData) -> Optional[LLMCaseData]:
         """
         Update an existing test case.
 
@@ -217,15 +213,19 @@ class InMemoryCaseRepository(CaseRepository, PicklePersistentMixin):
                 return None
 
             case = self._cases[case_id]
+            case.input = updates.input
+            case.actual_output = updates.actual_output
+            case.expected_output = updates.expected_output
+            case.context = updates.context
+            case.retrieval_context = updates.retrieval_context
+            # # Filter out None values and update only provided fields
+            # filtered_updates = {
+            #     k: v for k, v in updates.items() if v is not None and hasattr(case, k)
+            # }
 
-            # Filter out None values and update only provided fields
-            filtered_updates = {
-                k: v for k, v in updates.items() if v is not None and hasattr(case, k)
-            }
-
-            # Update the case
-            for key, value in filtered_updates.items():
-                setattr(case, key, value)
+            # # Update the case
+            # for key, value in filtered_updates.items():
+            #     setattr(case, key, value)
 
             case.updated_at = datetime.now()
             self._cases[case_id] = case

@@ -14,6 +14,7 @@ interface CasesViewProps {
 	loading: boolean;
 	onRefresh: () => Promise<void>;
 	onEvaluate: () => void;
+	onSynthesize: () => void;
 	showNotification: (
 		message: string,
 		type?: "info" | "success" | "error",
@@ -29,6 +30,7 @@ const CasesView = ({
 	loading,
 	onRefresh,
 	onEvaluate,
+	onSynthesize,
 	showNotification,
 }: CasesViewProps) => {
 	const [selectedCase, setSelectedCase] = useState<CaseType | null>(null);
@@ -147,6 +149,20 @@ const CasesView = ({
 						<Play className="w-5 h-5 mr-2" />
 						Evaluate
 					</button>
+					<button
+						type="button"
+						onClick={onSynthesize}
+						disabled={selectedCases.length === 0}
+						className={`inline-flex items-center px-4 py-2 rounded-lg ${
+							selectedCases.length > 0
+								? "bg-yellow-600 text-white hover:bg-yellow-700"
+								: "bg-gray-300 text-gray-500 cursor-not-allowed"
+						}`}
+					>
+						<Play className="w-5 h-5 mr-2" />
+						Synthesize
+					</button>
+
 					<button
 						type="button"
 						onClick={deleteSelectedCases}

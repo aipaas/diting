@@ -88,8 +88,18 @@ class SynthesizerService:
                 synthesizer_case, verbose=synthesizer_config["debug"]
             )
             # generate case input, expected_output
+            llm_case_data = LLMCaseData(
+                id=case.id.strip(),
+                input=llm_case.user_input or "",
+                actual_output=llm_case.actual_output or "",
+                expected_output=llm_case.expected_output,
+                context=llm_case.context,
+                retrieval_context=llm_case.retrieval_context,
+                created_at=case.created_at,
+                tags=case.tags,
+            )
             if self._case_repository:
-                await self._case_repository.update(case.id, llm_case.model_dump())
+                await self._case_repository.update(case.id.strip(), llm_case_data)
             result = {
                 "case_id": case.id,
                 "synthesizer_name": synthesizer.name,
@@ -197,7 +207,7 @@ class SynthesizerService:
             tasks: list[asyncio.Task[Any]] = []
             async with asyncio.TaskGroup() as tg:
                 for case in cases:
-                    assert len(synthesizer_configs_loaded) > 1
+                    assert len(synthesizer_configs_loaded) > 0
                     task = tg.create_task(
                         synthesize_case(
                             case, synthesizer_configs_loaded[0], model_configs

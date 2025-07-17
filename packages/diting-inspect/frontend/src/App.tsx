@@ -6,7 +6,7 @@ import Header from "./components/Header";
 import MainContent from "./components/MainContent";
 import NavigationTabs from "./components/NavigationTabs";
 import Notification from "./components/Notification";
-import CreateModelModual from "./components/CreateModelModual";
+import CreateModelModal from "./components/CreateModelModal";
 import type { ModelManagementData } from "./types/Models";
 import {
 	NotificationSchema,
@@ -22,6 +22,7 @@ import useFetchToolConfigs from "./hooks/useFetchToolConfigs";
 import CreateToolConfigModal from "./components/CreateToolConfigModal";
 import type { HttpToolType } from "./types/Tools";
 import useAddToolConfig from "./hooks/useAddToolConfig";
+import SynthesizerModal from "./components/SynthesizerModal";
 
 const App = () => {
 	const { cases, loading: loadingCases, fetchCases } = useFetchCases();
@@ -45,6 +46,8 @@ const App = () => {
 		useState<boolean>(false);
 	const [showModelModal, setShowModelModal] = useState<boolean>(false);
 	const [showCreateToolConfig, setShowCreateToolConfig] =
+		useState<boolean>(false);
+	const [showSynthesizerModal, setShowSynthesizerModal] =
 		useState<boolean>(false);
 	const { filteredCases, searchTerm, setSearchTerm } = useFilterCases(cases);
 	const [notification, setNotification] = useState<NotificationType>(null);
@@ -117,6 +120,7 @@ const App = () => {
 				fetchToolConfigs={fetchToolConfigs}
 				showNotification={showNotification}
 				setShowEvaluationModal={setShowEvaluationModal}
+				setShowSynthesizerModal={setShowSynthesizerModal}
 			/>
 			{/* Modals */}
 			{showCreateModal && (
@@ -132,7 +136,7 @@ const App = () => {
 			)}
 
 			{showModelModal && (
-				<CreateModelModual
+				<CreateModelModal
 					isOpen={showModelModal}
 					onClose={() => setShowModelModal(false)}
 					onCreate={handleAddNewModel}
@@ -148,6 +152,17 @@ const App = () => {
 						setShowEvaluationModal(false);
 						showNotification("Evaluation started!", "success");
 						fetchEvaluations();
+					}}
+				/>
+			)}
+			{showSynthesizerModal && (
+				<SynthesizerModal
+					selectedCases={selectedCases}
+					modelConfigs={models}
+					onClose={() => setShowSynthesizerModal(false)}
+					onSuccess={() => {
+						setShowSynthesizerModal(false);
+						showNotification("Synthesize started!", "success");
 					}}
 				/>
 			)}

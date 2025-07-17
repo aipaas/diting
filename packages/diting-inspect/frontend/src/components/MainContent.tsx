@@ -28,6 +28,7 @@ interface MainContentProps {
 		type?: "info" | "success" | "error",
 	) => void;
 	setShowEvaluationModal: (show: boolean) => void;
+	setShowSynthesizerModal: (show: boolean) => void;
 }
 
 const MainContent = ({
@@ -47,6 +48,7 @@ const MainContent = ({
 	fetchToolConfigs,
 	showNotification,
 	setShowEvaluationModal,
+	setShowSynthesizerModal,
 }: MainContentProps) => {
 	return (
 		<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -60,6 +62,7 @@ const MainContent = ({
 					loading={loading}
 					onRefresh={fetchCases}
 					onEvaluate={() => setShowEvaluationModal(true)}
+					onSynthesize={() => setShowSynthesizerModal(true)}
 					showNotification={showNotification}
 				/>
 			)}

@@ -1,7 +1,7 @@
 import { Edit, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { API_BASE } from "../constants";
-import CreateModelModual from "./CreateModelModual";
+import CreateModelModal from "./CreateModelModal";
 import EditModelModal from "./EditModelModal";
 import type { ModelManagementData } from "../types/Models";
 
@@ -142,7 +142,7 @@ const ModelsView = ({
 			</div>
 
 			{isModalOpen && (
-				<CreateModelModual
+				<CreateModelModal
 					isOpen={isModalOpen}
 					onClose={() => setIsModalOpen(false)}
 					onCreate={handleAddNewModel}

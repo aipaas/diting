@@ -3,7 +3,9 @@ import { API_BASE } from "../constants";
 import type { Synthesizer } from "../types/Synthesizers";
 
 const useFetchAvailableSynthesizers = () => {
-	const [availableSynthesizers, setAvailableSynthesizers] = useState<Synthesizer[]>([]);
+	const [availableSynthesizers, setAvailableSynthesizers] = useState<
+		Synthesizer[]
+	>([]);
 	const [error, setError] = useState<string | null>(null);
 
 	const fetchAvailableSynthesizers = async () => {

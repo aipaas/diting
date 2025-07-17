@@ -3,7 +3,7 @@ Business logic service for managing LLM test cases.
 Provides high-level operations and encapsulates business rules.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from diting_inspect.models.case_model import LLMCaseData, CaseRepository
 
 
@@ -75,7 +75,7 @@ class CaseService:
         return await self._repository.create(case)
 
     async def update_case(
-        self, case_id: str, updates: Dict[str, Any]
+        self, case_id: str, updates: LLMCaseData
     ) -> Optional[LLMCaseData]:
         """
         Update an existing test case.

@@ -23,6 +23,7 @@ import CreateToolConfigModal from "./components/CreateToolConfigModal";
 import type { HttpToolType } from "./types/Tools";
 import useAddToolConfig from "./hooks/useAddToolConfig";
 import SynthesizerModal from "./components/SynthesizerModal";
+import ToolExecutionModal from "./components/ToolExecutionModal";
 
 const App = () => {
 	const { cases, loading: loadingCases, fetchCases } = useFetchCases();
@@ -48,6 +49,8 @@ const App = () => {
 	const [showCreateToolConfig, setShowCreateToolConfig] =
 		useState<boolean>(false);
 	const [showSynthesizerModal, setShowSynthesizerModal] =
+		useState<boolean>(false);
+	const [showToolExecutionModal, setShowToolExecutionModal] =
 		useState<boolean>(false);
 	const { filteredCases, searchTerm, setSearchTerm } = useFilterCases(cases);
 	const [notification, setNotification] = useState<NotificationType>(null);
@@ -121,6 +124,7 @@ const App = () => {
 				showNotification={showNotification}
 				setShowEvaluationModal={setShowEvaluationModal}
 				setShowSynthesizerModal={setShowSynthesizerModal}
+				setShowToolExecutionModal={setShowToolExecutionModal}
 			/>
 			{/* Modals */}
 			{showCreateModal && (
@@ -163,6 +167,18 @@ const App = () => {
 					onSuccess={() => {
 						setShowSynthesizerModal(false);
 						showNotification("Synthesize started!", "success");
+					}}
+				/>
+			)}
+
+			{showToolExecutionModal && (
+				<ToolExecutionModal
+					selectedCases={selectedCases}
+					toolConfigs={toolConfigs}
+					onClose={() => setShowToolExecutionModal(false)}
+					onSuccess={() => {
+						setShowToolExecutionModal(false);
+						showNotification("Tool execution started!", "success");
 					}}
 				/>
 			)}

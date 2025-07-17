@@ -1,7 +1,7 @@
 services:
-  traefik:
+  diting-inspect-traefik:
     image: mirrors.sangfor.com/traefik:v3.2.0
-    container_name: traefik
+    container_name: diting-inspect-traefik
     command:
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"

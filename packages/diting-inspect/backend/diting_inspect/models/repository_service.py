@@ -1,3 +1,6 @@
+from diting_inspect.models.toolexecution_model import (
+    InMemoryToolExecutionRepository as ToolExecutionRepository,
+)
 from diting_inspect.services.case_service import CaseService
 from diting_inspect.services.file_import_service import FileImportService
 from diting_inspect.services.model_service import ModelService
@@ -28,12 +31,17 @@ synthesizer_repository = SynthesizerRepository(
     pickle_file=f"{dt_persistent_path}/synthesizers.pkl"
 )
 model_repository = ModelRepository(pickle_file=f"{dt_persistent_path}/models.pkl")
+toolconfig_repository = ToolConfigRepository(
+    pickle_file=f"{dt_persistent_path}/toolconfigs.pkl"
+)
+toolexecution_repository = ToolExecutionRepository(
+    pickle_file=f"{dt_persistent_path}/tool_executions.pkl"
+)
 model_service = ModelService(model_repository)
 case_service = CaseService(case_repository)
 evaluation_service = EvaluationService(evaluation_repository, case_repository)
 synthesizer_service = SynthesizerService(synthesizer_repository, case_repository)
 file_import_service = FileImportService()
-toolconfig_repository = ToolConfigRepository(
-    pickle_file=f"{dt_persistent_path}/toolconfigs.pkl"
+toolconfig_service = ToolConfigService(
+    toolconfig_repository, case_repository, toolexecution_repository
 )
-toolconfig_service = ToolConfigService(toolconfig_repository)

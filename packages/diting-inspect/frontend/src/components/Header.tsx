@@ -132,7 +132,7 @@ const Header = ({
 					<div className="flex items-center space-x-4">
 						{/* <img src="/logo.png" alt="Logo" className="h-10 w-10" /> */}
 						<h1 className="text-2xl font-bold text-gray-900">
-							DiTing Evaluation Tool
+							DiTing Inspect Tool
 						</h1>
 					</div>
 					<CreateDropdown

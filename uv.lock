@@ -552,12 +552,14 @@ all = [
     { name = "datasets" },
     { name = "langchain-community" },
     { name = "rapidfuzz" },
+    { name = "rjieba" },
     { name = "tiktoken" },
     { name = "unstructured", extra = ["md"] },
 ]
 docs-gen = [
     { name = "langchain-community" },
     { name = "rapidfuzz" },
+    { name = "rjieba" },
     { name = "tiktoken" },
     { name = "unstructured", extra = ["md"] },
 ]
@@ -574,6 +576,8 @@ requires-dist = [
     { name = "langchain-community", marker = "extra == 'docs-gen'", specifier = ">=0.3.24" },
     { name = "rapidfuzz", marker = "extra == 'all'" },
     { name = "rapidfuzz", marker = "extra == 'docs-gen'" },
+    { name = "rjieba", marker = "extra == 'all'", specifier = ">=0.1.13" },
+    { name = "rjieba", marker = "extra == 'docs-gen'", specifier = ">=0.1.13" },
     { name = "tiktoken", marker = "extra == 'all'" },
     { name = "tiktoken", marker = "extra == 'docs-gen'" },
     { name = "unstructured", extras = ["md"], marker = "extra == 'all'", specifier = ">=0.17.2" },
@@ -2197,6 +2201,42 @@ dependencies = [
 sdist = { url = "http://mirrors.sangfor.org/pypi/packages/requests-toolbelt/1.0.0/requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6" }
 wheels = [
     { url = "http://mirrors.sangfor.org/pypi/packages/requests-toolbelt/1.0.0/requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06" },
+]
+
+[[package]]
+name = "rjieba"
+version = "0.1.13"
+source = { registry = "http://mirrors.sangfor.org/pypi/simple" }
+sdist = { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13.tar.gz", hash = "sha256:3ff7396e645c6ebf8c780ac2d585a6c92ddc5e135be83b0da0da9f995ae62f46" }
+wheels = [
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-macosx_10_12_x86_64.whl", hash = "sha256:dc0e122105ac0e868a7ba4bfef7b90c26d626fd1a7fbbb999d0a5811f5ce6ebf" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:6ddc66958b0afaca46b8e754baa76fd56535c0ad18c996f27463d588645d2456" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9799b64142809b99132d82dee932dcf258251b8fe1fff0e067a5d561016a3f40" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f561f15ed8d64e8f2853ddd0edffa91c62c47b0c29fd40d7943a86be3abae3c6" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:ce0d60d2151af74f231f91cf746b589479ed98a11c804240c67faffd6363e56d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6b9b6416bb00be0b037feae72839a7605a8b7641d815f8ed11284d6a16d10b35" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:63389d5d10db6d2f9efd8f098fbe58601858b23001df5eff53c4c60695e56879" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:3811d7fe425b53b1215193697a378ec4e5541abbd15adedd53de04a76c7a60a7" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:73631d3cca99b1f2d6528e690ed42e69fe7d4dcc09f04ec93652cf858575e4a4" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-musllinux_1_2_armv7l.whl", hash = "sha256:19aaf5ccafc9c720b597a40f41f9b080d4a5dc99ba5f48ed9834a2dfdde36828" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:2a3efc11e7bee1ee3fc8d5887ae64f067243ec70a94257838eb68cce3590950d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:204d626c90d527209835aaaaffa277d47ff333ef6c50f1c74eb3afab1dc71eec" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-win32.whl", hash = "sha256:d86f35097333df3a77b7e402b331e26acf10fe66b2b2927940b8e7a8c1f75f06" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp313-cp313t-win_amd64.whl", hash = "sha256:52c9572458bc028ff4a2c30d6e38d2d798a520c9c673dfdcd88bdedcb9f6a83e" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:96230084c67faf250c9e014603c816ce506662492c6edfff41043a82f47f4dd5" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:6b2dc0edef2c2779a0d0f85f92edcf4e77e31999c327fc4e330db54019891157" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fd5ff297cacb39ad688d2af3ab21971c0fed487ba736a2058583ab71e17b959b" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:8b2a0f68aa56915359d1b972f536fa202d0f27e16a19a6d18c001a86e96c38ae" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:3af568cfb4d06aa45f0ee8f1115bf296bc95973183be75c1471cf26938a327bb" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:03e288f1bc5bd798feb03e6d4fec61c0a9a1c10300b635691c1c062b25c142a9" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0ddfb33110815a4cd33673679dde843133de82da4cb29abfa5f2a5b90cc836b3" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:fdbd36caed6e9eab59bab4f18d4a606521c431231053b1681bb867a240a5254f" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:49553f1326be77f4437f17e9696b495ffb9f70866048796f2cadca9aa27918da" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:04140779f395c07677b69a0ced51e759ad66c33979135f424ebd252dcd434d87" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:77fd4a8ba12455a70c9f74c7d07b2ed812c394eabc2381d40569bec0217e39db" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:0294fa41d51048c97558c1b9f712e40eb97c6b21ec793a7a21b575d983cdc81d" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-win32.whl", hash = "sha256:c836e064ac306c999603e89da258f8d8da57e66da5abe39240a02da8775e8385" },
+    { url = "http://mirrors.sangfor.org/pypi/packages/rjieba/0.1.13/rjieba-0.1.13-cp38-abi3-win_amd64.whl", hash = "sha256:58b69e98b5291c42e39ef5c18106360881337aac654f1c869065f65c8a694b6d" },
 ]
 
 [[package]]

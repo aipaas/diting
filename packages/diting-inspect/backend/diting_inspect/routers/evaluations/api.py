@@ -1,11 +1,6 @@
 from typing import List, Optional, Dict, Any
 from diting_inspect.metrics import MetricOptionSchema
-from diting_inspect.models.synthesizer_model import (
-    InMemorySynthesizerRepository,
-)
-from diting_inspect.services.synthesizer_service import SynthesizerService
 from diting_inspect.synthesizers import SynthesizerSchema
-from diting_inspect.utils import dt_persistent_path
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -14,14 +9,11 @@ from fastapi import (
 from pydantic import BaseModel
 import uuid
 
-from diting_inspect.models.case_model import (
-    InMemoryCaseRepository as CaseRepository,
-)
-from diting_inspect.models.evaluation_model import (
-    InMemoryEvaluationRepository as EvaluationRepository,
-)
-from diting_inspect.services.evaluation_service import EvaluationService
 from diting_inspect.models.model_management import ModelManagementData
+from diting_inspect.models.repository_service import (
+    evaluation_service,
+    synthesizer_service,
+)
 
 
 class EvaluationRequest(BaseModel):
@@ -39,16 +31,6 @@ class SynthesizeRequest(BaseModel):
     synthesizer_configs: List[Dict[str, Any]]
     model_configs: Optional[List[ModelManagementData]]
 
-
-case_repository = CaseRepository(pickle_file=f"{dt_persistent_path}/cases.pkl")
-evaluation_repository = EvaluationRepository(
-    pickle_file=f"{dt_persistent_path}/evaluations.pkl"
-)
-synthesizer_repository = InMemorySynthesizerRepository(
-    pickle_file=f"{dt_persistent_path}/synthesizers.pkl"
-)
-evaluation_service = EvaluationService(evaluation_repository, case_repository)
-synthesizer_service = SynthesizerService(synthesizer_repository, case_repository)
 
 router = APIRouter(prefix="/api", tags=["evaluations"])
 

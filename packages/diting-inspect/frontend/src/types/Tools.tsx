@@ -96,7 +96,7 @@ const ToolType = z.enum(["http", "webhook", "api"]);
 
 // Base tool schema
 const BaseTool = z.object({
-	id: z.number(),
+	id: z.string(),
 	name: z.string().min(1, "Tool name is required"),
 	type: ToolType,
 });

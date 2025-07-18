@@ -69,7 +69,6 @@ class AnswerRelevancy(BaseMetric):
     ) -> MetricValue:
         assert test_case.user_input, "user_input cannot be empty"
         assert test_case.actual_output, "actual_output cannot be empty"
-        assert test_case.expected_output, "expected_output cannot be empty"
 
         statements: List[str] = await self._a_generate_statements(
             test_case.actual_output, callbacks

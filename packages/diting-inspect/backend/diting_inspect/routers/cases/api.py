@@ -20,8 +20,8 @@ router = APIRouter(prefix="/api/cases", tags=["cases"])
 class CaseCreateRequest(BaseModel):
     """Request model for creating a new test case."""
 
-    input: str
-    actual_output: str
+    input: Optional[str] = None
+    actual_output: Optional[str] = None
     expected_output: Optional[str] = None
     context: Optional[List[str]] = None
     retrieval_context: Optional[List[str]] = None

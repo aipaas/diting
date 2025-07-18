@@ -147,12 +147,6 @@ class CaseService:
         Raises:
             ValueError: If case data is invalid
         """
-        if not case.input or not case.input.strip():
-            raise ValueError("Input is required and cannot be empty")
-
-        if not case.actual_output or not case.actual_output.strip():
-            raise ValueError("Actual output is required and cannot be empty")
-
         if case.context and any(not ctx.strip() for ctx in case.context):
             raise ValueError("Context items cannot be empty")
 

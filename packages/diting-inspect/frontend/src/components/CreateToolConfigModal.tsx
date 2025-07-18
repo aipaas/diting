@@ -604,7 +604,7 @@ const CreateToolConfigModal = ({
 									}
 									className="w-full px-3 py-2 border border-gray-300 rounded-md"
 									rows="4"
-									placeholder="JSON payload or form data"
+									placeholder='{"app_id": "9dab3804-ffff-4f78-9199-5e4f72467ba1","stream":false,"query":"{{user_input}}"}'
 								/>
 							</div>
 
@@ -652,7 +652,7 @@ const CreateToolConfigModal = ({
 										}
 										className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
 										rows="3"
-										placeholder="JSON Schema for response validation"
+										placeholder="{{body}}"
 									/>
 								</div>
 							</div>

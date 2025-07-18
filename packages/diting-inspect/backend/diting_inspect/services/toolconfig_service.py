@@ -308,9 +308,9 @@ class ToolConfigService:
                     func_input: str = ""
                     match input:
                         case LLMCaseParams.USER_INPUT:
-                            func_input = case.input
+                            func_input = case.input or ""
                         case LLMCaseParams.ACTUAL_OUTPUT:
-                            func_input = case.actual_output
+                            func_input = case.actual_output or ""
                         case LLMCaseParams.EXPECTED_OUTPUT:
                             func_input = case.expected_output or ""
                         case LLMCaseParams.CONTEXT:

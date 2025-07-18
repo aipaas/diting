@@ -2,7 +2,7 @@ import { Eye, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { API_BASE } from "../constants";
 import type { EvaluationType } from "../types/Evaluations";
-import EvaluationReportModal from "./EvaluationReportModal"; 
+import EvaluationReportModal from "./EvaluationReportModal";
 
 interface EvaluationsViewProps {
 	evaluations: EvaluationType[];
@@ -20,8 +20,11 @@ const EvaluationsView = ({
 }: EvaluationsViewProps) => {
 	const [searchTerm, setSearchTerm] = useState<string>("");
 	const [selectedEvaluations, setSelectedEvaluations] = useState<string[]>([]);
-	const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(null);
-	const [selectedEvaluation, setSelectedEvaluation] = useState<EvaluationType | null>(null); // 新增状态管理
+	const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(
+		null,
+	);
+	const [selectedEvaluation, setSelectedEvaluation] =
+		useState<EvaluationType | null>(null); // 新增状态管理
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // 控制模态框的打开和关闭
 
 	const filteredEvaluations = evaluations.filter(
@@ -214,7 +217,11 @@ const EvaluationsView = ({
 			</div>
 
 			{/* 模态框 */}
-			<EvaluationReportModal isOpen={isModalOpen} onClose={closeModal} evaluation={selectedEvaluation} />
+			<EvaluationReportModal
+				isOpen={isModalOpen}
+				onClose={closeModal}
+				evaluation={selectedEvaluation}
+			/>
 		</div>
 	);
 };

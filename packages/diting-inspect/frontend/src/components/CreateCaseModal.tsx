@@ -12,8 +12,8 @@ export type CreateCaseModalProps = z.infer<typeof CreateCaseModalPropsSchema>;
 
 const CreateCaseModal = ({ onClose, onSuccess }: CreateCaseModalProps) => {
 	const [formData, setFormData] = useState<{
-		input: string;
-		actual_output: string;
+		input?: string;
+		actual_output?: string;
 		expected_output?: string;
 		context: string[];
 		retrieval_context: string[];
@@ -95,7 +95,6 @@ const CreateCaseModal = ({ onClose, onSuccess }: CreateCaseModalProps) => {
 								setFormData({ ...formData, input: e.target.value })
 							}
 							className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-							required
 						/>
 					</div>
 					<div className="mb-4">
@@ -108,7 +107,6 @@ const CreateCaseModal = ({ onClose, onSuccess }: CreateCaseModalProps) => {
 								setFormData({ ...formData, actual_output: e.target.value })
 							}
 							className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
-							required
 						/>
 					</div>
 					<div className="mb-4">

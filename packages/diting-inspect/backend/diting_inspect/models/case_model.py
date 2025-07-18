@@ -20,8 +20,8 @@ class LLMCaseData(BaseModel):
     """
 
     id: str = Field(..., description="Unique identifier for the test case")
-    input: str = Field(..., description="Input prompt or query")
-    actual_output: str = Field(..., description="Actual LLM response")
+    input: Optional[str] = Field(None, description="Input prompt or query")
+    actual_output: Optional[str] = Field(None, description="Actual LLM response")
     expected_output: Optional[str] = Field(
         None, description="Expected or reference output"
     )

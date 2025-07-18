@@ -7,7 +7,7 @@ interface CreateModelModalProps {
 	onCreate: (modelData: Partial<ModelManagementData>) => void;
 }
 
-const CreateModelModual = ({
+const CreateModelModal = ({
 	isOpen,
 	onClose,
 	onCreate,
@@ -123,4 +123,4 @@ const CreateModelModual = ({
 	);
 };
 
-export default CreateModelModual;
+export default CreateModelModal;

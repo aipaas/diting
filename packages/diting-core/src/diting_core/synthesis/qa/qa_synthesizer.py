@@ -6,7 +6,7 @@ from typing import Any, Type, List, Optional
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.cases.llm_case import LLMCaseParams, LLMCase
-from diting_core.metrics.qa_quality.qa_quality import QAQualityMetric
+from diting_core.metrics.qa_quality.qa_quality import QAQuality
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.utilities.executor import task_wrapper
 from diting_core.synthesis.base_synthesizer import BaseSynthesizer
@@ -54,12 +54,12 @@ class QASynthesizer(BaseSynthesizer):
     quality_threshold: float = 0.7
     max_quality_retries: int = 3
 
-    _metric: Optional[QAQualityMetric] = None
+    _metric: Optional[QAQuality] = None
 
     @property
     def metric(self):
         if self._metric is None:
-            self._metric = QAQualityMetric(model=self.model)
+            self._metric = QAQuality(model=self.model)
         return self._metric
 
     async def _apply(
@@ -123,7 +123,7 @@ class QASynthesizer(BaseSynthesizer):
     ) -> None:
         """Computes the quality score for a given QA pair.
 
-        This method evaluates the QA pair using the QAQualityMetric and appends the result
+        This method evaluates the QA pair using the QAQuality and appends the result
         to the provided scores list.
 
         Args:

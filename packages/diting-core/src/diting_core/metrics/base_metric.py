@@ -9,13 +9,15 @@ from diting_core.cases.llm_case import LLMCase, LLMCaseParams, assert_testcase_v
 
 @dataclass
 class MetricValue:
+    metric_name: t.Optional[str] = None
     score: t.Optional[float] = None
     reason: t.Optional[str] = None
     run_logs: t.Optional[t.Dict[str, t.Any]] = None
 
     def __str__(self):
         return (
-            f"MetricValue(score={self.score}, "
+            f"MetricValue(metric={self.metric_name}, "
+            f"score={self.score}, "
             f"reason={self.reason}, "
             f"run_logs={self.run_logs})"
         )
@@ -84,6 +86,7 @@ class BaseMetric(ABC):
             metric_value = await self._compute(
                 test_case, callbacks=grp_cb, *args, **kwargs
             )
+            metric_value.metric_name = self.name
         except Exception as e:
             if run_manager:
                 await run_manager.on_chain_error(e)

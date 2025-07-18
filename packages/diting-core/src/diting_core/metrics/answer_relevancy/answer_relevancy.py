@@ -32,14 +32,14 @@ def _calculate_score(verdicts: List[AnswerRelevancyVerdict]) -> float:
 
 
 @dataclass
-class AnswerRelevancyMetric(BaseMetric):
+class AnswerRelevancy(BaseMetric):
     """
     The answer relevancy metric uses LLM-as-a-judge to measure
     the quality of your RAG pipeline's generator by evaluating
     how relevant the actual_output of your LLM application is compared to the provided input.
 
     Constraints:
-        To use the AnswerRelevancyMetric, you'll have to provide the following arguments when creating an LLMTestCase:
+        To use the AnswerRelevancy, you'll have to provide the following arguments when creating an LLMTestCase:
         - user_input
         - actual_output
         The user_input and actual_output are required to create an LLMCase (and hence required by all metrics)

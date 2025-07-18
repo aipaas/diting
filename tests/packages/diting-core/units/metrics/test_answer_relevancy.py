@@ -3,7 +3,7 @@ from typing import Any, Tuple, Dict
 from unittest.mock import patch
 
 from diting_core.metrics.answer_relevancy.answer_relevancy import (
-    AnswerRelevancyMetric,
+    AnswerRelevancy,
     _calculate_score,
 )
 from diting_core.cases.llm_case import LLMCase
@@ -33,7 +33,7 @@ class MockLLM(BaseLLM):
 class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.mock_model = MockLLM()
-        self.metric = AnswerRelevancyMetric(model=self.mock_model)
+        self.metric = AnswerRelevancy(model=self.mock_model)
         self.test_case = LLMCase(
             user_input="Test question",
             actual_output="Test answer",

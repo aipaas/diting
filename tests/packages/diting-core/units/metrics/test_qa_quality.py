@@ -2,7 +2,7 @@ import typing as t
 import unittest
 
 from diting_core.cases.llm_case import LLMCase
-from diting_core.metrics.qa_quality.qa_quality import QAQualityMetric
+from diting_core.metrics.qa_quality.qa_quality import QAQuality
 from diting_core.metrics.qa_quality.schema import QAQualityFeedback
 from diting_core.models.llms.base_model import BaseLLM
 
@@ -18,7 +18,7 @@ class MockLLM(BaseLLM):
 class TestQAQualityMetric(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.mock_model = MockLLM()
-        self.metric = QAQualityMetric(model=self.mock_model)
+        self.metric = QAQuality(model=self.mock_model)
         self.test_case = LLMCase(
             user_input="What is the capital of France?",
             expected_output="The capital of France is Paris.",

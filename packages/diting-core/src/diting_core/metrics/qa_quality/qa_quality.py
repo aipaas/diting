@@ -13,13 +13,13 @@ from diting_core.models.llms.base_model import BaseLLM
 
 
 @dataclass
-class QAQualityMetric(BaseMetric):
+class QAQuality(BaseMetric):
     """
     The QA Quality metric uses LLM-as-a-judge to measure
     the quality of your LLMCase's user_input, expected_output and optional context generator by synthesizer
 
     Constraints:
-        To use the QAQualityMetric, you'll have to provide the following arguments when creating an LLMTestCase:
+        To use the QAQuality, you'll have to provide the following arguments when creating an LLMTestCase:
         - user_input
         - expected_output
         - context:optional

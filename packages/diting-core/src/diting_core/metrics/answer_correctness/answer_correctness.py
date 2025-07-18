@@ -63,9 +63,12 @@ class AnswerCorrectness(BaseMetric):
             )
 
     def _compute_statement_presence(self, verdicts: Verdicts) -> float:
-        tp = len(verdicts.TP)
-        fp = len(verdicts.FP)
-        fn = len(verdicts.FN)
+        filtered_tp = [v for v in verdicts.TP if v.statement]
+        filtered_fp = [v for v in verdicts.FP if v.statement]
+        filtered_fn = [v for v in verdicts.FN if v.statement]
+        tp = len(filtered_tp)
+        fp = len(filtered_fp)
+        fn = len(filtered_fn)
         score = fbeta_score(tp, fp, fn, self.beta)
         return score
 

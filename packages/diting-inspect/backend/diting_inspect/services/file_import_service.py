@@ -18,8 +18,15 @@ class FileImportService:
     into LLMCase objects with proper error handling and data cleaning.
     """
 
-    REQUIRED_COLUMNS = ["input", "actual_output"]
-    OPTIONAL_COLUMNS = ["expected_output", "context", "retrieval_context", "tags"]
+    REQUIRED_COLUMNS: list[str] = []
+    OPTIONAL_COLUMNS = [
+        "input",
+        "actual_output",
+        "expected_output",
+        "context",
+        "retrieval_context",
+        "tags",
+    ]
 
     async def process_dataframe(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
         """
@@ -76,14 +83,14 @@ class FileImportService:
             ValueError: If row data is invalid
         """
         # Check required fields
-        if pd.isna(row.get("input")) or not str(row.get("input")).strip():  # type: ignore[misc]
-            raise ValueError("Input is required and cannot be empty")
+        # if pd.isna(row.get("input")) or not str(row.get("input")).strip():
+        #     raise ValueError("Input is required and cannot be empty")
 
-        if (
-            pd.isna(row.get("actual_output"))  # type: ignore
-            or not str(row.get("actual_output")).strip()  # type: ignore
-        ):
-            raise ValueError("Actual output is required and cannot be empty")
+        # if (
+        #     pd.isna(row.get("actual_output"))
+        #     or not str(row.get("actual_output")).strip()
+        # ):
+        #     raise ValueError("Actual output is required and cannot be empty")
 
         # Build case data
         case_data = {

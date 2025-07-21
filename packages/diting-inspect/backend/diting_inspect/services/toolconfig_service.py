@@ -16,7 +16,7 @@ from diting_inspect.models.toolexecution_model import (
 )
 from diting_inspect.utils import has_jinja2_syntax_parser
 import httpx
-from jinja2 import Template, TemplateError
+from jinja2 import Environment, Template, TemplateError
 
 
 class ToolConfigService:
@@ -228,7 +228,7 @@ class ToolConfigService:
             response_answer = response_body.split("\r\n")
             answer = [r for r in response_answer if r.startswith("data:")]
             if answer:
-                response_body = json.loads(answer[0][6:]).get("answer")
+                response_body = json.loads(answer[0][6:])
 
         response_dict = {
             "status_code": response.status_code,
@@ -238,8 +238,13 @@ class ToolConfigService:
         if tool.config.schema.response and has_jinja2_syntax_parser(
             tool.config.schema.response
         ):
-            return Template(tool.config.schema.response).render(**response_dict)
-        # Return structured response
+            env = Environment()
+            ast = env.parse(tool.config.schema.response)
+            assert len(ast.body) > 0, "error schema response jinja2 syntax"
+            response_type = ast.body[0].nodes[0].node.name  # type: ignore
+            response_key = ast.body[0].nodes[0].attr  # type: ignore
+            if response_type == "Response" and isinstance(response_body, dict):
+                response_dict["body"] = response_body.get(response_key, None)  # type: ignore
         return response_dict
 
     def _validate_tool_config(self, config: Tool) -> None:
@@ -322,25 +327,27 @@ class ToolConfigService:
                                 else ""
                             )
                     func_input_format = f'{{ "{input.value}": "{func_input}" }}'
-                    func_return: str | dict[str, Any] = await self.input_tool_output(
+                    func_return: dict[str, Any] = await self.input_tool_output(
                         tool_id, func_input_format
                     )
-                    func_output: str = ""
-                    if isinstance(func_return, str):
-                        func_output = func_return
-                    elif isinstance(func_return, dict):
-                        func_output = func_return.get("body", "")
+                    func_output: Any = func_return.get("body", "")
                     match output:
                         case LLMCaseParams.USER_INPUT:
-                            case.input = func_output
+                            case.input = str(func_output)
                         case LLMCaseParams.ACTUAL_OUTPUT:
-                            case.actual_output = func_output
+                            case.actual_output = str(func_output)
                         case LLMCaseParams.EXPECTED_OUTPUT:
-                            case.expected_output = func_output
+                            case.expected_output = str(func_output)
                         case LLMCaseParams.CONTEXT:
-                            case.context = list(func_output)
+                            if isinstance(func_output, list):
+                                case.context = [str(o) for o in func_output]  # type: ignore
+                            else:
+                                case.context = list(func_output)
                         case LLMCaseParams.RETRIEVAL_CONTEXT:
-                            case.retrieval_context = list(func_output)
+                            if isinstance(func_output, list):
+                                case.retrieval_context = [str(o) for o in func_output]  # type: ignore
+                            else:
+                                case.retrieval_context = list(func_output)
                     if self._case_repository:
                         await self._case_repository.update(case.id, case)
                     return func_return

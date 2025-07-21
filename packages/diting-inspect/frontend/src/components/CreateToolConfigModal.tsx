@@ -652,7 +652,7 @@ const CreateToolConfigModal = ({
 										}
 										className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
 										rows="3"
-										placeholder="{{body}}"
+										placeholder="{{ Response.answer }} | {{ Response.references }}"
 									/>
 								</div>
 							</div>

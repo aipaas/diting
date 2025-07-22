@@ -15,7 +15,8 @@ from diting_core.models.llms.base_model import BaseLLM
 @dataclass
 class ContextRecall(BaseMetric):
     """
-    The ContextRecall metric uses LLM-as-a-judge to measure how effectively your language model utilizes the provided retrieval_context to generate the expected_output in a RAG pipeline setting.
+    The ContextRecall metric uses LLM-as-a-judge to measure how effectively your language model utilizes the provided
+    retrieval_context to generate the expected_output in a RAG pipeline setting.
 
     Constraints:
         To use the ContextRecall metric, you'll need to provide the following arguments when creating an LLMTestCase:

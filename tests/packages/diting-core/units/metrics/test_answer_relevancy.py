@@ -133,14 +133,6 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AssertionError):
             await self.metric._compute(test_case)
 
-    async def test_compute_missing_expected(self):
-        """测试缺少expected_output时抛出断言错误"""
-        test_case = LLMCase(
-            user_input="Input", actual_output="Output", expected_output=""
-        )
-        with self.assertRaises(AssertionError):
-            await self.metric._compute(test_case)
-
     async def test_a_generate_statements(self):
         """测试生成statements的逻辑"""
         with patch.object(

@@ -67,11 +67,186 @@ Implements a library of metrics to assess LLM performance, with support for cust
   3. **Async Computation**: Uses `_compute` (abstract method) to implement metric logic asynchronously.  
 
 
-#### **Pre-built Metrics**  
-- **Accuracy**: For QA/classification tasks (checks if `actual_output` matches `expected_output`).  
-- **BLEU/Rouge**: For text generation (measures n-gram overlap between `actual_output` and `expected_output`).  
-- **Relevance**: Uses LLMs to judge if `actual_output` is relevant to `input` (via `LLMJudger`).  
-- **Safety**: Detects harmful content in `actual_output` (via regex or LLM-based checks).  
+#### **Constructed Metrics**  
+- **Answer similarity**:
+
+  The **Answer Similarity** metric measures how similar the `actual_output` is to the `expected_output` using **embedding-based cosine similarity**.  
+  It is especially useful for evaluating open-ended generation tasks where answers may differ lexically but are semantically equivalent.
+
+  - **Range**: Typically [0, 1]
+  - **Higher is better**: A score closer to 1 indicates stronger semantic similarity.
+
+  **Definition**  
+  This metric uses an embedding model (e.g., Sentence-BERT, BGE, OpenAI embeddings) to convert both outputs into vector representations, then computes the cosine similarity between the two vectors.
+
+  **Steps to Compute**
+
+  1. **Compute Embeddings**:  
+     Convert both `actual_output` and `expected_output` into embedding vectors using the embedding model.
+
+  2. **Normalize Vectors**:  
+     Normalize both vectors to unit length.
+
+  3. **Score Calculation**:
+     $$
+     Answer\ Similarity = \cos(\theta) = \frac{ \vec{v}_1 \cdot \vec{v}_2 }{ \| \vec{v}_1 \| \cdot \| \vec{v}_2 \| }
+     $$
+
+  Where:
+  $$
+  \vec{v}_1 = \text{embedding of actual output}, \quad
+  \vec{v}_2 = \text{embedding of expected output}
+  $$
+  A higher score indicates the outputs are semantically more aligned.
+
+- **Answer Correctness**: 
+
+  The **Answer Correctness** metric evaluates the factual accuracy and semantic similarity of an actual response (`actual_output`) compared to an expected response (`expected_output`), based on a given user input (`user_input`). It leverages a Large Language Model (LLM) as a judge to assess the correctness of the answer.
+
+    - **Range**: Typically [0, 1]  
+    - **Higher is better**: A score closer to 1 indicates that the actual output is more accurate and semantically similar to the expected output.
+
+  **Definition**  
+    An answer is deemed correct if it aligns factually and semantically with the expected response, as evaluated by an LLM judge.
+
+  **Steps to Compute**
+
+    1. **Generate Statements**:  
+       Utilize the LLM to extract factual or inferable statements from both the `actual_output` and `expected_output` in response to the `user_input`.
+
+    2. **Generate Verdicts**:  
+       Assess the generated statements to determine their factual accuracy and semantic similarity, producing verdicts on the correctness of each claim.
+
+    3. **Compute Statement Presence**:  
+       Calculate the presence of accurate statements using metrics such as F1 score, considering true positives (TP), false positives (FP), and false negatives (FN).
+
+       **F1 Score Definition**:
+       
+       - **Precision** measures the proportion of correctly predicted positive instances among all predicted positives:
+          $$
+              Precision = \frac{TP}{TP + FP}
+          $$
+       
+       - **Recall** measures the proportion of correctly predicted positive instances among all actual positives:
+          $$
+              Recall = \frac{TP}{TP + FN}
+          $$
+       
+       - **F1 score** balances precision and recall, calculated as:
+          $$
+          F1 = 2 \times \frac{Precision \times Recall}{Precision + Recall}
+          $$
+
+  4. **Compute Similarity Score**:  
+       If semantic similarity is included, use an auxiliary metric to measure the similarity between the `actual_output` and `expected_output`.
+
+    5. **Final Score Calculation**:  
+       $$
+       Answer\ Correctness\ Score = \text{Weighted Average}(F1\ Score, Similarity\ Score)
+       $$
+
+  The final score incorporates weights defined for factual accuracy and semantic similarity, allowing a balanced evaluation based on user preferences.
+
+- **Answer Relevance**: 
+
+  
+
+- **Faithfulness**:
+
+  The **Faithfulness** metric measures how factually consistent a response is with the retrieved context.
+
+  It is especially useful in evaluating RAG (Retrieval-Augmented Generation) systems.
+
+  - **Range**: Typically [0, 1]
+  - **Higher is better**: A score closer to 1 indicates that the response is more consistent with the context.
+
+  **Definition**
+  A response is considered faithful if all of its claims can be supported by the retrieved context.
+
+  **Steps to Compute**
+
+  1. **Extract Claims**:
+      Identify all factual or inferable statements in the `actual_output`.
+
+  2. **Generate Verdicts**:
+      For each claim, determine if it can be directly inferred or supported by the `retrieved_context`.
+
+  3. **Score Calculation**:
+     $$
+     Faithfulness\ Score = \frac{\text{Number of supported claims}}{\text{Total number of claims}}
+     $$
+
+- **Context Recall**: 
+
+  The **Context Recall** metric measures how many of the relevant documents or pieces of information were successfully retrieved for a given query. It emphasizes not missing important information, ensuring that the retrieval step captures as much of the relevant context as possible.
+
+  - **Range**:  Typically [0, 1]
+  - **Higher is better**: A higher recall score indicates fewer relevant documents or information pieces were omitted.
+
+  **Definition**  
+
+  Recall focuses on completeness: the proportion of relevant information successfully retrieved compared to the total relevant information available. Calculating context recall requires a reference to compare against, typically a set of ground-truth relevant contexts.
+
+  **Steps to Compute**
+
+  1. **Extract Claims**:
+
+     The `reference` answer is broken down into individual claims.
+
+  2. **Generate Verdicts**:
+
+     Each claim is analyzed to determine whether it can be attributed (i.e., supported) by the `retrieved_contexts`.
+
+  3. **Score Calculation**:
+
+     Ideally, all claims in the `reference` answer should be supported by the retrieved contexts for perfect recall.
+
+  $$
+  Context\ Recall = \frac{\text{Number of claims supported by retrieved context}}{\text{Total number of claims in reference}}
+  $$
+
+- **Context Precision**: 
+
+  **Context Precision** is a metric that measures the proportion of relevant chunks in the `retrieved_contexts`. It evaluates how much of the retrieved information is truly useful or relevant to the task at hand.
+
+  - **Range**: Typically [0, 1]
+  - **Higher is better**: A higher score indicates that more of the retrieved chunks are relevant and that the retrieved context is of higher quality.
+
+  **Definition**  
+  Context Precision is computed as the average of Precision@k over all retrieved chunks. Precision@k measures how many of the top-k retrieved chunks are relevant.
+
+  ---
+
+  **Steps to Compute**
+
+  1. **Label Relevance**  
+     Each chunk in the `retrieved_contexts` is labeled as relevant (1) or not relevant (0) based on whether it supports the reference answer or not.
+
+  2. **Compute Precision@k**  
+     For each rank \( k \), calculate:
+
+     $$
+     Precision@k = \frac{\text{Number of relevant chunks in top } k}{k}
+     $$
+
+  3. **Calculate Final Precision Score**  
+     The final **Context Precision** score is the average over all \( k \) positions:
+
+     $$
+     Context\ Precision = \frac{1}{N} \sum_{k=1}^{N} Precision@k
+     $$
+
+     where \( N \) is the total number of retrieved chunks.
+
+  ---
+
+  **Notes**  
+  - High precision means the retrieved results are mostly relevant and reduce noise.
+  - This metric complements **Context Recall**, where recall focuses on coverage (not missing relevant info), while precision emphasizes correctness (not retrieving irrelevant info).
+
+- **QA Quality**: .
+
+- **RAG Runtime**: .
 
 
 #### **Custom Metric Example**  
@@ -225,7 +400,7 @@ for case in cases:
 metric = AnswerCorrectness()
 results = [await metric.compute(case) for case in cases]
 print(f"Accuracy: {sum(results)/len(results):.2f}")  # e.g., 1.0 (100% correct)
-```  
+```
 
 
 ## 🛠️ Development Guide  
@@ -243,7 +418,7 @@ diting-core/
 ├── metrics/            # Evaluation metrics (Accuracy, BLEU, etc.)
 ├── models/             # LLM clients (OpenAI, Hugging Face)
 └── synthesis/          # Synthetic data generation (QA, summarization)
-```  
+```
 
 
 ## 🔄 Integration with DiTing Ecosystem  

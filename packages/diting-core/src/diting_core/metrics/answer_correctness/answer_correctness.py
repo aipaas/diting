@@ -12,6 +12,7 @@ from diting_core.metrics.answer_correctness.template import AnswerCorrectnessTem
 from diting_core.metrics.answer_correctness.schema import Statements, Verdicts
 from diting_core.metrics.utils import fbeta_score
 from diting_core.models.llms.base_model import BaseLLM
+from diting_core.models.embeddings.base_model import BaseEmbeddings
 
 
 @dataclass
@@ -35,6 +36,7 @@ class AnswerCorrectness(BaseMetric):
     """
 
     model: Optional[BaseLLM] = None
+    embedding_model: Optional[BaseEmbeddings] = None
     _required_params: List[LLMCaseParams] = field(
         default_factory=lambda: [
             LLMCaseParams.USER_INPUT,
@@ -167,7 +169,10 @@ class AnswerCorrectness(BaseMetric):
         if self.weights[1] == 0:
             similarity_score = 0.0
         else:
-            assert self.answer_similarity is not None, "AnswerSimilarity must be set"
+            if self.answer_similarity is None:
+                self.answer_similarity = AnswerSimilarity(
+                    embedding_model=self.embedding_model
+                )
             similarity_value = await self.answer_similarity.compute(test_case=test_case)
             similarity_score = similarity_value.score
 
@@ -189,3 +194,37 @@ class AnswerCorrectness(BaseMetric):
         )
 
         return metric_value
+
+
+#
+# if __name__ == "__main__":
+#     from diting_core.models.llms.factory import llm_factory
+#     from diting_core.models.embeddings.factory import embedding_factory
+#     # from diting_core.metrics.answer_correctness.data import (
+#     #     query,
+#     #     answer,
+#     #     expect_answer,
+#     #     retrive_context,
+#     # )
+#     import asyncio
+#
+#     llm = llm_factory(
+#         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
+#         base_url="http://10.72.1.16:3454/v1",
+#         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
+#         is_guided_json_support=True
+#     )
+#     embeddings = embedding_factory(
+#         model="bge-m3",
+#         base_url="http://10.57.1.91:20081/v1",
+#         api_key="sk-jwaRNx5UJxB9WVZf7UgdRKuMOPPRkMn_w1YgUbhb20I",
+#     )
+#     test_case = LLMCase(
+#         user_input="你好",
+#         actual_output="你好",
+#         expected_output="你好",
+#         retrieval_context=["你好", "你好"],
+#     )
+#     context_recall = AnswerCorrectness(model=llm, embedding_model=embeddings)
+#     context_recall_score = asyncio.run(context_recall.compute(test_case))
+#     print(context_recall_score)

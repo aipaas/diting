@@ -8,7 +8,6 @@ from diting_core.metrics.answer_correctness.schema import (
     StatementsWithReason,
     Statements,
 )
-from diting_core.metrics.answer_similarity.answer_similarity import AnswerSimilarity
 from diting_core.metrics.base_metric import MetricValue
 from diting_core.cases.llm_case import LLMCase
 from mock_model import MockLLM
@@ -18,9 +17,10 @@ from mock_embedding import MockEmbeddings
 class TestAnswerCorrectness(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.model_mock = MockLLM()
-        self.answer_similarity = AnswerSimilarity(embedding_model=MockEmbeddings())
+        # self.answer_similarity = AnswerSimilarity(embedding_model=MockEmbeddings())
+        self.mock_embedding = MockEmbeddings()
         self.answer_correctness = AnswerCorrectness(
-            model=self.model_mock, answer_similarity=self.answer_similarity
+            model=self.model_mock, embedding_model=self.mock_embedding
         )
         self.test_case = LLMCase(
             user_input="法国的首都是什么？",

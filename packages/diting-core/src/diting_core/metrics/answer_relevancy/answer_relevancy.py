@@ -57,7 +57,7 @@ class AnswerRelevancy(BaseMetric):
             LLMCaseParams.ACTUAL_OUTPUT,
         ]
     )
-
+    include_reason: bool = True
     evaluation_template: Type[AnswerRelevancyTemplate] = AnswerRelevancyTemplate
 
     async def _compute(
@@ -80,7 +80,7 @@ class AnswerRelevancy(BaseMetric):
         reason = None
         if self.include_reason:
             reason = await self._a_generate_reason(
-                test_case.user_input, score, verdicts
+                test_case.user_input, score, verdicts, callbacks=callbacks
             )
         metric_value = MetricValue(
             score=score,
@@ -156,7 +156,11 @@ class AnswerRelevancy(BaseMetric):
         return res.verdicts
 
     async def _a_generate_reason(
-        self, user_input: str, score: float, verdicts: List[AnswerRelevancyVerdict]
+        self,
+        user_input: str,
+        score: float,
+        verdicts: List[AnswerRelevancyVerdict],
+        callbacks: Optional[Callbacks] = None,
     ) -> str:
         assert self.model is not None, "llm is not set"
         irrelevant_statements: List[str] = []
@@ -169,6 +173,22 @@ class AnswerRelevancy(BaseMetric):
             input=user_input,
             score=round(score, 2),
         )
-        res = await self.model.generate_structured_output(prompt, schema=Reason)
-        res = Reason.model_validate(res)
+        run_mgt, grp_cb = await new_group(
+            name="generate_reason",
+            inputs={
+                "user_input": user_input,
+                "score": score,
+                "verdicts": verdicts,
+            },
+            callbacks=callbacks,
+        )
+        try:
+            res = await self.model.generate_structured_output(
+                prompt, schema=Reason, callbacks=grp_cb
+            )
+            res = Reason.model_validate(res)
+        except Exception as e:
+            await run_mgt.on_chain_error(e)
+            raise e
+        await run_mgt.on_chain_end(outputs={"reason": res.reason})
         return res.reason

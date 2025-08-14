@@ -16,3 +16,7 @@ class FaithfulnessVerdict(BaseModel):
 
 class Verdicts(BaseModel):
     verdicts: List[FaithfulnessVerdict]
+
+
+class Reason(BaseModel):
+    reason: str

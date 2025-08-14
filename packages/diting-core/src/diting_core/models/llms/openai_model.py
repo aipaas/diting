@@ -48,12 +48,10 @@ class LangchainLLMWrapper(BaseLLM):
         self,
         llm: BaseLanguageModel[BaseMessage],
         is_guided_json_support: bool = False,
-        is_structured_output_support: bool = False,
     ):
         super().__init__()
         self.llm = llm
         self.is_guided_json_support: bool = is_guided_json_support
-        self.is_structured_output_support: bool = is_structured_output_support
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(llm={self.llm.__class__.__name__}(...))"
@@ -86,11 +84,28 @@ class LangchainLLMWrapper(BaseLLM):
             self.llm.temperature = temperature  # type: ignore
         prompt_value: PromptValue = StringPromptValue(text=prompt)
         if self.is_multiple_completion_supported(self.llm):
+            run_manager, _ = await new_group(
+                name=self.__repr__(),
+                inputs={"prompt": [prompt]},
+                callbacks=kwargs.pop("callbacks", None),
+                chain_type=ChainType.LLM,
+            )
             result = await self.llm.agenerate_prompt(
                 prompts=[prompt_value],
                 n=n,
             )
+            await run_manager.on_chain_end(
+                outputs={"llm_result": result},
+                inputs={"prompt": [prompt]},
+                chain_type=ChainType.LLM,
+            )
         else:
+            run_manager, _ = await new_group(
+                name=self.__repr__(),
+                inputs={"prompt": [prompt] * n},
+                callbacks=kwargs.pop("callbacks", None),
+                chain_type=ChainType.LLM,
+            )
             result = await self.llm.agenerate_prompt(
                 prompts=[prompt_value] * n,
             )
@@ -98,7 +113,11 @@ class LangchainLLMWrapper(BaseLLM):
             # note that LLMResult.runs is still a list that represents each run
             generations = [[g[0] for g in result.generations]]
             result.generations = generations
-
+            await run_manager.on_chain_end(
+                outputs={"llm_result": result},
+                inputs={"prompt": [prompt] * n},
+                chain_type=ChainType.LLM,
+            )
         # reset the temperature to the original value
         if old_temperature is not None:
             self.llm.temperature = old_temperature  # type: ignore
@@ -114,10 +133,9 @@ class LangchainLLMWrapper(BaseLLM):
         prompt: str,
         schema: Optional[PydanticClass] = None,
         use_guided_json: bool = False,
-        use_structured_output: bool = False,
         **kwargs: Any,
     ) -> Any:
-        run_manager, _ = await new_group(
+        run_manager, grp_cb = await new_group(
             name=self.__repr__(),
             inputs={"prompt": prompt},
             callbacks=kwargs.pop("callbacks", None),
@@ -127,23 +145,24 @@ class LangchainLLMWrapper(BaseLLM):
         )
         try:
             if schema is None:
-                content = cast(str, await self.generate(prompt, **kwargs))
+                content = cast(
+                    str, await self.generate(prompt, callbacks=grp_cb, **kwargs)
+                )
                 fmt_output = filter_model_output(content)
                 output_model = json_repair.loads(fmt_output)
             elif use_guided_json:
                 json_schema = schema.model_json_schema()
                 self.llm.extra_body = {"guided_json": json_schema}  # type: ignore
-                content = cast(str, await self.generate(prompt, **kwargs))
+                content = cast(
+                    str, await self.generate(prompt, callbacks=grp_cb, **kwargs)
+                )
                 fmt_output = filter_model_output(content)
                 json_output = json_repair.loads(fmt_output)
                 output_model = schema.model_validate(json_output)
-            elif use_structured_output:
-                # tool call
-                llm_structured = self.llm.with_structured_output(schema)  # type: ignore
-                res = await llm_structured.ainvoke(prompt, **kwargs)  # type: ignore
-                output_model = schema.model_validate(res)
             else:
-                content = cast(str, await self.generate(prompt))
+                content = cast(
+                    str, await self.generate(prompt, callbacks=grp_cb, **kwargs)
+                )
                 fmt_output = filter_model_output(content)
                 json_output = json_repair.loads(fmt_output)
                 output_model = schema.model_validate(json_output)
@@ -164,20 +183,24 @@ class LangchainLLMWrapper(BaseLLM):
             prompt,
             schema=schema,
             use_guided_json=self.is_guided_json_support,
-            use_structured_output=self.is_structured_output_support,
             **kwargs,
         )
 
 
-# if __name__ == "__main__":
-#     from diting_core.models.llms.factory import llm_factory
-#     import asyncio
-#
-#     llm = llm_factory(
-#         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
-#         base_url="http://10.72.1.16:3454/v1",
-#         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
-#     )
-#
-#     result = asyncio.run(llm.generate("你好，你是谁"))
-#     print(result)
+if __name__ == "__main__":
+    from diting_core.models.llms.factory import llm_factory
+    import asyncio
+
+    # llm = llm_factory(
+    #     model="Qwen2.5-72B-Instruct-GPTQ-Int4",
+    #     base_url="http://10.72.1.16:3454/v1",
+    #     api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
+    # )
+    llm = llm_factory(
+        model="Qwen3-14B",
+        base_url="http://10.113.71.40:30001/v1",
+        api_key="aiproxy",
+    )
+
+    result = asyncio.run(llm.generate("写一个快速排序算法", n=2))
+    print(result)

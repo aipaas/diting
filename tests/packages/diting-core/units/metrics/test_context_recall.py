@@ -3,7 +3,11 @@ import pytest
 from unittest.mock import patch, AsyncMock
 
 from diting_core.metrics.context_recall.context_recall import ContextRecall
-from diting_core.metrics.context_recall.schema import Verdicts, ContextRecallVerdict
+from diting_core.metrics.context_recall.schema import (
+    Verdicts,
+    ContextRecallVerdict,
+    Reason,
+)
 from diting_core.metrics.base_metric import MetricValue
 from diting_core.cases.llm_case import LLMCase
 from mock_model import MockLLM
@@ -102,5 +106,10 @@ class TestContextRecall(unittest.IsolatedAsyncioTestCase):
         with patch.object(
             ContextRecall, "_a_generate_verdicts", AsyncMock(return_value=verdicts)
         ):
-            metric_value = await self.context_recall._compute(self.test_case)
-            self.assertIsInstance(metric_value, MetricValue)
+            with patch.object(
+                self.context_recall,
+                "_a_generate_reason",
+                AsyncMock(return_value=Reason(reason="test")),
+            ):
+                metric_value = await self.context_recall._compute(self.test_case)
+                self.assertIsInstance(metric_value, MetricValue)

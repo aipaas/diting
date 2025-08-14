@@ -9,7 +9,12 @@ from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.metrics.faithfulness.template import FaithfulnessTemplate
-from diting_core.metrics.faithfulness.schema import Statements, Verdicts
+from diting_core.metrics.faithfulness.schema import (
+    Statements,
+    Verdicts,
+    FaithfulnessVerdict,
+    Reason,
+)
 
 
 @dataclass
@@ -42,6 +47,7 @@ class Faithfulness(BaseMetric):
             LLMCaseParams.RETRIEVAL_CONTEXT,
         ]
     )
+    include_reason: bool = True
     evaluation_template: Type[FaithfulnessTemplate] = FaithfulnessTemplate
 
     @staticmethod
@@ -117,6 +123,41 @@ class Faithfulness(BaseMetric):
         await run_mgt.on_chain_end(outputs={"verdicts": verdicts})
         return cast(Verdicts, verdicts)
 
+    async def _a_generate_reason(
+        self,
+        score: float,
+        verdicts: List[FaithfulnessVerdict],
+        callbacks: Optional[Callbacks] = None,
+    ) -> str:
+        assert self.model is not None, "llm is not set"
+        contradictions: List[str] = []
+        for verdict in verdicts:
+            if verdict.verdict == 0:
+                contradictions.append(verdict.reason)
+        prompt = self.evaluation_template.generate_reason(
+            score=round(score, 2), contradictions=contradictions
+        )
+        run_mgt, grp_cb = await new_group(
+            name="generate_reason",
+            inputs={
+                "score": score,
+                "verdicts": verdicts,
+            },
+            callbacks=callbacks,
+        )
+        try:
+            res = cast(
+                Reason,
+                await self.model.generate_structured_output(
+                    prompt, schema=Reason, callbacks=grp_cb
+                ),
+            )
+        except Exception as e:
+            await run_mgt.on_chain_error(e)
+            raise e
+        await run_mgt.on_chain_end(outputs={"reason": res.reason})
+        return res.reason
+
     async def _compute(
         self,
         test_case: LLMCase,
@@ -152,8 +193,15 @@ class Faithfulness(BaseMetric):
             callbacks=callbacks,
         )
         score = self._compute_score(verdicts)
+        reason = None
+        if self.include_reason:
+            reason = await self._a_generate_reason(
+                score, verdicts.verdicts, callbacks=callbacks
+            )
         metric_value = MetricValue(
-            score=score, run_logs={"statements": statements, "verdicts": verdicts}
+            score=score,
+            reason=reason,
+            run_logs={"statements": statements, "verdicts": verdicts},
         )
         return metric_value
 

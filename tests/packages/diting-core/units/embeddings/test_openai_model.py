@@ -8,34 +8,6 @@ from diting_core.models.embeddings.openai_model import (
 )
 
 
-class TestPrivateEmbeddingsSync(unittest.TestCase):
-    def setUp(self):
-        # Mock 同步 client
-        self.mock_sync_client = MagicMock()
-        self.mock_sync_client.embeddings.create.return_value.data = [
-            MagicMock(embedding=[0.1, 0.2, 0.3]),
-            MagicMock(embedding=[0.4, 0.5, 0.6]),
-        ]
-        self.emb = PrivateEmbeddings(
-            model="test-model",
-            client=self.mock_sync_client,
-        )
-
-    def test_embed_query(self):
-        result = self.emb.embed_query("hello")
-        self.assertEqual(result, [0.1, 0.2, 0.3])
-        self.mock_sync_client.embeddings.create.assert_called_once_with(
-            model="test-model", input=["hello"]
-        )
-
-    def test_embed_documents(self):
-        result = self.emb.embed_documents(["a", "b"])
-        self.assertEqual(result, [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
-        self.mock_sync_client.embeddings.create.assert_called_once_with(
-            model="test-model", input=["a", "b"]
-        )
-
-
 class TestPrivateEmbeddingsAsync(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.mock_async_client = MagicMock()

@@ -1,0 +1,6 @@
+buildName: diting
+buildDocker: auto
+artifacts:
+  - diting.image
+refPaths:
+  dockerfile: Dockerfile

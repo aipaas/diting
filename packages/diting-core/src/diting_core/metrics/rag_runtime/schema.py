@@ -17,3 +17,13 @@ class EvaluationResult(str, Enum):
     FABRICATE_OUTPUT = "Fabricate_Output"
     INCOMPLETE_OUTPUT = "Incomplete_Output"
     RETRIEVAL_CONTEXT_NOISE = "Retrieval_Context_Noise"
+
+
+EVALUATION_SCORES = {
+    EvaluationResult.ACCURACY.lower(): 1.0,
+    EvaluationResult.NO_RETRIEVAL_CONTEXT.lower(): 0.0,
+    EvaluationResult.INCOMPLETE_RETRIEVAL_CONTEXT.lower(): 0.3,
+    EvaluationResult.FABRICATE_OUTPUT.lower(): 0.0,
+    EvaluationResult.INCOMPLETE_OUTPUT.lower(): 0.4,
+    EvaluationResult.RETRIEVAL_CONTEXT_NOISE.lower(): 0.6,
+}

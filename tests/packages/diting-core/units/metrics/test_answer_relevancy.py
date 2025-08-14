@@ -50,14 +50,17 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
                 "_a_generate_verdicts",
                 return_value=[AnswerRelevancyVerdict(verdict="yes")],
             ):
-                result = await self.metric.compute(self.test_case, verbose=True)
-                self.assertEqual(result.score, 1.0)
-                assert result.run_logs
-                self.assertEqual(result.run_logs["statements"], ["statement1"])
-                self.assertEqual(
-                    result.run_logs["verdicts"],
-                    [AnswerRelevancyVerdict(verdict="yes")],
-                )
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric.compute(self.test_case, verbose=True)
+                    self.assertEqual(result.score, 1.0)
+                    assert result.run_logs
+                    self.assertEqual(result.run_logs["statements"], ["statement1"])
+                    self.assertEqual(
+                        result.run_logs["verdicts"],
+                        [AnswerRelevancyVerdict(verdict="yes")],
+                    )
 
     async def test_calculate_score_all_relevant(self):
         """测试所有verdict为'yes'或'idk'的情况"""
@@ -108,14 +111,19 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
                 "_a_generate_verdicts",
                 return_value=[AnswerRelevancyVerdict(verdict="yes")],
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 1.0)
-                assert result.run_logs
-                self.assertEqual(result.run_logs["statements"], ["statement1"])
-                self.assertEqual(
-                    result.run_logs["verdicts"],
-                    [AnswerRelevancyVerdict(verdict="yes")],
-                )
+                with patch.object(
+                    self.metric,
+                    "_a_generate_reason",
+                    return_value=Reason(reason="test"),
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 1.0)
+                    assert result.run_logs
+                    self.assertEqual(result.run_logs["statements"], ["statement1"])
+                    self.assertEqual(
+                        result.run_logs["verdicts"],
+                        [AnswerRelevancyVerdict(verdict="yes")],
+                    )
 
     async def test_compute_missing_input(self):
         """测试缺少user_input时抛出断言错误"""
@@ -219,8 +227,11 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             with patch.object(
                 self.metric, "_a_generate_verdicts", return_value=verdicts
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 0.0)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 0.0)
 
     async def test_compute_with_partial_irrelevant(self):
         """测试部分verdict为'no'时得分正确"""
@@ -235,8 +246,11 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             with patch.object(
                 self.metric, "_a_generate_verdicts", return_value=verdicts
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 2 / 3)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 2 / 3)
 
     async def test_compute_with_idk(self):
         """测试包含'idk'的verdict处理"""
@@ -250,22 +264,31 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             with patch.object(
                 self.metric, "_a_generate_verdicts", return_value=verdicts
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 0.5)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 0.5)
 
     async def test_compute_with_no_statements_and_no_verdicts(self):
         """测试statements和verdicts都为空时返回1.0"""
         with patch.object(self.metric, "_a_generate_statements", return_value=[]):
             with patch.object(self.metric, "_a_generate_verdicts", return_value=[]):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 1.0)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 1.0)
 
     async def test_compute_with_statements_but_no_verdicts(self):
         """测试有statements但verdicts为空时返回1.0"""
         with patch.object(self.metric, "_a_generate_statements", return_value=["s1"]):
             with patch.object(self.metric, "_a_generate_verdicts", return_value=[]):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 1.0)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 1.0)
 
     async def test_compute_with_statements_and_all_yes(self):
         """测试statements存在且所有verdict为'yes'"""
@@ -277,8 +300,11 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             with patch.object(
                 self.metric, "_a_generate_verdicts", return_value=verdicts
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 1.0)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 1.0)
 
     async def test_compute_with_statements_and_all_no(self):
         """测试statements存在且所有verdict为'no'"""
@@ -290,8 +316,11 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             with patch.object(
                 self.metric, "_a_generate_verdicts", return_value=verdicts
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(result.score, 0.0)
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(result.score, 0.0)
 
     async def test_compute_with_statements_and_mixed_verdicts(self):
         """测试statements存在且混合'yes'、'no'、'idk'"""
@@ -307,10 +336,13 @@ class TestAnswerRelevancyMetric(unittest.IsolatedAsyncioTestCase):
             with patch.object(
                 self.metric, "_a_generate_verdicts", return_value=verdicts
             ):
-                result = await self.metric._compute(self.test_case)
-                self.assertEqual(
-                    result.score, 2 / 3
-                )  # "yes"和"idk"视为相关，"no"不相关
+                with patch.object(
+                    self.metric, "_a_generate_reason", return_value="Test reason"
+                ):
+                    result = await self.metric._compute(self.test_case)
+                    self.assertEqual(
+                        result.score, 2 / 3
+                    )  # "yes"和"idk"视为相关，"no"不相关
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
-from diting_core.metrics.context_precision.schema import Verdict
+from typing import Any
+from diting_core.metrics.context_precision.schema import Verdict, Reason
 
 
 class ContextPrecisionTemplate:
@@ -52,5 +53,33 @@ input: {{
     "question": "{user_input}",
     "context": "{context}",
     "answer": "{expected_output}"
+}}
+Output: """
+
+    @staticmethod
+    def generate_reason(user_input: str, score: float, verdicts: list[dict[str, Any]]):
+        return f"""Given the input, retrieval contexts, and contextual precision score, provide a CONCISE summary for the score. Explain why it is not higher, but also why it is at its current score.
+The retrieval contexts is a list of JSON with three keys: `verdict`, `reason` (reason for the verdict) and `node`. `verdict` will be either 'yes' or 'no', which represents whether the corresponding 'node' in the retrieval context is relevant to the input. 
+Contextual precision represents if the relevant nodes are ranked higher than irrelevant nodes. Also note that retrieval contexts is given IN THE ORDER OF THEIR RANKINGS.
+
+Please return the output in a JSON format that complies with the following schema as specified in JSON Schema:
+{json.dumps(Reason.model_json_schema())}
+Do not use single quotes in your response but double quotes, properly escaped with a backslash.
+
+Example JSON:
+{{
+    "reason": "The score is <contextual_precision_score> because <your_reason>."
+}}
+
+In your reason, you MUST USE the `reason`, QUOTES in the 'reason', and the node RANK (starting from 1, eg. first node) to explain why the 'no' verdicts should be ranked lower than the 'yes' verdicts.
+When addressing nodes, make it explicit that they are nodes in retrieval contexts.
+If the score is 1, keep it short and say something positive with an upbeat tone (but don't overdo it, otherwise it gets annoying).
+-----------------------------
+
+Now perform the same with the following input
+input: {{
+    "input": {user_input},
+    "contextual_precision_score": {score},
+    "retrieval_contexts": {verdicts},
 }}
 Output: """

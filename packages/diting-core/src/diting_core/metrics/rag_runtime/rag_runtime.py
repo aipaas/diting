@@ -14,7 +14,11 @@ from diting_core.metrics.rag_runtime.template import (
     CriticPromptTemplate,
     ProblemLocation,
 )
-from diting_core.metrics.rag_runtime.schema import EvaluationResult, Verdicts
+from diting_core.metrics.rag_runtime.schema import (
+    EvaluationResult,
+    Verdicts,
+    EVALUATION_SCORES,
+)
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.embeddings.base_model import BaseEmbeddings
 
@@ -70,7 +74,8 @@ class RagRuntime(BaseMetric):
         assert answer_correctness_score, "answer_correctness_score cannot be None"
         if answer_correctness_score >= self.answer_correctness_threshold:
             run_logs["result"] = EvaluationResult.ACCURACY
-            metric_value = MetricValue(run_logs=run_logs)
+            score = EVALUATION_SCORES[EvaluationResult.ACCURACY.lower()]
+            metric_value = MetricValue(score=score, run_logs=run_logs)
             return metric_value
 
         run_logs["context_recall"] = await self._evaluate_context_recall(test_case)
@@ -95,7 +100,8 @@ class RagRuntime(BaseMetric):
             if critic_result.result.lower() == EvaluationResult.ACCURACY.lower():
                 run_logs["result"] = EvaluationResult.ACCURACY
                 run_logs["reason"] = critic_result.reason
-                metric_value = MetricValue(run_logs=run_logs)
+                score = EVALUATION_SCORES[EvaluationResult.ACCURACY.lower()]
+                metric_value = MetricValue(score=score, run_logs=run_logs)
                 return metric_value
 
             run_logs["faithfulness"] = await self._evaluate_faithfulness(test_case)
@@ -128,11 +134,15 @@ class RagRuntime(BaseMetric):
                 run_logs["problem_location"] = problem_location_result
                 if problem_location_result.result.lower() in expected:
                     run_logs["result"] = problem_location_result.result
+                    score = EVALUATION_SCORES[problem_location_result.result.lower()]
                     run_logs["reason"] = problem_location_result.reason
                 else:
                     run_logs["result"] = EvaluationResult.RETRIEVAL_CONTEXT_NOISE
+                    score = EVALUATION_SCORES[
+                        EvaluationResult.RETRIEVAL_CONTEXT_NOISE.lower()
+                    ]
                     run_logs["reason"] = EvaluationResult.UNKNOWN
-                metric_value = MetricValue(run_logs=run_logs)
+                metric_value = MetricValue(score=score, run_logs=run_logs)
                 return metric_value
             else:
                 # FABRICATE_OUTPUT，RETRIEVAL_CONTEXT_NOISE.，INCOMPLETE_RETRIEVAL_CONTEXT
@@ -159,11 +169,13 @@ class RagRuntime(BaseMetric):
                 run_logs["problem_location"] = problem_location_result
                 if problem_location_result.result.lower() in expected:
                     run_logs["result"] = problem_location_result.result
+                    score = EVALUATION_SCORES[problem_location_result.result.lower()]
                     run_logs["reason"] = problem_location_result.reason
                 else:
                     run_logs["result"] = EvaluationResult.FABRICATE_OUTPUT
+                    score = EVALUATION_SCORES[EvaluationResult.FABRICATE_OUTPUT.lower()]
                     run_logs["reason"] = EvaluationResult.UNKNOWN
-                metric_value = MetricValue(run_logs=run_logs)
+                metric_value = MetricValue(score=score, run_logs=run_logs)
                 return metric_value
 
         # Low correctness score and answer recall suggest a possible retrieval issue.
@@ -187,9 +199,13 @@ class RagRuntime(BaseMetric):
         run_logs["problem_location"] = problem_location_result
         if problem_location_result.result.lower() in expected:
             run_logs["result"] = problem_location_result.result
+            score = EVALUATION_SCORES[problem_location_result.result.lower()]
             run_logs["reason"] = problem_location_result.reason
         else:
             run_logs["result"] = EvaluationResult.INCOMPLETE_RETRIEVAL_CONTEXT
+            score = EVALUATION_SCORES[
+                EvaluationResult.INCOMPLETE_RETRIEVAL_CONTEXT.lower()
+            ]
             run_logs["reason"] = EvaluationResult.UNKNOWN
-        metric_value = MetricValue(run_logs=run_logs)
+        metric_value = MetricValue(score=score, run_logs=run_logs)
         return metric_value

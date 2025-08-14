@@ -134,8 +134,12 @@ class TestFaithfulness(unittest.IsolatedAsyncioTestCase):
             patch.object(
                 Faithfulness, "_a_generate_verdicts", new_callable=AsyncMock
             ) as mock_verdicts,
+            patch.object(
+                Faithfulness, "_a_generate_reason", new_callable=AsyncMock
+            ) as mock_reason,
         ):
             mock_statements.return_value = ["statements"]
             mock_verdicts.return_value = self.create_mock_verdicts()
+            mock_reason.return_value = "test"
             metric_value = await self.faithfulness._compute(self.test_case)
             self.assertIsInstance(metric_value, MetricValue)

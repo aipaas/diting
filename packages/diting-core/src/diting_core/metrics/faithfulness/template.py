@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from typing import List
 import json
-from diting_core.metrics.faithfulness.schema import Statements, Verdicts
+from diting_core.metrics.faithfulness.schema import Statements, Verdicts, Reason
 
 
 class FaithfulnessTemplate:
@@ -104,6 +104,32 @@ Now perform the same with the following input
 input: {{
     "context": {retrieval_context},
     "statements": {statements}
+}}
+Output: """
+
+    @staticmethod
+    def generate_reason(score: float, contradictions: List[str]):
+        return f"""Below is a list of Contradictions. It is a list of strings explaining why the 'actual output' does not align with the information presented in the 'retrieval context'. Contradictions happen in the 'actual output', NOT the 'retrieval context'.
+Given the faithfulness score, which is a 0-1 score indicating how faithful the `actual output` is to the retrieval context (higher the better), CONCISELY summarize the contradictions to justify the score. 
+
+Please return the output in a JSON format that complies with the following schema as specified in JSON Schema:
+{json.dumps(Reason.model_json_schema())}
+Do not use single quotes in your response but double quotes, properly escaped with a backslash.
+
+Example JSON:
+{{
+    "reason": "The score is <faithfulness_score> because <your_reason>."
+}}
+
+If there are no contradictions, just say something positive with an upbeat encouraging tone (but don't overdo it otherwise it gets annoying).
+Your reason MUST use information in `contradiction` in your reason.
+Be sure in your reason, as if you know what the actual output is from the contradictions.
+-----------------------------
+
+Now perform the same with the following input
+input: {{
+    "faithfulness_score": {score},
+    "contradictions": {contradictions},
 }}
 Output: """
 

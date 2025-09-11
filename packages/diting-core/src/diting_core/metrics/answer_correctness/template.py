@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from typing import List
 import json
-from diting_core.metrics.answer_correctness.schema import Verdicts, Statements
+from diting_core.metrics.answer_correctness.schema import Verdicts, Statements, Reason
 
 
 class AnswerCorrectnessTemplate:
@@ -133,6 +133,41 @@ input: {{
     "question": "{user_input}",
     "answer": {actual_output_statements},
     "ground_truth": {expected_output_statements}
+}}
+Output: """
+
+    @staticmethod
+    def generate_reasons(
+        score: float,
+        tp_reasons: List[str],
+        fp_reasons: List[str],
+        fn_reasons: List[str],
+    ) -> str:
+        return f"""Given the answer correctness score, the list of reasons of TP, FP, FN:
+- **Correctly Included (TP)**: Statements in the response that are factually accurate and directly supported by the ground truth.
+- **Incorrectly Added (FP)**: Statements in the response that are not supported by the ground truth.
+- **Missing (FN)**: Important facts present in the ground truth but absent from the response.
+These categories are for analysis only. When generating your explanation, do NOT use the terms "TP", "FP", "FN", "true positive", 
+or any technical evaluation jargon. Provide a concise and user-friendly reason for the score using plain, natural language.
+
+Please return the output in a JSON format that complies with the following schema as specified in JSON Schema:
+{json.dumps(Reason.model_json_schema())}
+Do not use single quotes in your response but double quotes, properly escaped with a backslash.
+
+Example JSON:
+{{
+    "reason": "The score is <answer_correctness_score> because because <your_reason>."
+}}
+
+If the score is 1, keep it short and say something positive with an upbeat encouraging tone (but don't overdo it).
+-----------------------------
+
+Now perform the same with the following input
+input: {{
+    "answer_correctness_score": {score},
+    "tp_reasons": {tp_reasons},
+    "fp_reasons": {fp_reasons},
+    "fn_reasons": {fn_reasons},
 }}
 Output: """
 

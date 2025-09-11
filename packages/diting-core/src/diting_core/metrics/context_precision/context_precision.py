@@ -9,7 +9,7 @@ from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.metrics.context_precision.template import ContextPrecisionTemplate
-from diting_core.metrics.context_precision.schema import Verdict
+from diting_core.metrics.context_precision.schema import Verdict, Reason
 
 
 @dataclass
@@ -41,6 +41,7 @@ class ContextPrecision(BaseMetric):
             LLMCaseParams.RETRIEVAL_CONTEXT,
         ]
     )
+    include_reason: bool = True
     evaluation_template: Type[ContextPrecisionTemplate] = ContextPrecisionTemplate
 
     @staticmethod
@@ -89,6 +90,44 @@ class ContextPrecision(BaseMetric):
         await run_mgt.on_chain_end(outputs={"verdict": verdict})
         return verdict
 
+    async def _a_generate_reason(
+        self,
+        user_input: str,
+        score: float,
+        verdicts: List[Verdict],
+        callbacks: Optional[Callbacks] = None,
+    ) -> str:
+        assert self.model is not None, "llm is not set"
+        context_precision_verdicts = [
+            {"verdict": verdict.verdict, "reason": verdict.reason}
+            for verdict in verdicts
+        ]
+        prompt = self.evaluation_template.generate_reason(
+            user_input=user_input,
+            score=round(score, 2),
+            verdicts=context_precision_verdicts,
+        )
+        run_mgt, grp_cb = await new_group(
+            name="generate_reason",
+            inputs={
+                "user_input": user_input,
+                "score": score,
+                "verdicts": verdicts,
+            },
+            callbacks=callbacks,
+        )
+        try:
+            res = cast(
+                Reason,
+                await self.model.generate_structured_output(
+                    prompt, schema=Reason, callbacks=grp_cb
+                ),
+            )
+        except Exception as e:
+            raise e
+        await run_mgt.on_chain_end(outputs={"reason": res.reason})
+        return res.reason
+
     async def _compute(
         self,
         test_case: LLMCase,
@@ -109,5 +148,12 @@ class ContextPrecision(BaseMetric):
             )
             verdicts.append(verdict)
         score = self._calculate_average_precision(verdicts)
-        metric_value = MetricValue(score=score, run_logs={"verdicts": verdicts})
+        reason = None
+        if self.include_reason:
+            reason = await self._a_generate_reason(
+                test_case.user_input, score, verdicts, callbacks=callbacks
+            )
+        metric_value = MetricValue(
+            score=score, reason=reason, run_logs={"verdicts": verdicts}
+        )
         return metric_value

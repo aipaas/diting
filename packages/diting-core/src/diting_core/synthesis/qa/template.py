@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # flake8: noqa
-from typing import List
+from typing import List, Optional
 
 
 class QAGenerateTemplate:
     @staticmethod
-    def generate_qa(context: List[str], max_generation_per_context: int) -> str:
+    def generate_qa(
+        context: List[str],
+        max_generation_per_context: int,
+        themes: Optional[List[str]] = None,
+    ) -> str:
+        theme_part = ""
+        if themes:
+            theme_part = f"""5. 请优先围绕以下主题生成问答：{themes}。如果主题与上下文完全无关，可以忽略主题，但应尽量保证问题与这些主题相关。"""
         return f"""任务: 根据给定的上下文（一个字符串列表），生成一个包含 `question` 和 `answer`键的JSON对象(问答对)列表。
                 输入: 上下文（一个字符串列表）
 
@@ -20,6 +27,7 @@ class QAGenerateTemplate:
                 2. 问题应**明确目标**，清楚地传达了其意图，以便能够直接和恰当地回答或执行，而没有歧义。
                 3. 回答应**简洁明了**，直接回应问题，确保和问题强相关，避免添加额外的解释或评论，确保答案信息与上下文一致。
                 4. 回答应**完整无误**，不遗漏问题相关的答案，基于上下文给出问题完整的解答。
+                {theme_part}
 
                 *重要提示*：
 

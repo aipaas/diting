@@ -7,6 +7,7 @@ from diting_core.metrics.answer_correctness.schema import (
     Verdicts,
     StatementsWithReason,
     Statements,
+    Reason,
 )
 from diting_core.metrics.base_metric import MetricValue
 from diting_core.cases.llm_case import LLMCase
@@ -147,7 +148,32 @@ class TestAnswerCorrectness(unittest.IsolatedAsyncioTestCase):
                     "What is the capital?", ["statement1"], ["statement2"]
                 )
 
+    async def test__a_generate_reason(self):
+        verdicts = self.create_mock_verdicts()
+        with patch.object(
+            self.model_mock,
+            "generate_structured_output",
+            AsyncMock(return_value=Reason(reason="test")),
+        ):
+            res = await self.answer_correctness._a_generate_reason(
+                score=1.0, verdicts=verdicts
+            )
+            self.assertEqual(res, "test")
+
+    async def test__a_generate_reason_exception(self):
+        verdicts = self.create_mock_verdicts()
+        with patch.object(
+            self.model_mock,
+            "generate_structured_output",
+            AsyncMock(side_effect=Exception("Mocked exception")),
+        ):
+            with pytest.raises(Exception, match="Mocked exception"):
+                await self.answer_correctness._a_generate_reason(
+                    score=1.0, verdicts=verdicts
+                )
+
     async def test__compute(self):
+        self.answer_correctness.include_reason = False
         with (
             patch.object(
                 AnswerCorrectness, "_a_generate_statements", new_callable=AsyncMock
@@ -161,5 +187,27 @@ class TestAnswerCorrectness(unittest.IsolatedAsyncioTestCase):
                 ["statement2"],  # For expected
             ]
             mock_verdicts.return_value = self.create_mock_verdicts()
+            metric_value = await self.answer_correctness._compute(self.test_case)
+            self.assertIsInstance(metric_value, MetricValue)
+
+    async def test__compute_with_reathon(self):
+        self.answer_correctness.include_reason = True
+        with (
+            patch.object(
+                AnswerCorrectness, "_a_generate_statements", new_callable=AsyncMock
+            ) as mock_statements,
+            patch.object(
+                AnswerCorrectness, "_a_generate_verdicts", new_callable=AsyncMock
+            ) as mock_verdicts,
+            patch.object(
+                AnswerCorrectness, "_a_generate_reason", new_callable=AsyncMock
+            ) as mock_reason,
+        ):
+            mock_statements.side_effect = [
+                ["statement1"],  # For actual
+                ["statement2"],  # For expected
+            ]
+            mock_verdicts.return_value = self.create_mock_verdicts()
+            mock_reason.return_value = "test"
             metric_value = await self.answer_correctness._compute(self.test_case)
             self.assertIsInstance(metric_value, MetricValue)

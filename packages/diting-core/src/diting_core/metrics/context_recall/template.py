@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from typing import List
 import json
-from diting_core.metrics.context_recall.schema import Verdicts
+from diting_core.metrics.context_recall.schema import Verdicts, Reason
 
 
 class ContextRecallTemplate:
@@ -53,6 +53,38 @@ input: {{
     "question": {user_input},
     "context": {retrieval_context},
     "answer": {expected_output}
+}}
+Output: """
+
+    @staticmethod
+    def generate_reason(
+        expected_output: str,
+        supportive_reasons: list[str],
+        unsupportive_reasons: list[str],
+        score: float,
+    ):
+        return f"""Given the original expected output, a list of supportive reasons, and a list of unsupportive reasons (which are deduced directly from the 'expected output'), and a contextual recall score (closer to 1 the better), summarize a CONCISE reason for the score.
+Relate supportive/unsupportive reasons to the sentence number in expected output, and include info regarding the node number in retrieval context to support your final reason. The first mention of "node(s)" should specify "node(s) in retrieval context".
+
+Please return the output in a JSON format that complies with the following schema as specified in JSON Schema:
+{json.dumps(Reason.model_json_schema())}
+Do not use single quotes in your response but double quotes, properly escaped with a backslash.
+
+Example JSON:
+{{
+    "reason": "The score is <contextual_recall_score> because <your_reason>."
+}}
+
+DO NOT mention 'supportive reasons' and 'unsupportive reasons' in your reason, these terms are just here for you to understand the broader scope of things.
+If the score is 1, keep it short and say something positive with an upbeat encouraging tone (but don't overdo it).
+-----------------------------
+
+Now perform the same with the following input
+input: {{
+    "contextual_recall_score": {score},
+    "expected_output": {expected_output},
+    "supportive_reasons": {supportive_reasons},
+    "unsupportive_reasons": {unsupportive_reasons},
 }}
 Output: """
 

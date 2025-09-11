@@ -279,6 +279,7 @@ class ChainType(Enum):
     METRIC = "metric"
     SYNTHETIC = "synthetic"
     LLM = "llm"
+    EMBED = "embed"
     CORPORA = "corpora"
     FUNC = "func"
 

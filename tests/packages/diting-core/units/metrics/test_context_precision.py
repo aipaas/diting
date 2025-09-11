@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import AsyncMock, patch
 from diting_core.metrics.context_precision.context_precision import ContextPrecision
-from diting_core.metrics.context_precision.schema import Verdict
+from diting_core.metrics.context_precision.schema import Verdict, Reason
 from diting_core.metrics.base_metric import MetricValue
 from diting_core.cases.llm_case import LLMCase
 from mock_model import MockLLM
@@ -63,8 +63,13 @@ class TestContextPrecision(unittest.IsolatedAsyncioTestCase):
                 ]
             ),
         ):
-            metric_value = await self.metric._compute(self.test_case)
-            self.assertIsInstance(metric_value, MetricValue)
+            with patch.object(
+                self.metric,
+                "_a_generate_reason",
+                AsyncMock(return_value=Reason(reason="test")),
+            ):
+                metric_value = await self.metric._compute(self.test_case)
+                self.assertIsInstance(metric_value, MetricValue)
 
 
 if __name__ == "__main__":

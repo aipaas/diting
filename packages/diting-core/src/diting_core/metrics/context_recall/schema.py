@@ -14,6 +14,10 @@ class Verdicts(BaseModel):
     verdicts: List[ContextRecallVerdict]
 
 
+class Reason(BaseModel):
+    reason: str
+
+
 if __name__ == "__main__":
     import json
 

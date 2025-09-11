@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.messages import BaseMessage
@@ -17,7 +17,6 @@ class TestLangchainLLMWrapper(unittest.IsolatedAsyncioTestCase):
         self.wrapper = LangchainLLMWrapper(
             llm=self.mock_llm,
             is_guided_json_support=True,
-            is_structured_output_support=True,
         )
 
     def test_is_multiple_completion_supported(self):
@@ -94,22 +93,6 @@ class TestLangchainLLMWrapper(unittest.IsolatedAsyncioTestCase):
 
         result = await self.wrapper._generate_parse(
             "Prompt", schema=Schema, use_guided_json=True
-        )
-
-        self.assertEqual(result, Schema(key="value"))
-
-    async def test_generate_parse_structured_output(self):
-        mock_structured = AsyncMock()
-        mock_structured.ainvoke.return_value = {"key": "value"}
-        self.wrapper.llm.with_structured_output = MagicMock(
-            return_value=mock_structured
-        )
-
-        class Schema(BaseModel):
-            key: str
-
-        result = await self.wrapper._generate_parse(
-            "Structured Prompt", schema=Schema, use_structured_output=True
         )
 
         self.assertEqual(result, Schema(key="value"))

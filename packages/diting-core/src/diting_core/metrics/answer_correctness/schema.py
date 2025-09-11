@@ -17,3 +17,7 @@ class Verdicts(BaseModel):
     TP: List[StatementsWithReason]
     FP: List[StatementsWithReason]
     FN: List[StatementsWithReason]
+
+
+class Reason(BaseModel):
+    reason: str

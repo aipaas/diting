@@ -8,7 +8,11 @@ from diting_core.callbacks.manager import new_group
 from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.metrics.context_recall.template import ContextRecallTemplate
-from diting_core.metrics.context_recall.schema import Verdicts
+from diting_core.metrics.context_recall.schema import (
+    Verdicts,
+    ContextRecallVerdict,
+    Reason,
+)
 from diting_core.models.llms.base_model import BaseLLM
 
 
@@ -37,6 +41,7 @@ class ContextRecall(BaseMetric):
             LLMCaseParams.RETRIEVAL_CONTEXT,
         ]
     )
+    include_reason: bool = True
     evaluation_template: Type[ContextRecallTemplate] = ContextRecallTemplate
 
     @staticmethod
@@ -93,6 +98,50 @@ class ContextRecall(BaseMetric):
         await run_mgt.on_chain_end(outputs={"verdicts": verdicts})
         return verdicts
 
+    async def _a_generate_reason(
+        self,
+        expected_output: str,
+        score: float,
+        verdicts: List[ContextRecallVerdict],
+        callbacks: Optional[Callbacks] = None,
+    ) -> str:
+        assert self.model is not None, "llm is not set"
+        supportive_reasons: List[str] = []
+        unsupportive_reasons: List[str] = []
+        for verdict in verdicts:
+            if verdict.attributed == 1:
+                supportive_reasons.append(verdict.reason)
+            else:
+                unsupportive_reasons.append(verdict.reason)
+
+        prompt = self.evaluation_template.generate_reason(
+            expected_output=expected_output,
+            supportive_reasons=supportive_reasons,
+            unsupportive_reasons=unsupportive_reasons,
+            score=round(score, 2),
+        )
+        run_mgt, grp_cb = await new_group(
+            name="generate_reason",
+            inputs={
+                "expected_output": expected_output,
+                "score": score,
+                "verdicts": verdicts,
+            },
+            callbacks=callbacks,
+        )
+        try:
+            res = cast(
+                Reason,
+                await self.model.generate_structured_output(
+                    prompt, schema=Reason, callbacks=grp_cb
+                ),
+            )
+        except Exception as e:
+            await run_mgt.on_chain_error(e)
+            raise e
+        await run_mgt.on_chain_end(outputs={"reason": res.reason})
+        return res.reason
+
     async def _compute(
         self,
         test_case: LLMCase,
@@ -108,10 +157,17 @@ class ContextRecall(BaseMetric):
             user_input=test_case.user_input,
             expected_output=test_case.expected_output,
             retrieval_context=test_case.retrieval_context,
+            callbacks=callbacks,
         )
         score = self._compute_score(verdicts)
+        reason = None
+        if self.include_reason:
+            reason = await self._a_generate_reason(
+                test_case.expected_output, score, verdicts.verdicts, callbacks=callbacks
+            )
         metric_value = MetricValue(
             score=score,
+            reason=reason,
             run_logs={
                 "verdicts": verdicts,
             },

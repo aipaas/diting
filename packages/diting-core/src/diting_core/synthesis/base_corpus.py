@@ -20,6 +20,7 @@ class BaseCorpus(BaseModel):
     """
 
     context: Optional[List[str]] = None
+    themes: Optional[List[str]] = None
     model_config = ConfigDict(extra="allow")  # 允许任意额外属性
 
 

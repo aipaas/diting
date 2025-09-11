@@ -9,7 +9,7 @@ from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.metrics.answer_similarity.answer_similarity import AnswerSimilarity
 from diting_core.metrics.answer_correctness.template import AnswerCorrectnessTemplate
-from diting_core.metrics.answer_correctness.schema import Statements, Verdicts
+from diting_core.metrics.answer_correctness.schema import Statements, Verdicts, Reason
 from diting_core.metrics.utils import fbeta_score
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.embeddings.base_model import BaseEmbeddings
@@ -44,6 +44,7 @@ class AnswerCorrectness(BaseMetric):
             LLMCaseParams.EXPECTED_OUTPUT,
         ]
     )
+    include_reason: bool = True
     weights: List[float] = field(default_factory=lambda: [0.80, 0.20])
     beta: float = 1.0
     answer_similarity: Optional[AnswerSimilarity] = None
@@ -133,6 +134,43 @@ class AnswerCorrectness(BaseMetric):
         await run_mgt.on_chain_end(outputs={"verdicts": verdicts})
         return cast(Verdicts, verdicts)
 
+    async def _a_generate_reason(
+        self,
+        score: float,
+        verdicts: Optional[Verdicts],
+        callbacks: Optional[Callbacks] = None,
+    ) -> str:
+        assert self.model is not None, "llm is not set"
+        tp_reasons: List[str] = [tp.reason for tp in verdicts.TP] if verdicts else []
+        fp_reasons: List[str] = [fp.reason for fp in verdicts.FP] if verdicts else []
+        fn_reasons: List[str] = [fn.reason for fn in verdicts.FN] if verdicts else []
+        prompt = self.evaluation_template.generate_reasons(
+            score=score,
+            tp_reasons=tp_reasons,
+            fp_reasons=fp_reasons,
+            fn_reasons=fn_reasons,
+        )
+        run_mgt, grp_cb = await new_group(
+            name="generate_reason",
+            inputs={
+                "score": score,
+                "verdicts": verdicts,
+            },
+            callbacks=callbacks,
+        )
+        try:
+            res = cast(
+                Reason,
+                await self.model.generate_structured_output(
+                    prompt, schema=Reason, callbacks=grp_cb
+                ),
+            )
+        except Exception as e:
+            await run_mgt.on_chain_error(e)
+            raise e
+        await run_mgt.on_chain_end(outputs={"reason": res.reason})
+        return res.reason
+
     async def _compute(
         self,
         test_case: LLMCase,
@@ -159,6 +197,7 @@ class AnswerCorrectness(BaseMetric):
                 user_input=test_case.user_input,
                 actual_output_statements=actual_output_statements,
                 expected_output_statements=expected_output_statements,
+                callbacks=callbacks,
             )
             f1_score = self._compute_statement_presence(verdicts)
         else:
@@ -173,7 +212,9 @@ class AnswerCorrectness(BaseMetric):
                 self.answer_similarity = AnswerSimilarity(
                     embedding_model=self.embedding_model
                 )
-            similarity_value = await self.answer_similarity.compute(test_case=test_case)
+            similarity_value = await self.answer_similarity.compute(
+                test_case=test_case, callbacks=callbacks
+            )
             similarity_score = similarity_value.score
 
         try:
@@ -184,8 +225,16 @@ class AnswerCorrectness(BaseMetric):
             )
         arr = np.array([f1_score, similarity_score], dtype=float)
         score = float(np.average(arr, weights=self.weights))
+        reason = None
+        if self.include_reason:
+            reason = await self._a_generate_reason(
+                score,
+                verdicts,
+                callbacks=callbacks,
+            )
         metric_value = MetricValue(
             score=score,
+            reason=reason,
             run_logs={
                 "actual_output_statements": actual_output_statements,
                 "expected_output_statements": expected_output_statements,

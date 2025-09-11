@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from dataclasses import field, dataclass
 from typing import Optional, Any, List
-
+from diting_core.callbacks.base import Callbacks
 from diting_core.cases.llm_case import LLMCase, LLMCaseParams
 from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.models.embeddings.base_model import BaseEmbeddings
@@ -19,7 +19,11 @@ class AnswerSimilarity(BaseMetric):
     )
 
     async def _compute(
-        self, test_case: LLMCase, *args: Any, **kwargs: Any
+        self,
+        test_case: LLMCase,
+        *args: Any,
+        callbacks: Optional[Callbacks] = None,
+        **kwargs: Any,
     ) -> MetricValue:
         assert self.embedding_model is not None, "embeddings is not set"
         assert test_case.actual_output
@@ -32,10 +36,14 @@ class AnswerSimilarity(BaseMetric):
             )
 
         embedding_1 = np.array(
-            await self.embedding_model.embed_text(test_case.actual_output)
+            await self.embedding_model.embed_text(
+                test_case.actual_output, callbacks=callbacks
+            )
         )
         embedding_2 = np.array(
-            await self.embedding_model.embed_text(test_case.expected_output)
+            await self.embedding_model.embed_text(
+                test_case.expected_output, callbacks=callbacks
+            )
         )
         # Normalization factors of the above embeddings
         norms_1 = np.linalg.norm(embedding_1, keepdims=True)
@@ -49,5 +57,5 @@ class AnswerSimilarity(BaseMetric):
 
         return MetricValue(
             score=score,
-            reason=f"The cosine similarity score between the question and the answer is {score:.4f}",
+            reason=f"The cosine similarity between the question and the answer is {score:.4f}",
         )

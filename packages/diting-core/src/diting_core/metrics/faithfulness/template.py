@@ -62,7 +62,7 @@ Input: {{
     ]
 }}
 Output: {{
-    "statements": [
+    "verdicts": [
         {{
             "statement": "John is majoring in Biology.",
             "reason": "John's major is explicitly mentioned as Computer Science. There is no information suggesting he is majoring in Biology.",
@@ -94,7 +94,7 @@ Input: {{
     ]
 }}
 Output: {{
-    "statements": [
+    "verdicts": [
         {{
             "statement": "Albert Einstein was a genius.",
             "reason": "The context and statement are unrelated",

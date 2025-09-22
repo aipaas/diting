@@ -10,7 +10,7 @@ from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.metrics.answer_similarity.answer_similarity import AnswerSimilarity
 from diting_core.metrics.answer_correctness.template import AnswerCorrectnessTemplate
 from diting_core.metrics.answer_correctness.schema import Statements, Verdicts, Reason
-from diting_core.metrics.utils import fbeta_score
+from diting_core.metrics.utils import fbeta_score, Language, detect_language
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.models.embeddings.base_model import BaseEmbeddings
 
@@ -76,11 +76,15 @@ class AnswerCorrectness(BaseMetric):
         return score
 
     async def _a_generate_statements(
-        self, user_input: str, text: str, callbacks: Optional[Callbacks] = None
+        self,
+        user_input: str,
+        text: str,
+        language: Language = Language.ENGLISH,
+        callbacks: Optional[Callbacks] = None,
     ) -> List[str]:
         assert self.model is not None, "llm is not set"
         prompt = self.evaluation_template.generate_statements(
-            user_input=user_input, text=text
+            user_input=user_input, text=text, language=language
         )
         run_mgt, grp_cb = await new_group(
             name="generate_statements",
@@ -107,6 +111,7 @@ class AnswerCorrectness(BaseMetric):
         user_input: str,
         actual_output_statements: List[str],
         expected_output_statements: List[str],
+        language: Language = Language.ENGLISH,
         callbacks: Optional[Callbacks] = None,
     ) -> Verdicts:
         assert self.model is not None, "llm is not set"
@@ -114,6 +119,7 @@ class AnswerCorrectness(BaseMetric):
             user_input=user_input,
             actual_output_statements=actual_output_statements,
             expected_output_statements=expected_output_statements,
+            language=language,
         )
         run_mgt, grp_cb = await new_group(
             name="generate_verdicts",
@@ -138,6 +144,7 @@ class AnswerCorrectness(BaseMetric):
         self,
         score: float,
         verdicts: Optional[Verdicts],
+        language: Language = Language.ENGLISH,
         callbacks: Optional[Callbacks] = None,
     ) -> str:
         assert self.model is not None, "llm is not set"
@@ -149,6 +156,7 @@ class AnswerCorrectness(BaseMetric):
             tp_reasons=tp_reasons,
             fp_reasons=fp_reasons,
             fn_reasons=fn_reasons,
+            language=language,
         )
         run_mgt, grp_cb = await new_group(
             name="generate_reason",
@@ -182,14 +190,19 @@ class AnswerCorrectness(BaseMetric):
         assert test_case.actual_output, "actual_output cannot be empty"
         assert test_case.expected_output, "expected_output cannot be empty"
 
+        # 检测语言 - 基于用户问题
+        language = detect_language(test_case.user_input)
+
         actual_output_statements: List[str] = await self._a_generate_statements(
             user_input=test_case.user_input,
             text=test_case.actual_output,
+            language=language,
             callbacks=callbacks,
         )
         expected_output_statements: List[str] = await self._a_generate_statements(
             user_input=test_case.user_input,
             text=test_case.expected_output,
+            language=language,
             callbacks=callbacks,
         )
         if actual_output_statements or expected_output_statements:
@@ -197,6 +210,7 @@ class AnswerCorrectness(BaseMetric):
                 user_input=test_case.user_input,
                 actual_output_statements=actual_output_statements,
                 expected_output_statements=expected_output_statements,
+                language=language,
                 callbacks=callbacks,
             )
             f1_score = self._compute_statement_presence(verdicts)
@@ -230,6 +244,7 @@ class AnswerCorrectness(BaseMetric):
             reason = await self._a_generate_reason(
                 score,
                 verdicts,
+                language=language,
                 callbacks=callbacks,
             )
         metric_value = MetricValue(

@@ -10,6 +10,7 @@ from diting_core.metrics.base_metric import BaseMetric, MetricValue
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.metrics.context_precision.template import ContextPrecisionTemplate
 from diting_core.metrics.context_precision.schema import Verdict, Reason
+from diting_core.metrics.utils import Language, detect_language
 
 
 @dataclass
@@ -62,11 +63,15 @@ class ContextPrecision(BaseMetric):
         user_input: str,
         expected_output: str,
         context: str,
+        language: Language = Language.ENGLISH,
         callbacks: Optional[Callbacks] = None,
     ) -> Verdict:
         assert self.model is not None, "llm is not set"
         prompt = self.evaluation_template.generate_verdict(
-            user_input=user_input, expected_output=expected_output, context=context
+            user_input=user_input,
+            expected_output=expected_output,
+            context=context,
+            language=language,
         )
         run_mgt, grp_cb = await new_group(
             name="a_generate_verdicts",
@@ -95,6 +100,7 @@ class ContextPrecision(BaseMetric):
         user_input: str,
         score: float,
         verdicts: List[Verdict],
+        language: Language = Language.ENGLISH,
         callbacks: Optional[Callbacks] = None,
     ) -> str:
         assert self.model is not None, "llm is not set"
@@ -106,6 +112,7 @@ class ContextPrecision(BaseMetric):
             user_input=user_input,
             score=round(score, 2),
             verdicts=context_precision_verdicts,
+            language=language,
         )
         run_mgt, grp_cb = await new_group(
             name="generate_reason",
@@ -138,12 +145,17 @@ class ContextPrecision(BaseMetric):
         assert test_case.user_input, "user_input cannot be empty"
         assert test_case.expected_output, "expected_output cannot be empty"
         assert test_case.retrieval_context, "retrieval_context cannot be empty"
+
+        # 检测语言 - 基于用户问题
+        language = detect_language(test_case.user_input)
+
         verdicts: List[Verdict] = []
         for context in test_case.retrieval_context:
             verdict = await self._a_generate_verdicts(
                 user_input=test_case.user_input,
                 expected_output=test_case.expected_output,
                 context=context,
+                language=language,
                 callbacks=callbacks,
             )
             verdicts.append(verdict)
@@ -151,7 +163,11 @@ class ContextPrecision(BaseMetric):
         reason = None
         if self.include_reason:
             reason = await self._a_generate_reason(
-                test_case.user_input, score, verdicts, callbacks=callbacks
+                test_case.user_input,
+                score,
+                verdicts,
+                language=language,
+                callbacks=callbacks,
             )
         metric_value = MetricValue(
             score=score, reason=reason, run_logs={"verdicts": verdicts}

@@ -144,10 +144,22 @@ class ContextPrecision(BaseMetric):
     ) -> MetricValue:
         assert test_case.user_input, "user_input cannot be empty"
         assert test_case.expected_output, "expected_output cannot be empty"
-        assert test_case.retrieval_context, "retrieval_context cannot be empty"
+        assert test_case.retrieval_context is not None, (
+            "retrieval_context cannot be None"
+        )
 
-        # 检测语言 - 基于用户问题
         language = detect_language(test_case.user_input)
+        if not test_case.retrieval_context:
+            reason = (
+                "检索内容为空"
+                if language == Language.CHINESE
+                else "Retrieval Context is empty"
+            )
+            metric_value = MetricValue(
+                score=0.0,
+                reason=reason,
+            )
+            return metric_value
 
         verdicts: List[Verdict] = []
         for context in test_case.retrieval_context:

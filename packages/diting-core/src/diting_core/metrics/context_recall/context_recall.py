@@ -198,30 +198,3 @@ class ContextRecall(BaseMetric):
             },
         )
         return metric_value
-
-
-# if __name__ == "__main__":
-#     from diting_core.models.llms.factory import llm_factory
-#     # from diting_core.metrics.answer_correctness.data import (
-#     #     query,
-#     #     answer,
-#     #     expect_answer,
-#     #     retrive_context,
-#     # )
-#     import asyncio
-#
-#     llm = llm_factory(
-#         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
-#         base_url="http://10.72.1.16:3454/v1",
-#         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
-#         is_guided_json_support=True
-#     )
-#     test_case = LLMCase(
-#         user_input="你好",
-#         actual_output="你好",
-#         expected_output="你好",
-#         # retrieval_context=[],
-#     )
-#     context_recall = ContextRecall(model=llm)
-#     context_recall_score = asyncio.run(context_recall.compute(test_case))
-#     print(context_recall_score)

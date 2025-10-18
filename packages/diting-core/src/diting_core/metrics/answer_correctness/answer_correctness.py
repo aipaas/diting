@@ -373,37 +373,3 @@ class AnswerCorrectness(BaseMetric):
         )
 
         return metric_value
-
-
-#
-# if __name__ == "__main__":
-#     from diting_core.models.llms.factory import llm_factory
-#     from diting_core.models.embeddings.factory import embedding_factory
-#     # from diting_core.metrics.answer_correctness.data import (
-#     #     query,
-#     #     answer,
-#     #     expect_answer,
-#     #     retrive_context,
-#     # )
-#     import asyncio
-#
-#     llm = llm_factory(
-#         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
-#         base_url="http://10.72.1.16:3454/v1",
-#         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
-#         is_guided_json_support=True
-#     )
-#     embeddings = embedding_factory(
-#         model="bge-m3",
-#         base_url="http://10.57.1.91:20081/v1",
-#         api_key="sk-jwaRNx5UJxB9WVZf7UgdRKuMOPPRkMn_w1YgUbhb20I",
-#     )
-#     test_case = LLMCase(
-#         user_input="你好",
-#         actual_output="你好",
-#         expected_output="你好",
-#         retrieval_context=["你好", "你好"],
-#     )
-#     context_recall = AnswerCorrectness(model=llm, embedding_model=embeddings)
-#     context_recall_score = asyncio.run(context_recall.compute(test_case))
-#     print(context_recall_score)

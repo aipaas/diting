@@ -233,29 +233,3 @@ class Faithfulness(BaseMetric):
             run_logs={"statements": statements, "verdicts": verdicts},
         )
         return metric_value
-
-
-# if __name__ == "__main__":
-#     from diting_core.models.llms.factory import llm_factory
-#     from diting_core.metrics.faithfulness.data import (
-#         query,
-#         answer,
-#         expect_answer,
-#         retrive_context,
-#     )
-#     import asyncio
-#
-#     llm = llm_factory(
-#         model="Qwen2.5-72B-Instruct-GPTQ-Int4",
-#         base_url="http://10.72.1.16:3454/v1",
-#         api_key="j77GLdbQejCKvItUAOzqg994bijpXyT4123",
-#     )
-#     test_case = LLMCase(
-#         user_input=query,
-#         actual_output=answer,
-#         expected_output=expect_answer,
-#         retrieval_context=retrive_context,
-#     )
-#     faithfulness = Faithfulness(model=llm)
-#     faithfulness_score = asyncio.run(faithfulness.compute(test_case))
-#     print(faithfulness_score)

@@ -36,6 +36,7 @@ dev = [
     "coverage>=7.9.1",
     "pre-commit>=4.2.0",
     "pytest>=8.4.1",
+    "pytest-asyncio>=1.2.0",
 ]
 lint = [
     "mypy>=1.16.1",
@@ -47,7 +48,7 @@ lint = [
 line-ending = "lf"
 
 [tool.uv]
-index-url = "http://mirrors.sangfor.org/pypi/simple/"
+index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
 
 # https://coverage.readthedocs.io/en/latest/config.html#run
 [tool.coverage.run]
@@ -55,6 +56,10 @@ index-url = "http://mirrors.sangfor.org/pypi/simple/"
 include = [
     "packages/**/*.py",
     "tests/**/*.py",
+]
+omit = [
+    "packages/diting-core/src/diting_core/optimization/**/*.py",
+    "tests/packages/diting-core/units/optimization/**/*.py",
 ]
 branch = true
 
@@ -85,6 +90,10 @@ exclude_lines = [
     'assert False',
 ]
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
@@ -96,5 +105,17 @@ include = [
     "packages",
     # "tests",
 ]
+exclude = [
+    "packages/diting-core/src/diting_core/optimization",
+]
 venvPath = '.'
 venv = ".venv"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+exclude = [
+    "^packages/diting-core/src/diting_core/optimization/",
+]

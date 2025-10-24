@@ -18,7 +18,7 @@ def llm_factory(
 ) -> BaseLLM:
     # 统一设置 enable_thinking 为 false 以避免非流式调用错误
     extra_body = kwargs.get("extra_body", {})
-    extra_body["enable_thinking"] = False
+    # extra_body["enable_thinking"] = False  # GLM in silconflow not support that
     kwargs["extra_body"] = extra_body
 
     if api_key:
@@ -32,6 +32,6 @@ def llm_factory(
     else:
         llm = ChatOpenAI(model=model, base_url=base_url, timeout=timeout, **kwargs)
     return LangchainLLMWrapper(
-        llm=llm,
+        llm=llm,  # pyright: ignore[reportArgumentType]
         is_guided_json_support=is_guided_json_support,
     )

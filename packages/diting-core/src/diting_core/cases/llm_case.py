@@ -88,7 +88,7 @@ def assert_testcase_validity(
     Raises
     ------
     ValueError
-        If any required parameter is None, a ValueError is raised with a message listing the missing parameters.
+        If any required model_parameters is None, a ValueError is raised with a message listing the missing parameters.
 
     Notes
     -----

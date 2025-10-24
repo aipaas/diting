@@ -47,7 +47,7 @@ class LangchainLLMWrapper(BaseLLM):
 
     def __init__(
         self,
-        llm: BaseLanguageModel[BaseMessage],
+        llm: BaseLanguageModel[BaseMessage],  # pyright: ignore[reportInvalidTypeArguments]
         is_guided_json_support: bool = False,
         json_retry_handler: Optional[JsonRetryHandler] = None,
     ):
@@ -66,7 +66,7 @@ class LangchainLLMWrapper(BaseLLM):
         return 0.3 if n > 1 else 0.0
 
     @staticmethod
-    def is_multiple_completion_supported(llm: BaseLanguageModel[BaseMessage]) -> bool:
+    def is_multiple_completion_supported(llm: BaseLanguageModel[BaseMessage]) -> bool:  # pyright: ignore[reportInvalidTypeArguments]
         """Return whether the given LLM supports n-completion."""
         for llm_type in MULTIPLE_COMPLETION_SUPPORTED:
             if isinstance(llm, llm_type):

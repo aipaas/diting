@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
   "diting-core",
   "diting-server",
+  "pandas>=2.3.3",
 ]
 
 [build-system]

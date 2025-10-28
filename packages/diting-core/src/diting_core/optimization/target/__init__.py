@@ -4,7 +4,12 @@
 """
 
 from diting_core.optimization.target.prompt_config import PromptConfig
+from diting_core.optimization.target.semantic_search_config import SemanticSearchConfig
+from diting_core.optimization.target.semantic_retriever import SemanticRetriever, BaseSemanticRetriever
 
 __all__ = [
     "PromptConfig",
+    "SemanticSearchConfig",
+    "SemanticRetriever",
+    "BaseSemanticRetriever"
 ]

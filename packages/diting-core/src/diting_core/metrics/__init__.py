@@ -9,6 +9,7 @@ from diting_core.metrics.answer_similarity.answer_similarity import AnswerSimila
 from diting_core.metrics.context_recall.context_recall import ContextRecall
 from diting_core.metrics.faithfulness.faithfulness import Faithfulness
 from diting_core.metrics.qa_quality.qa_quality import QAQuality
+from diting_core.metrics.composite import CompositeMetric
 
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "ContextRecall",
     "Faithfulness",
     "QAQuality",
+    "CompositeMetric",
     "MetricValueAggregator",
     "MetricScoreScope",
 ]

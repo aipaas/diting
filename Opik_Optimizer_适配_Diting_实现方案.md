@@ -534,6 +534,7 @@ from .types import (
 
 logger = logging.getLogger(__name__)
 
+
 class HierarchicalRootCauseAnalyzer:
     """层次化根因分析器
 
@@ -552,13 +553,13 @@ class HierarchicalRootCauseAnalyzer:
     """
 
     def __init__(
-        self,
-        call_model_fn: Callable,
-        reasoning_model: str,
-        seed: int,
-        max_parallel_batches: int = 5,
-        batch_size: int = 25,
-        verbose: bool = True,
+            self,
+            call_model_fn: Callable,
+            reasoning_model: str,
+            seed: int,
+            max_parallel_batches: int = 5,
+            batch_size: int = 25,
+            verbose: bool = True,
     ):
         self.call_model_fn = call_model_fn
         self.reasoning_model = reasoning_model
@@ -568,10 +569,10 @@ class HierarchicalRootCauseAnalyzer:
         self.verbose = verbose
 
     def _format_test_results_batch(
-        self,
-        test_results: List[Any],
-        batch_start: int,
-        batch_end: int,
+            self,
+            test_results: List[Any],
+            batch_start: int,
+            batch_end: int,
     ) -> str:
         """格式化批次测试结果用于分析"""
         formatted_results = []
@@ -581,7 +582,7 @@ class HierarchicalRootCauseAnalyzer:
 
             # 提取分数信息
             scores_info = []
-            for score in test_result.score_results:
+            for score in test_result.metric_values:
                 score_str = f"  - {score.name}: {score.value:.3f}"
                 if score.reason:
                     score_str += f"\n    原因: {score.reason}"
@@ -599,11 +600,11 @@ class HierarchicalRootCauseAnalyzer:
         return "\n\n" + ("=" * 80 + "\n\n").join(formatted_results)
 
     async def _analyze_batch_async(
-        self,
-        evaluation_result: EvaluationResult,
-        batch_number: int,
-        batch_start: int,
-        batch_end: int,
+            self,
+            evaluation_result: EvaluationResult,
+            batch_number: int,
+            batch_start: int,
+            batch_end: int,
     ) -> BatchAnalysis:
         """异步分析单个批次"""
         test_results = evaluation_result.test_results
@@ -636,9 +637,9 @@ class HierarchicalRootCauseAnalyzer:
         )
 
     async def _synthesize_batch_analyses_async(
-        self,
-        batch_analyses: List[BatchAnalysis],
-        total_test_cases: int,
+            self,
+            batch_analyses: List[BatchAnalysis],
+            total_test_cases: int,
     ) -> HierarchicalRootCauseAnalysis:
         """综合所有批次分析，提取统一失败模式"""
 
@@ -656,8 +657,8 @@ class HierarchicalRootCauseAnalyzer:
         return synthesis_response
 
     async def analyze(
-        self,
-        evaluation_result: EvaluationResult
+            self,
+            evaluation_result: EvaluationResult
     ) -> HierarchicalRootCauseAnalysis:
         """执行完整的层次化根因分析
 
@@ -732,9 +733,9 @@ class HierarchicalRootCauseAnalyzer:
 """
 
     def _build_synthesis_prompt(
-        self,
-        batch_analyses: List[BatchAnalysis],
-        total_test_cases: int
+            self,
+            batch_analyses: List[BatchAnalysis],
+            total_test_cases: int
     ) -> str:
         """构建综合分析提示词
 
@@ -743,7 +744,7 @@ class HierarchicalRootCauseAnalyzer:
         """
         batch_summaries = []
         for batch in batch_analyses:
-            summary = f"批次 {batch.batch_number} (测试用例 {batch.start_index+1}-{batch.end_index}):\n"
+            summary = f"批次 {batch.batch_number} (测试用例 {batch.start_index + 1}-{batch.end_index}):\n"
             for fm in batch.failure_modes:
                 summary += f"  - {fm.name}: {fm.description}\n"
             batch_summaries.append(summary)

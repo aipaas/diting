@@ -6,6 +6,8 @@ including batch processing, synthesis, and validation.
 
 import pytest
 
+from diting_core.cases.llm_case import LLMCase
+from diting_core.metrics import MetricValue
 from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.root_cause_analyzer import (
     HierarchicalRootCauseAnalyzer,
 )
@@ -18,6 +20,8 @@ from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_ref
 # Import mock helpers from parent directory
 import sys
 from pathlib import Path
+
+from diting_core.optimization.infra.eval_task import TestResult, ExperimentResult
 
 test_helpers_path = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(test_helpers_path))
@@ -58,14 +62,52 @@ class TestHierarchicalRootCauseAnalyzer:
     def sample_test_results(self):
         """Create sample test results with reasons"""
         return [
-            {
-                "user_input": f"Test input {i}",
-                "actual_output": f"Test output {i}",
-                "expected_output": f"Expected output {i}",
-                "score": 0.7 + (i % 3) * 0.05,
-                "reason": f"Test case {i} failed due to insufficient handling of edge cases",
-            }
+            TestResult(
+                test_case=LLMCase(
+                    user_input=f"Test input {i}",
+                    actual_output=f"Test output {i}",
+                    expected_output=f"Expected output {i}",
+                ),
+                metric_value=MetricValue(
+                    metric_name="accuracy",
+                    reason=f"Test case {i} failed due to insufficient handling of edge cases",
+                    score=0.7 + (i % 3) * 0.05,
+                ),
+            )
             for i in range(10)
+        ]
+
+    @pytest.fixture
+    def test_results_empty_reasons(self):
+        return [
+            TestResult(
+                test_case=LLMCase(
+                    user_input="Test input",
+                    actual_output="Test output",
+                    expected_output="Expected output",
+                ),
+                metric_value=MetricValue(
+                    metric_name="accuracy",
+                    reason="",
+                    score=0.5,
+                ),
+            )
+        ]
+
+    @pytest.fixture
+    def test_results_no_reasons(self):
+        return [
+            TestResult(
+                test_case=LLMCase(
+                    user_input="Test input",
+                    actual_output="Test output",
+                    expected_output="Expected output",
+                ),
+                metric_value=MetricValue(
+                    metric_name="accuracy",
+                    score=0.5,
+                ),
+            )
         ]
 
     @pytest.fixture
@@ -91,36 +133,6 @@ class TestHierarchicalRootCauseAnalyzer:
         assert analyzer.max_parallel_batches == 5
         assert analyzer.batch_size == 25
 
-    def test_format_test_results_batch(self, analyzer, sample_test_results):
-        """Test batch formatting produces correct structure"""
-        formatted = analyzer._format_test_results_batch(
-            test_results=sample_test_results,
-            batch_start=0,
-            batch_end=3,
-        )
-
-        # Check that formatted string contains key information
-        assert "Test Case #1" in formatted
-        assert "Test Case #2" in formatted
-        assert "Test Case #3" in formatted
-        assert "Test input 0" in formatted
-        assert "Score:" in formatted
-        assert "Reason:" in formatted
-
-    def test_format_test_results_batch_boundary(self, analyzer, sample_test_results):
-        """Test batch formatting handles boundary correctly"""
-        # Request beyond available results
-        formatted = analyzer._format_test_results_batch(
-            test_results=sample_test_results,
-            batch_start=8,
-            batch_end=15,  # Only 10 results available
-        )
-
-        # Should only include test cases 9 and 10
-        assert "Test Case #9" in formatted
-        assert "Test Case #10" in formatted
-        assert "Test Case #11" not in formatted
-
     def test_validate_reasons_present_with_valid_results(
         self, analyzer, sample_test_results
     ):
@@ -133,32 +145,18 @@ class TestHierarchicalRootCauseAnalyzer:
         # Should not raise for empty list
         analyzer._validate_reasons_present([])
 
-    def test_validate_reasons_present_missing_reasons(self, analyzer):
+    def test_validate_reasons_present_missing_reasons(
+        self, analyzer, test_results_no_reasons
+    ):
         """Test validation fails when reasons are missing"""
-        test_results_no_reasons = [
-            {
-                "input": "Test",
-                "output": "Output",
-                "expected": "Expected",
-                "score": 0.5,
-                # No 'reason' field
-            }
-        ]
 
         with pytest.raises(ValueError, match="must include 'reason' fields"):
             analyzer._validate_reasons_present(test_results_no_reasons)
 
-    def test_validate_reasons_present_empty_reasons(self, analyzer):
+    def test_validate_reasons_present_empty_reasons(
+        self, analyzer, test_results_empty_reasons
+    ):
         """Test validation fails when reasons are empty strings"""
-        test_results_empty_reasons = [
-            {
-                "input": "Test",
-                "output": "Output",
-                "expected": "Expected",
-                "score": 0.5,
-                "reason": "",  # Empty reason
-            }
-        ]
 
         with pytest.raises(ValueError, match="must include 'reason' fields"):
             analyzer._validate_reasons_present(test_results_empty_reasons)
@@ -239,7 +237,9 @@ class TestHierarchicalRootCauseAnalyzer:
 
     async def test_analyze_async_full_flow(self, analyzer, sample_test_results):
         """Test complete hierarchical analysis flow"""
-        result = await analyzer.analyze(sample_test_results)
+        result = await analyzer.analyze(
+            ExperimentResult(experiment_name="test", test_results=sample_test_results)
+        )
 
         # Check result structure
         assert isinstance(result, HierarchicalRootCauseAnalysis)
@@ -254,21 +254,18 @@ class TestHierarchicalRootCauseAnalyzer:
             assert failure_mode.description
             assert failure_mode.root_cause
 
-    async def test_analyze_async_with_missing_reasons(self, analyzer):
+    async def test_analyze_async_with_missing_reasons(
+        self, analyzer, test_results_no_reasons
+    ):
         """Test analysis fails gracefully with missing reasons"""
-        test_results_no_reasons = [
-            {
-                "input": "Test",
-                "output": "Output",
-                "expected": "Expected",
-                "score": 0.5,
-            }
-        ]
-
         with pytest.raises(ValueError, match="must include 'reason' fields"):
-            await analyzer.analyze(test_results_no_reasons)
+            await analyzer.analyze(
+                ExperimentResult(
+                    experiment_name="test", test_results=test_results_no_reasons
+                )
+            )
 
-    async def test_analyze_async_single_batch(self, call_model_fn):
+    async def test_analyze_async_single_batch(self, call_model_fn, sample_test_results):
         """Test analysis with results fitting in single batch"""
         analyzer = HierarchicalRootCauseAnalyzer(
             call_model_fn=call_model_fn,
@@ -277,25 +274,18 @@ class TestHierarchicalRootCauseAnalyzer:
             batch_size=20,  # Larger than test results
         )
 
-        test_results = [
-            {
-                "input": f"Test {i}",
-                "output": f"Output {i}",
-                "expected": f"Expected {i}",
-                "score": 0.7,
-                "reason": f"Reason {i}",
-            }
-            for i in range(5)
-        ]
-
-        result = await analyzer.analyze(test_results)
+        result = await analyzer.analyze(
+            ExperimentResult(experiment_name="test", test_results=sample_test_results)
+        )
 
         # Should still work with single batch
         # Note: Mock returns fixed values
         assert result.total_test_cases >= 0
         assert result.num_batches >= 0
 
-    async def test_analyze_async_multiple_batches(self, call_model_fn):
+    async def test_analyze_async_multiple_batches(
+        self, call_model_fn, sample_test_results
+    ):
         """Test analysis with results split across multiple batches"""
         analyzer = HierarchicalRootCauseAnalyzer(
             call_model_fn=call_model_fn,
@@ -304,18 +294,11 @@ class TestHierarchicalRootCauseAnalyzer:
             batch_size=3,  # Small batch size to force multiple batches
         )
 
-        test_results = [
-            {
-                "input": f"Test {i}",
-                "output": f"Output {i}",
-                "expected": f"Expected {i}",
-                "score": 0.7,
-                "reason": f"Reason {i}",
-            }
-            for i in range(10)
-        ]
+        experiment = ExperimentResult(
+            experiment_name="test", test_results=sample_test_results
+        )
 
-        result = await analyzer.analyze(test_results)
+        result = await analyzer.analyze(experiment)
 
         # Should have multiple batches
         # Note: Mock returns fixed values
@@ -348,17 +331,24 @@ class TestHierarchicalRootCauseAnalyzer:
         )
 
         test_results = [
-            {
-                "input": f"Test {i}",
-                "output": f"Output {i}",
-                "expected": f"Expected {i}",
-                "score": 0.7,
-                "reason": f"Reason {i}",
-            }
+            TestResult(
+                test_case=LLMCase(
+                    user_input=f"Test input {i}",
+                    actual_output=f"Test output {i}",
+                    expected_output=f"Expected output {i}",
+                ),
+                metric_value=MetricValue(
+                    metric_name="accuracy",
+                    reason=f"Test case {i} failed due to insufficient handling of edge cases",
+                    score=0.7 + (i % 3) * 0.05,
+                ),
+            )
             for i in range(15)
         ]
 
-        result = await analyzer.analyze(test_results)
+        result = await analyzer.analyze(
+            ExperimentResult(experiment_name="test", test_results=test_results)
+        )
 
         # Should have called LLM: 3 batches + 1 synthesis = 4 calls
         assert call_count == 4

@@ -2,17 +2,17 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from diting_core.callbacks.base import ChainType
 from diting_core.callbacks.manager import new_group
-from diting_core.metrics.base_metric import BaseMetric
-from diting_core.optimization.datasets.base_dataset import BaseDataset
 from diting_core.callbacks.usage import (
     GetEmbedTokenCallbackHandler,
     GetLLMTokenCallbackHandler,
     compute_token_usages,
 )
+from diting_core.metrics.base_metric import BaseMetric
+from diting_core.optimization.datasets.base_dataset import BaseDataset
 from diting_core.optimization.optimization_result import OptimizationResult
 from diting_core.optimization.target.base_config import BaseConfig
 
@@ -25,7 +25,7 @@ class BaseOptimizer(ABC):
         config: BaseConfig,
         dataset: BaseDataset,
         metric: BaseMetric,
-        n_samples: int | None = None,
+        n_samples: Optional[int] = None,
         **kwargs: Any,
     ) -> OptimizationResult:
         """通用优化接口
@@ -93,7 +93,7 @@ class BaseOptimizer(ABC):
         config: BaseConfig,
         dataset: BaseDataset,
         metric: BaseMetric,
-        n_samples: int | None = None,
+        n_samples: Optional[int] = None,
         **kwargs: Any,
     ) -> OptimizationResult:
         """子类实现的具体优化逻辑

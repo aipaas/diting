@@ -3,21 +3,21 @@
 Adapted from Opik's hierarchical_root_cause_analyzer.py with minimal changes for Diting.
 """
 
-import logging
 import asyncio
+import logging
 from typing import Any, Callable, Optional
 
 from diting_core.callbacks.base import Callbacks
-from diting_core.cases.llm_case import LLMCaseParams
+from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.prompts import (
+    BATCH_ANALYSIS_PROMPT,
+    SYNTHESIS_PROMPT,
+)
 from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.types import (
     RootCauseAnalysis,
     BatchAnalysis,
     HierarchicalRootCauseAnalysis,
 )
-from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.prompts import (
-    BATCH_ANALYSIS_PROMPT,
-    SYNTHESIS_PROMPT,
-)
+from diting_core.optimization.infra.eval_task import ExperimentResult, TestResult
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +59,71 @@ class HierarchicalRootCauseAnalyzer:
         self.max_parallel_batches = max_parallel_batches
         self.batch_size = batch_size
 
+    # TODO 改进点, 传入case信息: 在小数据量(10) Qwen2.5-32B-Instruct Total Improvement:46.02%
+    @staticmethod
     def _format_test_results_batch(
-        self,
-        test_results: list[dict[str, Any]],
+        test_results: list[TestResult],
+        batch_start: int,
+        batch_end: int,
+        severe_threshold: float = 0.3,  # 可调整：严重失败阈值
+        partial_threshold: float = 0.7,  # 可调整：部分失败阈值
+    ) -> str:
+        """
+        优化目标：聚焦失败分析，用<>标记边界，按LLM分析逻辑组织信息
+        """
+        formatted_results = []
+        valid_results = test_results[batch_start:batch_end]
+
+        for idx, test_result in enumerate(valid_results, start=batch_start + 1):
+            tc = test_result.test_case
+            mv = test_result.metric_value
+
+            # 1. 提取关键信息（仅保留失败分析必需字段，用N/A补全缺失值）
+            input_text = tc.user_input or "N/A"
+            expected = tc.expected_output or "N/A"
+            actual = tc.actual_output or "N/A"
+            dataset_item_id = (
+                tc.metadata.get("dataset_item_id", f"missing_id_{batch_start + idx}")
+                if tc.metadata
+                else f"missing_id_{batch_start + idx}"
+            )
+
+            metric = mv.metric_name or "unknown_metric"
+            # 分数处理：None→0.0，同时添加FAIL标记（分数≤0.5视为失败案例）
+            score = mv.score if mv.score is not None else 0.0
+            if score <= severe_threshold:
+                score_interpret = "severe failure"
+            elif score <= partial_threshold:
+                score_interpret = "partial failure"
+            else:
+                score_interpret = "success"
+
+            # 原因处理：优先保留失败原因，无原因时补充默认描述
+            reason = mv.reason or (
+                "No failure reason provided"
+                if score <= 0.5
+                else "No additional notes for passing case"
+            )
+
+            # 2. 用<>标记单条测试结果边界，按「输入→预期→实际→结果」逻辑组织
+            result_text = f"""<TestResult id="{dataset_item_id}">
+[TestCase]
+Input: {input_text}
+Expected: {expected}
+Actual Output: {actual}
+
+[{metric} ANALYSIS]
+Score: {score:.3f} ({score_interpret})
+Reason: {reason}
+</TestResult>"""
+            formatted_results.append(result_text)
+
+        # 3. 用空行分隔多条结果，避免标记嵌套干扰
+        return "\n\n".join(formatted_results)
+
+    @staticmethod
+    def _format_test_results_batch_v1(
+        test_results: list[TestResult],
         batch_start: int,
         batch_end: int,
     ) -> str:
@@ -83,19 +145,66 @@ class HierarchicalRootCauseAnalyzer:
 
             # Format this test result
             result_text = f"""Test Case #{idx + 1}
-Input: {test_result.get(LLMCaseParams.USER_INPUT.value, "N/A")}
-Output: {test_result.get(LLMCaseParams.ACTUAL_OUTPUT.value, "N/A")}
-Expected: {test_result.get(LLMCaseParams.EXPECTED_OUTPUT.value, "N/A")}
-Score: {test_result.get("score", 0):.3f}
-Reason: {test_result.get("reason", "N/A")}"""
+Input: {test_result.test_case.user_input or "N/A"}
+Output: {test_result.test_case.actual_output or "N/A"}
+Expected: {test_result.test_case.expected_output or "N/A"}
+{test_result.metric_value.metric_name or "N/A"}: {test_result.metric_value.score or 0:.3f}
+Reason: {test_result.metric_value.reason or "N/A"}"""
 
             formatted_results.append(result_text)
 
         return "\n\n" + ("=" * 80 + "\n\n").join(formatted_results)
 
+    # TODO 按照opik源码不传入case信息: 在小数据量(10) Qwen2.5-32B-Instruct Total Improvement:3.87%
+    @staticmethod
+    def _format_test_results_batch_v0(
+        test_results: list[TestResult],
+        batch_start: int,
+        batch_end: int,
+    ) -> str:
+        """
+        Format a batch of test results for analysis.
+
+        Args:
+            test_results: Full list of test results
+            batch_start: Starting index of the batch
+            batch_end: Ending index of the batch (exclusive)
+
+        Returns:
+            Formatted string containing test result details
+        """
+        formatted_results = []
+
+        for idx in range(batch_start, min(batch_end, len(test_results))):
+            test_result = test_results[idx]
+            test_case = test_result.test_case
+            dataset_item_id = (
+                test_case.metadata.get(
+                    "dataset_item_id", f"missing_id_{batch_start + idx}"
+                )
+                if test_case.metadata
+                else "missing_id_{batch_start + idx}"
+            )
+            # Extract scores
+            metric_value = test_result.metric_value
+            scores_info = []
+            score_str = f"  - {metric_value.metric_name}: {metric_value.score:.3f}"
+            if metric_value.reason:
+                score_str += f"\n    Reason: {metric_value.reason}"
+            scores_info.append(score_str)
+
+            # Format this test result
+            result_text = f"""Test Case #{idx + 1} (ID: {dataset_item_id})
+Scores:
+{chr(10).join(scores_info)}"""
+
+            formatted_results.append(result_text)
+
+        return ("\n\n" + "=" * 80 + "\n\n").join(formatted_results)
+
     async def _analyze_batch(
         self,
-        test_results: list[dict[str, Any]],
+        test_results: list[TestResult],
         batch_number: int,
         batch_start: int,
         batch_end: int,
@@ -144,7 +253,7 @@ Reason: {test_result.get("reason", "N/A")}"""
 
     async def _synthesize_batch_analyses(
         self,
-        test_results: list[dict[str, Any]],
+        test_results: list[TestResult],
         batch_analyses: list[BatchAnalysis],
         callbacks: Optional[Callbacks] = None,
     ) -> HierarchicalRootCauseAnalysis:
@@ -191,7 +300,7 @@ Reason: {test_result.get("reason", "N/A")}"""
 
         return synthesis_response
 
-    def _validate_reasons_present(self, test_results: list[dict[str, Any]]) -> None:
+    def _validate_reasons_present(self, test_results: list[TestResult]) -> None:
         """
         Validate that test results include reasons for scoring.
 
@@ -206,7 +315,10 @@ Reason: {test_result.get("reason", "N/A")}"""
 
         has_reasons = False
         for test_result in test_results:
-            if test_result.get("reason") and test_result["reason"].strip():
+            if (
+                test_result.metric_value.reason
+                and test_result.metric_value.reason.strip()
+            ):
                 has_reasons = True
                 break
 
@@ -220,7 +332,7 @@ Reason: {test_result.get("reason", "N/A")}"""
 
     async def analyze(
         self,
-        test_results: list[dict[str, Any]],
+        experiment_result: ExperimentResult,
         callbacks: Optional[Callbacks] = None,
     ) -> HierarchicalRootCauseAnalysis:
         """
@@ -233,7 +345,7 @@ Reason: {test_result.get("reason", "N/A")}"""
         4. Synthesizes batch analyses into unified failure modes
 
         Args:
-            test_results: List of test results (each is a dict with 'input', 'output', 'expected', 'score', 'reason')
+            experiment_result: The evaluation result to analyze
             callbacks: callbacks for log and llm cost calc
 
         Returns:
@@ -242,6 +354,8 @@ Reason: {test_result.get("reason", "N/A")}"""
         Raises:
             ValueError: If test results don't include reasons, which are critical for analysis
         """
+        test_results = experiment_result.test_results
+
         num_test_results = len(test_results)
 
         # Validate that reasons are present in test results

@@ -21,7 +21,7 @@ from pathlib import Path
 
 test_helpers_path = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(test_helpers_path))
-from test_helpers import MockLLMAdapter, mock_evaluate_prompt_with_detail  # noqa: E402
+from test_helpers import MockLLMAdapter, mock_evaluate_prompt  # noqa: E402
 
 
 class MockMetric(BaseMetric):
@@ -95,8 +95,8 @@ class TestHierarchicalReflectiveOptimizer:
 
     @pytest.mark.asyncio
     @patch(
-        "diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer.evaluate_prompt_with_detail",
-        mock_evaluate_prompt_with_detail,
+        "diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer.evaluate_prompt",
+        mock_evaluate_prompt,
     )
     async def test_optimize_basic(self, initial_prompt, mock_dataset, mock_metric):
         """Test basic optimization flow (with mocks)"""
@@ -128,8 +128,8 @@ class TestHierarchicalReflectiveOptimizer:
 
     @pytest.mark.asyncio
     @patch(
-        "diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer.evaluate_prompt_with_detail",
-        mock_evaluate_prompt_with_detail,
+        "diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer.evaluate_prompt",
+        mock_evaluate_prompt,
     )
     async def test_optimize_converges_early(
         self, initial_prompt, mock_dataset, mock_metric
@@ -175,8 +175,8 @@ class TestHierarchicalReflectiveOptimizer:
 
     @pytest.mark.asyncio
     @patch(
-        "diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer.evaluate_prompt_with_detail",
-        mock_evaluate_prompt_with_detail,
+        "diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer.evaluate_prompt",
+        mock_evaluate_prompt,
     )
     async def test_optimization_history(
         self, initial_prompt, mock_dataset, mock_metric

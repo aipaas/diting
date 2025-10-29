@@ -4,11 +4,13 @@ This module provides mock implementations ONLY for testing purposes.
 Production code should NOT import from this module.
 """
 
-import random
 import typing as t
 from typing import Any
 
+from diting_core.cases.llm_case import LLMCase
+from diting_core.metrics import MetricValue
 from diting_core.models.llms.base_model import BaseLLM, PydanticClass
+from diting_core.optimization.infra.eval_task import ExperimentResult, TestResult
 from diting_core.optimization.target.prompt_config import PromptConfig
 from diting_core.optimization.datasets.base_dataset import BaseDataset
 from diting_core.metrics.base_metric import BaseMetric
@@ -99,46 +101,13 @@ class MockLLMAdapter(BaseLLM):
             raise ValueError(f"Unknown response model: {schema.__name__}")
 
 
-async def mock_evaluate_prompt_with_detail(
-    prompt_config: PromptConfig,
-    dataset: BaseDataset,
-    metric: BaseMetric,
-    max_concurrency: int,
-    **kwargs: Any,
-) -> tuple[float, list[dict[str, Any]]]:
-    """Mock prompt evaluation for testing.
-
-    Args:
-        prompt_config: Prompt configuration (ignored in mock)
-        dataset: Evaluation dataset (ignored in mock)
-        metric: Evaluation metric (ignored in mock)
-        max_concurrency: max concurrency for evaluation (ignored in mock)
-
-    Returns:
-        Tuple of (average_score, test_results)
-    """
-    test_results = [
-        {
-            "input": f"Test input {i}",
-            "output": f"Test output {i}",
-            "expected": f"Expected output {i}",
-            "score": 0.7 + (i % 3) * 0.05,  # Varying scores
-            "reason": f"Mock evaluation reason for test case {i}",
-        }
-        for i in range(10)
-    ]
-
-    avg_score = sum(r["score"] for r in test_results) / len(test_results)
-    return avg_score, test_results
-
-
 async def mock_evaluate_prompt(
     prompt_config: PromptConfig,
     dataset: BaseDataset,
     metric: BaseMetric,
     max_concurrency: int,
     **kwargs: Any,
-) -> float:
+) -> ExperimentResult:
     """Mock synchronous prompt evaluation for testing.
 
     Returns a random score to simulate model_parameters optimization trials.
@@ -152,7 +121,26 @@ async def mock_evaluate_prompt(
     Returns:
         Random score between 0.5 and 0.9
     """
-    return random.uniform(0.5, 0.9)
+    test_results = [
+        TestResult(
+            test_case=LLMCase(
+                **{
+                    "input": f"Test input {i}",
+                    "output": f"Test output {i}",
+                    "expected": f"Expected output {i}",
+                    "metadata": {},
+                }
+            ),
+            metric_value=MetricValue(
+                metric_name="test",
+                score=0.7 + (i % 3) * 0.05,  # Varying scores
+                reason=f"Mock evaluation reason for test case {i}",
+            ),
+        )
+        for i in range(10)
+    ]
+
+    return ExperimentResult(experiment_name="mock", test_results=test_results)
 
 
 def mock_evaluate_prompt_sync(
@@ -161,7 +149,7 @@ def mock_evaluate_prompt_sync(
     metric: BaseMetric,
     max_concurrency: int,
     **kwargs: Any,
-) -> float:
+) -> ExperimentResult:
     """Mock synchronous prompt evaluation for testing.
 
     Returns a random score to simulate model_parameters optimization trials.
@@ -175,4 +163,23 @@ def mock_evaluate_prompt_sync(
     Returns:
         Random score between 0.5 and 0.9
     """
-    return random.uniform(0.5, 0.9)
+    test_results = [
+        TestResult(
+            test_case=LLMCase(
+                **{
+                    "input": f"Test input {i}",
+                    "output": f"Test output {i}",
+                    "expected": f"Expected output {i}",
+                    "metadata": {},
+                }
+            ),
+            metric_value=MetricValue(
+                metric_name="test",
+                score=0.7 + (i % 3) * 0.05,  # Varying scores
+                reason=f"Mock evaluation reason for test case {i}",
+            ),
+        )
+        for i in range(10)
+    ]
+
+    return ExperimentResult(experiment_name="mock", test_results=test_results)

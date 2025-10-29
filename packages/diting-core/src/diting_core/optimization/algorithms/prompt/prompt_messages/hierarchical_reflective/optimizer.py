@@ -8,21 +8,18 @@ Main adaptations:
 - Async-first design aligned with Diting conventions
 """
 
-import logging
 import copy
+import logging
 from datetime import datetime
 from typing import Any, Optional, List, Dict
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.callbacks.manager import new_group
-from diting_core.models.llms.base_model import BaseLLM, PydanticClass
-from diting_core.optimization.base_optimizer import BaseOptimizer
-from diting_core.optimization.target.prompt_config import PromptConfig
-from diting_core.optimization.target.base_config import BaseConfig
-from diting_core.optimization.datasets.base_dataset import BaseDataset
 from diting_core.metrics.base_metric import BaseMetric
-from diting_core.optimization.optimization_result import OptimizationResult
-
+from diting_core.models.llms.base_model import BaseLLM, PydanticClass
+from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.prompts import (
+    IMPROVE_PROMPT_TEMPLATE,
+)
 from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.root_cause_analyzer import (
     HierarchicalRootCauseAnalyzer,
 )
@@ -30,10 +27,12 @@ from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_ref
     FailureMode,
     ImprovedPrompt,
 )
-from diting_core.optimization.algorithms.prompt.prompt_messages.hierarchical_reflective.prompts import (
-    IMPROVE_PROMPT_TEMPLATE,
-)
-from diting_core.optimization.infra.eval_task import evaluate_prompt_with_detail
+from diting_core.optimization.base_optimizer import BaseOptimizer
+from diting_core.optimization.datasets.base_dataset import BaseDataset
+from diting_core.optimization.infra.eval_task import evaluate_prompt, ExperimentResult
+from diting_core.optimization.optimization_result import OptimizationResult
+from diting_core.optimization.target.base_config import BaseConfig
+from diting_core.optimization.target.prompt_config import PromptConfig
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +188,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
         attempt: int,
         n_samples: Optional[int] = None,
         callbacks: Optional[Callbacks] = None,
-    ) -> tuple[PromptConfig, float, list[dict[str, Any]]]:
+    ) -> tuple[PromptConfig, ExperimentResult]:
         """
         Generate and evaluate a single improvement attempt for a failure mode.
 
@@ -223,7 +222,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
         )
 
         # Evaluate improved prompt
-        improved_score, improved_test_results = await evaluate_prompt_with_detail(
+        improved_experiment_result = await evaluate_prompt(
             prompt_config=improved_prompt,
             dataset=dataset,
             metric=metric,
@@ -232,7 +231,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             callbacks=callbacks,
         )
 
-        return improved_prompt, improved_score, improved_test_results
+        return improved_prompt, improved_experiment_result
 
     async def _optimize(
         self,
@@ -282,7 +281,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             callbacks=grp_cb,
         )
 
-        baseline_score, test_results = await evaluate_prompt_with_detail(
+        experiment_result = await evaluate_prompt(
             prompt_config=prompt_config,
             dataset=dataset,
             metric=metric,
@@ -290,18 +289,22 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             n_samples=n_samples,
             callbacks=eval_baseline_grp,
         )
+        baseline_score = experiment_result.avg_score
         history.append(
             {
                 "iteration": 0,
                 "timestamp": datetime.utcnow().isoformat(),
-                "prompt": prompt_config.model_dump(),
-                "score": baseline_score,
-                "test_results": test_results,
                 "stage": "baseline",
+                "config": prompt_config,
+                "score": baseline_score,
+                "experiment_result": experiment_result,
             }
         )
         await eval_baseline_rm.on_chain_end(
-            outputs={"baseline_score": baseline_score, "test_results": test_results}
+            outputs={
+                "experiment_result": experiment_result,
+                "baseline_score": baseline_score,
+            }
         )
 
         # Track baseline and best
@@ -325,13 +328,13 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             root_cause_analyze_rm, root_cause_analyze_grp = await new_group(
                 name="hierarchical_root_cause_analysis",
                 inputs={
-                    "test_results": test_results,
+                    "experiment_result": experiment_result,
                 },
                 callbacks=optimize_iter_grp,
             )
 
             hierarchical_analysis = await self._hierarchical_analyzer.analyze(
-                test_results, root_cause_analyze_grp
+                experiment_result, root_cause_analyze_grp
             )
 
             await root_cause_analyze_rm.on_chain_end(
@@ -357,14 +360,13 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                 max_attempts = self.max_retries + 1
                 improved_prompt = None
                 improved_score = None
-                improved_test_results = None
+                improved_experiment_result = None
 
                 for attempt in range(1, max_attempts + 1):
                     # Generate and evaluate improvement
                     (
                         improved_prompt,
-                        improved_score,
-                        improved_test_results,
+                        improved_experiment_result,
                     ) = await self._generate_and_evaluate_improvement(
                         root_cause=root_cause,
                         best_prompt=best_prompt,
@@ -374,16 +376,17 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                         n_samples=n_samples,
                         callbacks=gen_and_eval_improve_grp,
                     )
+                    improved_score = improved_experiment_result.avg_score
                     history.append(
                         {
                             "iteration": iteration,
-                            "sub_iteration": attempt,
                             "timestamp": datetime.utcnow().isoformat(),
-                            "root_cause": root_cause.model_dump(),
-                            "prompt": improved_prompt.model_dump(),
-                            "score": improved_score,
-                            "test_results": improved_test_results,
                             "stage": "optimizing",
+                            "config": improved_prompt,
+                            "score": improved_score,
+                            "experiment_result": improved_experiment_result,
+                            "root_cause": root_cause,
+                            "sub_iteration": attempt,
                         }
                     )
 
@@ -425,7 +428,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                     # Update best
                     best_score = improved_score
                     best_prompt = improved_prompt
-                    test_results = improved_test_results
+                    experiment_result = improved_experiment_result
                 else:
                     logger.debug(
                         f"Keeping previous best prompt, no improvement from '{root_cause.name}'"

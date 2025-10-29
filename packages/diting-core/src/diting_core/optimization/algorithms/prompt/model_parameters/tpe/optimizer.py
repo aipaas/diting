@@ -100,7 +100,7 @@ class ParameterOptimizer(BaseOptimizer):
             callbacks=grp_cb,
         )
 
-        baseline_score = await evaluate_prompt(
+        experiment_result = await evaluate_prompt(
             prompt_config=prompt_config,
             dataset=dataset,
             metric=metric,
@@ -109,19 +109,25 @@ class ParameterOptimizer(BaseOptimizer):
             callbacks=eval_baseline_grp,
         )
 
+        baseline_score = experiment_result.avg_score
         history.append(
             {
                 "iteration": 0,
                 "timestamp": datetime.utcnow().isoformat(),
-                "parameters": {},
-                "score": baseline_score,
-                "model_params": copy.deepcopy(prompt_config.model_params or {}),
-                "type": "baseline",
                 "stage": "baseline",
+                "config": copy.deepcopy(prompt_config.model_params or {}),
+                "score": baseline_score,
+                "experiment_result": experiment_result,
+                "parameters": {},
             }
         )
 
-        await eval_baseline_rm.on_chain_end(outputs={"baseline_score": baseline_score})
+        await eval_baseline_rm.on_chain_end(
+            outputs={
+                "baseline_score": baseline_score,
+                "experiment_result": experiment_result,
+            }
+        )
 
         parameter_search_rm, parameter_search_grp = await new_group(
             name="parameter_search",
@@ -149,7 +155,7 @@ class ParameterOptimizer(BaseOptimizer):
         local_trials = int(total_trials * self.local_search_ratio)
         global_trials = total_trials - local_trials
 
-        if global_trials <= 0 and total_trials > 0:
+        if global_trials <= 0 < total_trials:
             global_trials = 1
             local_trials = total_trials - 1
 
@@ -167,7 +173,7 @@ class ParameterOptimizer(BaseOptimizer):
             )
 
             # Use synchronous evaluation
-            score = evaluate_prompt_sync(
+            _experiment_result = evaluate_prompt_sync(
                 tuned_prompt,
                 dataset,
                 metric,
@@ -180,8 +186,9 @@ class ParameterOptimizer(BaseOptimizer):
             trial.set_user_attr(
                 "model_params", copy.deepcopy(tuned_prompt.model_params)
             )
+            trial.set_user_attr("experiment_result", _experiment_result)
             trial.set_user_attr("stage", current_stage)
-            return float(score)
+            return _experiment_result.avg_score
 
         # Global search
         global_range = parameter_space.describe()
@@ -202,10 +209,11 @@ class ParameterOptimizer(BaseOptimizer):
                 {
                     "iteration": trial.number + 1,
                     "timestamp": timestamp.isoformat(),
-                    "parameters": trial.user_attrs.get("parameters", {}),
-                    "score": float(trial.value),
-                    "model_params": trial.user_attrs.get("model_params"),
                     "stage": trial.user_attrs.get("stage", "global"),
+                    "config": trial.user_attrs.get("model_params"),
+                    "score": float(trial.value),
+                    "experiment_result": trial.user_attrs.get("experiment_result", {}),
+                    "parameters": trial.user_attrs.get("parameters", {}),
                 }
             )
 

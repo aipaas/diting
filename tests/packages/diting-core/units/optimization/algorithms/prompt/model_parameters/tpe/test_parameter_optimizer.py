@@ -243,7 +243,7 @@ class TestParameterOptimizer:
         assert len(result.history) > 0
         first_entry = result.history[0]
         assert first_entry["iteration"] == 0
-        assert first_entry["type"] == "baseline"
+        assert first_entry["stage"] == "baseline"
         assert first_entry["score"] == result.initial_score
 
     @pytest.mark.asyncio

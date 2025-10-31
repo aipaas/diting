@@ -15,9 +15,10 @@ from diting_server.services.synthesis.synthesizers import SynthesizerFactory
 from diting_core.models.llms.factory import llm_factory
 from diting_server.common.logging_config.config import get_logger
 from diting_core.models.embeddings.factory import embedding_factory
-from diting_server.common.callback import (
+from diting_core.callbacks.usage import (
     GetEmbedTokenCallbackHandler,
     GetLLMTokenCallbackHandler,
+    compute_token_usages,
 )
 from diting_server.exceptions.synthesis import (
     ModelConfigException,
@@ -25,7 +26,6 @@ from diting_server.exceptions.synthesis import (
 )
 from diting_server.common.utils import resolve_model_config
 from diting_server.common.schema import StatusEnum
-from diting_server.common.utils import compute_token_usage
 
 logger = get_logger(__name__)
 
@@ -152,7 +152,7 @@ class SynthesizerService:
             error = str(ex)
             logger.error(f"Synthesizer application: {error}", exc_info=True)
         finally:
-            usages = compute_token_usage(
+            usages = compute_token_usages(
                 llm_usages=get_llm_token.usages,
                 embed_usages=get_embed_token.usages,
             )

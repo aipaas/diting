@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
   "diting-core",
   "diting-server",
+  "diting-optimizer",
 ]
 
 [build-system]
@@ -27,6 +28,7 @@ only-include = ["/README.md"]
 [tool.uv.sources]
 diting-core = { workspace = true }
 diting-server = { workspace = true}
+diting-optimizer = { workspace = true}
 
 [tool.uv.workspace]
 members = ["packages/*"]
@@ -58,8 +60,8 @@ include = [
     "tests/**/*.py",
 ]
 omit = [
-    "packages/diting-core/src/diting_core/optimization/**/*.py",
-    "tests/packages/diting-core/units/optimization/**/*.py",
+    "packages/diting-optimizer/*.py",
+    "tests/packages/diting-optimizer/units/*.py",
 ]
 branch = true
 
@@ -106,7 +108,7 @@ include = [
     # "tests",
 ]
 exclude = [
-    "packages/diting-core/src/diting_core/optimization",
+    "packages/diting-optimizer/src/diting_optimizer/",
 ]
 venvPath = '.'
 venv = ".venv"
@@ -117,5 +119,5 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 exclude = [
-    "^packages/diting-core/src/diting_core/optimization/",
+    "^packages/diting-optimizer/src/diting_optimizer/",
 ]

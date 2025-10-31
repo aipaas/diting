@@ -11,9 +11,10 @@ from diting_server.apis.v1.evaluation.data_models import (
     EvalMetricTypeEnum,
 )
 from diting_server.services.evaluation.metrics import MetricFactory
-from diting_server.common.callback import (
+from diting_core.callbacks.usage import (
     GetEmbedTokenCallbackHandler,
     GetLLMTokenCallbackHandler,
+    compute_token_usages,
 )
 from diting_core.metrics.base_metric import BaseMetric
 from diting_core.models.llms.factory import llm_factory
@@ -25,7 +26,6 @@ from diting_server.exceptions.evaluation import (
 )
 from diting_server.common.utils import resolve_model_config
 from diting_server.common.schema import StatusEnum
-from diting_server.common.utils import compute_token_usage
 
 logger = get_logger(__name__)
 
@@ -149,7 +149,7 @@ class EvaluationService:
             error = str(ex)
             logger.error(f"Metric compute error: {error}", exc_info=True)
         finally:
-            usages = compute_token_usage(
+            usages = compute_token_usages(
                 llm_usages=get_llm_token.usages,
                 embed_usages=get_embed_token.usages,
             )

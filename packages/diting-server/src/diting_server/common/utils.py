@@ -1,43 +1,6 @@
 import os
+from typing import Any, Optional
 from urllib.parse import urlparse
-from typing import Any, List, Optional
-from diting_server.common.schema import Usage, ModelType
-
-
-def compute_token_usage(llm_usages: List[Any], embed_usages: List[Any]) -> List[Usage]:
-    usages: List[Usage] = []
-
-    # Embedding token
-    if embed_usages:
-        prompt_tokens = sum(u.prompt_tokens for u in embed_usages)
-        completion_tokens = sum(
-            getattr(u, "completion_tokens", 0) for u in embed_usages
-        )
-        total_tokens = sum(u.total_tokens for u in embed_usages)
-        usages.append(
-            Usage(
-                model_type=ModelType.EMBED,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
-                total_tokens=total_tokens,
-            )
-        )
-
-    # LLM token
-    if llm_usages:
-        prompt_tokens = sum(u.get("prompt_tokens", 0) for u in llm_usages)
-        completion_tokens = sum(u.get("completion_tokens", 0) for u in llm_usages)
-        total_tokens = sum(u.get("total_tokens", 0) for u in llm_usages)
-        usages.append(
-            Usage(
-                model_type=ModelType.LLM,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
-                total_tokens=total_tokens,
-            )
-        )
-
-    return usages
 
 
 def resolve_model_config(

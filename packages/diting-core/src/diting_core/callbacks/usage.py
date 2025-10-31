@@ -3,8 +3,8 @@ from enum import StrEnum
 from typing import Any, Dict, Optional, Union, List
 from uuid import UUID
 
-from openai import BaseModel
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, BaseModel
+from pydantic.alias_generators import to_camel
 from typing_extensions import override
 from diting_core.callbacks.base import AsyncCallbackHandler
 from diting_core.callbacks.base import ChainType
@@ -18,33 +18,25 @@ import tiktoken
 ENC = tiktoken.get_encoding("cl100k_base")
 
 
-def to_camel(string: str) -> str:
-    """snake_case → camelCase"""
-    parts = string.split("_")
-    return parts[0] + "".join(word.capitalize() for word in parts[1:])
-
-
-class BaseSchema(BaseModel):
-    """统一配置的基类：支持别名(camelCase)，允许 orm_mode"""
-
-    model_config = ConfigDict(
-        alias_generator=to_camel,
-        populate_by_name=True,
-        extra="forbid",  # 默认禁止多余字段，防止 API 滥用
-        from_attributes=True,
-    )
-
-
 class ModelType(StrEnum):
     LLM = "llm"
     EMBED = "embed"
 
 
-class Usage(BaseSchema):
+class Usage(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        extra="forbid",
+        from_attributes=True,
+    )
+
     model_type: ModelType = Field(..., description="Type of the model (llm, embed)")
-    prompt_tokens: Optional[int] = Field(None, description="提示词token数")
-    completion_tokens: Optional[int] = Field(None, description="完成token数")
-    total_tokens: Optional[int] = Field(None, description="总token数")
+    prompt_tokens: Optional[int] = Field(None, description="number of prompt tokens")
+    completion_tokens: Optional[int] = Field(
+        None, description="number of completion tokens"
+    )
+    total_tokens: Optional[int] = Field(None, description="total tokens number")
 
 
 def compute_token_usages(llm_usages: List[Any], embed_usages: List[Any]) -> List[Usage]:

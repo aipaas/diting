@@ -1,15 +1,11 @@
 [project]
-name = "diting-core"
+name = "diting-optimizer"
 version = "0.1.0"
-description = "DiTing Core Module"
+description = "DiTing Optimizer Module"
 requires-python = ">=3.11"
 dependencies = [
-    "json-repair>=0.47.6",
-    "langchain-core>=0.3.68",
-    "langchain-openai>=0.3.27",
-    "numpy>=2.3.1",
-    "openai>=1.93.0",
-    "pydantic>=2.0.0",
+    "diting-core",
+    "optuna>=3.0.0"
 ]
 
 [build-system]
@@ -24,5 +20,8 @@ vcs = "git"
 style = "pep440"
 bump = true
 
+[tool.uv.sources]
+diting-core = { workspace = true }
+
 [tool.hatch.build.targets.wheel]
-packages = ["src/diting_core"]
+packages = ["src/diting_optimizer"]

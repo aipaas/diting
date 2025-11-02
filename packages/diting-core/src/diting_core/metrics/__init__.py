@@ -10,6 +10,11 @@ from diting_core.metrics.context_recall.context_recall import ContextRecall
 from diting_core.metrics.faithfulness.faithfulness import Faithfulness
 from diting_core.metrics.qa_quality.qa_quality import QAQuality
 from diting_core.metrics.composite import CompositeMetric
+from diting_core.metrics.retrieval_metrics import (
+    AverageSimilarityMetric,
+    TopDocumentMatchMetric,
+    WeightedRetrievalMetric,
+)
 
 
 __all__ = [
@@ -24,4 +29,7 @@ __all__ = [
     "CompositeMetric",
     "MetricValueAggregator",
     "MetricScoreScope",
+    "AverageSimilarityMetric",
+    "TopDocumentMatchMetric",
+    "WeightedRetrievalMetric",
 ]

@@ -8,6 +8,7 @@ dependencies = [
   "diting-core",
   "diting-server",
   "pandas>=2.3.3",
+  "pydantic>=2.12.3",
 ]
 
 [build-system]

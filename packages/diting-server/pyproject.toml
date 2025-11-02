@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
     "diting-core",
     "fastapi>=0.116.1",
+    "httpx>=0.27.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.10.1",
     "pyyaml>=6.0.2",

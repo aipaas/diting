@@ -1,0 +1,166 @@
+import asyncio
+import logging
+import typing as t
+
+import numpy as np
+from pydantic import BaseModel
+
+from diting_core.callbacks.base import Callbacks
+from diting_core.models.llms.base_model import BaseLLM
+from diting_core.utilities.executor import task_wrapper
+from diting_dataset.corpus import Persona
+from diting_dataset.knowledge_graph.schema import Node, KnowledgeGraph
+from diting_dataset.utilities.pydantic_prompt import PydanticPrompt, StringIO
+
+logger = logging.getLogger(__name__)
+
+
+def default_filter(node: Node) -> bool:
+    if (
+        node.type.name == "DOCUMENT"
+        and node.properties.get("summary_embedding") is not None
+    ):
+        return True
+    else:
+        return False
+
+
+class PersonaGenerationPrompt(PydanticPrompt[StringIO, Persona]):
+    instruction: str = (
+        "Using the provided summary, generate a single persona who would likely "
+        "interact with or benefit from the content. Include a unique name and a "
+        "concise role description of who they are."
+    )
+    input_model: t.Type[StringIO] = StringIO
+    output_model: t.Type[Persona] = Persona
+    examples: t.List[t.Tuple[StringIO, Persona]] = [
+        (
+            StringIO(
+                text="Guide to Digital Marketing explains strategies for engaging audiences across various online platforms."
+            ),
+            Persona(
+                name="Digital Marketing Specialist",
+                role_description="Focuses on engaging audiences and growing the brand online.",
+            ),
+        )
+    ]
+
+
+class PersonaList(BaseModel):
+    personas: t.List[Persona]
+
+    def __getitem__(self, key: str) -> Persona:
+        for persona in self.personas:
+            if persona.name == key:
+                return persona
+        raise KeyError(f"No persona found with name '{key}'")
+
+
+async def generate_personas_from_kg(
+    kg: KnowledgeGraph,
+    llm: BaseLLM,
+    persona_generation_prompt: PydanticPrompt[
+        StringIO, Persona
+    ] = PersonaGenerationPrompt(),
+    num_personas: int = 3,
+    max_concurrency: t.Optional[int] = None,
+    filter_fn: t.Callable[[Node], bool] = default_filter,
+    callbacks: t.Optional[Callbacks] = None,
+) -> t.List[Persona]:
+    """
+    Generate personas from a knowledge graph based on cluster of similar document summaries.
+
+    parameters:
+        kg: KnowledgeGraph
+            The knowledge graph to generate personas from.
+        llm: BaseLLM
+            The LLM to use for generating the persona.
+        persona_generation_prompt: PersonaGenerationPrompt
+            The prompt to use for generating the persona.
+        num_personas: int
+            The maximum number of personas to generate.
+        filter_fn: Callable[[Node], bool]
+            A function to filter nodes in the knowledge graph.
+        callbacks: Callbacks
+            The callbacks to use for the generation process.
+
+
+    returns:
+        t.List[Persona]
+            The list of generated personas.
+    """
+
+    nodes = [node for node in kg.nodes if filter_fn(node)]
+    if len(nodes) == 0:
+        raise ValueError(
+            "No nodes that satisfied the given filer. Try changing the filter."
+        )
+
+    summaries = [node.properties.get("summary") for node in nodes]
+    summaries = [summary for summary in summaries if isinstance(summary, str)]
+    num_personas = min(num_personas, len(summaries))
+
+    embeddings = []
+    for node in nodes:
+        embeddings.append(node.properties.get("summary_embedding"))  # type: ignore[misc]
+
+    embeddings = np.array(embeddings)  # type: ignore[misc]
+    cosine_similarities = np.dot(embeddings, embeddings.T)  # type: ignore[misc]
+
+    groups: t.List[t.List[int]] = []
+    visited: t.Set[int] = set()
+    threshold = 0.75
+
+    for i, _ in enumerate(summaries):
+        if i in visited:
+            continue
+        group = [i]
+        visited.add(i)
+        for j in range(i + 1, len(summaries)):
+            if cosine_similarities[i, j] > threshold:
+                group.append(j)
+                visited.add(j)
+        groups.append(group)
+
+    top_summaries: t.List[str] = []
+    for group in groups:
+        representative_summary = max([summaries[i] for i in group], key=len)
+        top_summaries.append(representative_summary)
+
+    if len(top_summaries) <= num_personas:
+        top_summaries.extend(
+            np.random.choice(top_summaries, num_personas - len(top_summaries))
+        )
+
+    max_concurrency = num_personas if max_concurrency is None else max_concurrency
+    semaphore = asyncio.Semaphore(max_concurrency)
+
+    persona_list: t.List[Persona] = []
+    tasks = [
+        task_wrapper(
+            semaphore,
+            _generate_persona,
+            summary=summary,
+            persona_generation_prompt=persona_generation_prompt,
+            llm=llm,
+            persona_list=persona_list,
+            callbacks=callbacks,
+        )
+        for summary in top_summaries[:num_personas]
+    ]
+    await asyncio.gather(*tasks)
+
+    return persona_list
+
+
+async def _generate_persona(
+    summary: str,
+    persona_generation_prompt: PersonaGenerationPrompt,
+    llm: BaseLLM,
+    persona_list: t.List[Persona],
+    **kwargs: t.Any,
+) -> None:
+    persona = await persona_generation_prompt.generate(
+        llm, StringIO(text=summary), temperature=1.0, **kwargs
+    )
+    persona_list.append(persona)

@@ -32,6 +32,6 @@ def llm_factory(
     else:
         llm = ChatOpenAI(model=model, base_url=base_url, timeout=timeout, **kwargs)
     return LangchainLLMWrapper(
-        llm=llm,
+        llm=llm,  # type: ignore
         is_guided_json_support=is_guided_json_support,
     )

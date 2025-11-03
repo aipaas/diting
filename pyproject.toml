@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
   "diting-core",
   "diting-server",
+  "diting-dataset",
 ]
 
 [build-system]
@@ -27,9 +28,15 @@ only-include = ["/README.md"]
 [tool.uv.sources]
 diting-core = { workspace = true }
 diting-server = { workspace = true}
+diting-dataset = { workspace = true }
 
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[project.optional-dependencies]
+all = [
+  "diting-dataset[all]",
+]
 
 [dependency-groups]
 dev = [
@@ -47,7 +54,7 @@ lint = [
 line-ending = "lf"
 
 [tool.uv]
-index-url = "http://mirrors.sangfor.org/pypi/simple/"
+index-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
 
 # https://coverage.readthedocs.io/en/latest/config.html#run
 [tool.coverage.run]

@@ -1,10 +1,12 @@
-"""参数优化器类型定义"""
+"""Parameter optimizer type definitions."""
+
+from __future__ import annotations
 
 from enum import Enum
 
 
 class ParameterType(str, Enum):
-    """参数类型枚举"""
+    """Enumeration for parameter types."""
 
     FLOAT = "float"
     INT = "int"
@@ -12,7 +14,7 @@ class ParameterType(str, Enum):
 
 
 class ScaleType(str, Enum):
-    """缩放类型枚举"""
+    """Enumeration for scaling types."""
 
     LINEAR = "linear"
     LOG = "log"

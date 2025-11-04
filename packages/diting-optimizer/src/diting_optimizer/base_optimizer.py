@@ -1,4 +1,6 @@
-"""优化器基类"""
+"""Base optimizer module for all optimization algorithms."""
+
+from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
@@ -20,6 +22,22 @@ logger = logging.getLogger(__name__)
 
 
 class BaseOptimizer(ABC):
+    """Abstract base class for all optimization algorithms.
+
+    This class provides the common optimization interface and handles
+    token tracking, callback management, and error handling for all
+    optimizer implementations.
+
+    Attributes:
+        None (base class only defines interface)
+
+    Notes:
+        - All optimizers must inherit from this class
+        - Token usage is automatically tracked
+        - Callback management is handled centrally
+        - Errors are properly propagated with callback notification
+    """
+
     async def optimize(
         self,
         config: BaseConfig,
@@ -28,21 +46,40 @@ class BaseOptimizer(ABC):
         n_samples: Optional[int] = None,
         **kwargs: Any,
     ) -> OptimizationResult:
-        """通用优化接口
+        """Execute optimization process using the provided configuration.
 
-        Args:
-            config: 优化目标配置（任意BaseConfig子类）
-            dataset: 评估数据集
-            metric: 评估指标
-            n_samples: Optional number of items to test in the dataset
-            **kwargs: 其他优化参数，可能包含:
-                - callbacks: 回调管理器
-                - verbose: 是否显示详细信息
-                - tags: 标签列表
-                - metadata: 元数据
+        This is the main entry point for optimization. It handles setup,
+        token tracking, callback management, and error handling before
+        delegating to the concrete implementation in _optimize.
 
-        Returns:
-            OptimizationResult: 优化结果
+        Parameters
+        ----------
+        config : BaseConfig
+            Target configuration to optimize (any BaseConfig subclass)
+        dataset : BaseDataset
+            Dataset used for evaluation during optimization
+        metric : BaseMetric
+            Metric function used to evaluate performance
+        n_samples : Optional[int]
+            Number of items to test from the dataset. If None, use all items.
+        **kwargs : Any
+            Additional optimization parameters, may include:
+                - callbacks : Callback handlers
+                - verbose : bool
+                    Whether to display detailed information
+
+        Returns
+        -------
+        OptimizationResult
+            Complete optimization results including best configuration,
+            scores, and optimization history.
+
+        Raises
+        ------
+        ValueError
+            If configuration dependencies are not properly set
+        Exception
+            Propagates any errors from the optimization process
         """
         config.validate_dependencies()
 
@@ -62,8 +99,6 @@ class BaseOptimizer(ABC):
             chain_type=ChainType.OPTIMIZE,
             callbacks=callbacks,
             verbose=kwargs.get("verbose", False),
-            tags=kwargs.get("tags", None),
-            metadata=kwargs.get("metadata", None),
         )
 
         try:
@@ -96,25 +131,52 @@ class BaseOptimizer(ABC):
         n_samples: Optional[int] = None,
         **kwargs: Any,
     ) -> OptimizationResult:
-        """子类实现的具体优化逻辑
+        """Concrete optimization logic implemented by subclasses.
 
-        Args:
-            config: 优化目标配置
-            dataset: 评估数据集
-            metric: 评估指标
-            n_samples: Optional number of items to test in the dataset
-            **kwargs: 其他参数
+        This method must be implemented by all optimizer subclasses to
+        define the specific optimization algorithm.
 
-        Returns:
-            OptimizationResult: 优化结果
+        Parameters
+        ----------
+        config : BaseConfig
+            Target configuration to optimize
+        dataset : BaseDataset
+            Dataset used for evaluation during optimization
+        metric : BaseMetric
+            Metric function used to evaluate performance
+        n_samples : Optional[int]
+            Number of items to test from the dataset
+        **kwargs : Any
+            Additional parameters specific to the optimizer implementation
+
+        Returns
+        -------
+        OptimizationResult
+            Complete optimization results
+
+        Raises
+        ------
+        NotImplementedError
+            If not implemented by subclass
         """
         raise NotImplementedError
 
     @staticmethod
     def calculate_improvement(current_score: float, previous_score: float) -> float:
-        """Calculate the improvement percentage between scores."""
-        return (
-            (current_score - previous_score) / previous_score
-            if previous_score > 0
-            else 0
-        )
+        """Calculate the improvement percentage between scores.
+
+        Parameters
+        ----------
+        current_score : float
+            The current score
+        previous_score : float
+            The previous/baseline score
+
+        Returns
+        -------
+        float
+            Improvement percentage (0.0 for no improvement or division by zero case)
+        """
+        if previous_score == 0:
+            return 0.0 if current_score == 0 else float("inf")
+        return (current_score - previous_score) / previous_score

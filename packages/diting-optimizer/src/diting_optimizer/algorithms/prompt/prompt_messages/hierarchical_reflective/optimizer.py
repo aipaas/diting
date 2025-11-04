@@ -1,17 +1,19 @@
 """Hierarchical Reflective Optimizer.
 
 Adapted from Opik's HierarchicalReflectiveOptimizer with minimal changes for Diting.
+Enhanced with basic error handling and code quality improvements.
+
 Main adaptations:
 - Uses Diting's BaseOptimizer, PromptConfig, BaseDataset, BaseMetric interfaces
 - Uses Diting's LLM for structured outputs
 - Simplified reporting (removed Rich console outputs)
 - Async-first design aligned with Diting conventions
+- Added basic error handling and code standardization
 """
 
 import copy
 import logging
-from datetime import datetime
-from typing import Any, Optional, List, Dict
+from typing import Any, Optional, List
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.callbacks.manager import new_group
@@ -30,7 +32,7 @@ from diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.
 from diting_optimizer.base_optimizer import BaseOptimizer
 from diting_optimizer.datasets.base_dataset import BaseDataset
 from diting_optimizer.infra.eval_task import evaluate_prompt, ExperimentResult
-from diting_optimizer.optimization_result import OptimizationResult
+from diting_optimizer.optimization_result import OptimizationResult, HistoryRecord
 from diting_optimizer.target.base_config import BaseConfig
 from diting_optimizer.target.prompt_config import PromptConfig
 
@@ -38,29 +40,25 @@ logger = logging.getLogger(__name__)
 
 
 class HierarchicalReflectiveOptimizer(BaseOptimizer):
-    """
-    分层反思优化器，使用分层根因分析改进提示词
+    """Hierarchical Reflective Optimizer using layered root cause analysis to improve prompts.
 
-    此算法使用两阶段分层方法：批量分析失败模式，然后综合结果识别统一失败模式。
-    适用于复杂提示词的系统性改进。
+    This algorithm uses a two-stage hierarchical approach: batch analysis of failure modes,
+    then comprehensive result analysis to identify unified failure patterns.
+    Suitable for systematic improvement of complex prompts.
 
-    重构改进：
-    - 适配新的 BaseOptimizer 通用接口
-    - 支持 PromptConfig 自包含执行逻辑
-
-    Args:
-        llm: Diting LLM 实例，用于生成结构化输出
-        seed: 随机种子，用于可重现性 (默认: 42)
-        max_parallel_batches: 分层根因分析期间并发处理的最大批次数 (默认: 5)
-        batch_size: 根因分析的每批测试用例数 (默认: 25)
-        max_iterations: 最大优化迭代次数 (默认: 5)
-        convergence_threshold: 相对改进低于此阈值时停止 (默认: 0.01)
-        max_retries: 每个失败模式的最大重试次数 (默认: 2)
+    Attributes:
+        llm: Diting LLM instance for generating structured outputs
+        seed: Random seed for reproducibility (default: 42)
+        max_parallel_batches: Maximum concurrent batches during root cause analysis (default: 5)
+        batch_size: Number of test cases per batch for root cause analysis (default: 25)
+        max_iterations: Maximum optimization iterations (default: 5)
+        convergence_threshold: Stop when relative improvement below this threshold (default: 0.01)
+        max_retries: Maximum retry attempts per failure mode (default: 2)
         num_eval_threads: Number of parallel threads for evaluation (default: 12)
     """
 
     DEFAULT_MAX_ITERATIONS = 5
-    DEFAULT_CONVERGENCE_THRESHOLD = 0.01  # 改进小于1%时停止
+    DEFAULT_CONVERGENCE_THRESHOLD = 0.01  # Stop when improvement < 1%
 
     def __init__(
         self,
@@ -94,38 +92,39 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
 
     async def _call_model(
         self,
-        messages: list[dict[str, str]],
+        messages: List[dict[str, str]],
         seed: int,
         response_model: Optional[PydanticClass] = None,  # noqa: UP006,
         callbacks: Optional[Callbacks] = None,
     ) -> Any:
         """
-        调用LLM生成结构化输出
+        Call LLM to generate structured output.
 
         Args:
-            messages: 消息字典列表
-            seed: 随机种子，用于可重现性
-            response_model: 用于结构化输出的Pydantic模型
+            messages: List of message dictionaries
+            seed: Random seed for reproducibility
+            response_model: Pydantic model for structured output
+            callbacks: Callback handlers
 
         Returns:
-            response_model的实例
+            Instance of response_model
 
         Raises:
-            ValueError: 如果LLM未配置
+            ValueError: If LLM is not configured
         """
         if self.llm is None:
             raise ValueError(
                 "LLM not configured. "
-                "Provide 'llm' model_parameters when creating the optimizer_name. "
+                "Provide 'llm' parameter when creating the optimizer. "
                 "\n\nExample:"
                 "\n  from diting_core.models.llms import SomeLLM"
                 "\n  llm = SomeLLM(...)"
-                "\n  optimizer_name = HierarchicalReflectiveOptimizer(llm=llm)"
+                "\n  optimizer = HierarchicalReflectiveOptimizer(llm=llm)"
             )
 
         prompt_str = PromptConfig.format_messages(messages)
 
-        # 使用LLM的结构化输出方法
+        # Use LLM's structured output method
         return await self.llm.generate_structured_output(
             prompt=prompt_str, schema=response_model, seed=seed, callbacks=callbacks
         )
@@ -200,14 +199,33 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             attempt: Current attempt number (1-indexed)
 
         Returns:
-            Tuple of (improved_prompt, improved_score, improved_test_results)
+            Tuple of (improved_prompt, improved_experiment_result)
         """
+        run_manager, grp_cb = await new_group(
+            name=f"generate_and_evaluate_improvement_attempt_{attempt}",
+            inputs={
+                "root_cause": root_cause,
+                "current_prompt": best_prompt,
+                "n_samples": n_samples,
+            },
+            callbacks=callbacks,
+        )
+
+        gen_improve_rm, gen_improve_grp = await new_group(
+            name="generate_improvement_prompt",
+            inputs={
+                "root_cause": root_cause,
+                "current_prompt": best_prompt,
+                "n_samples": n_samples,
+            },
+            callbacks=grp_cb,
+        )
         # Generate improvement
         improved_prompt_response = await self._improve_prompt(
             prompt_config=best_prompt,
             root_cause=root_cause,
             attempt=attempt,
-            callbacks=callbacks,
+            callbacks=gen_improve_grp,
         )
 
         # Convert to PromptConfig
@@ -220,6 +238,17 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             model_params=copy.deepcopy(best_prompt.model_params),
             llm=best_prompt.llm,
         )
+        await gen_improve_rm.on_chain_end(outputs={"improved_prompt": improved_prompt})
+
+        eval_improve_rm, eval_improve_grp = await new_group(
+            name="eval_improvement_prompt",
+            inputs={
+                "improved_prompt": improved_prompt,
+                "dataset": dataset.name,
+                "n_samples": n_samples,
+            },
+            callbacks=grp_cb,
+        )
 
         # Evaluate improved prompt
         improved_experiment_result = await evaluate_prompt(
@@ -228,7 +257,10 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             metric=metric,
             max_concurrency=self.num_eval_threads,
             n_samples=n_samples,
-            callbacks=callbacks,
+            callbacks=eval_improve_grp,
+        )
+        await eval_improve_rm.on_chain_end(
+            outputs={"improved_experiment_result": improved_experiment_result}
         )
 
         return improved_prompt, improved_experiment_result
@@ -243,18 +275,25 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
         **kwargs: Any,
     ) -> OptimizationResult:
         """
-        分层反思优化的主要逻辑
+        Main logic for hierarchical reflective optimization.
 
-        Args:
-            config: 初始配置（必须是PromptConfig）
-            dataset: 要优化的数据集
-            metric: 要优化的指标
-            **kwargs: 附加参数
+        Parameters
+        ----------
+        config : BaseConfig
+            Initial configuration (must be PromptConfig)
+        dataset : BaseDataset
+            Dataset to optimize
+        metric : BaseMetric
+            Metric to optimize
+        **kwargs : Any
+            Additional parameters
 
-        Returns:
-            包含优化提示和元数据的OptimizationResult
+        Returns
+        -------
+        OptimizationResult
+            Result containing optimized prompt and metadata
         """
-        # 验证配置类型
+        # Validate configuration type
         if not isinstance(config, PromptConfig):
             raise ValueError(
                 f"HierarchicalReflectiveOptimizer requires PromptConfig, "
@@ -262,7 +301,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             )
 
         prompt_config = config
-        history: List[Dict[str, Any]] = []
+        histories: List[HistoryRecord] = []
 
         run_manager, grp_cb = await new_group(
             name="optimize",
@@ -290,31 +329,29 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             callbacks=eval_baseline_grp,
         )
         baseline_score = experiment_result.avg_score
-        history.append(
-            {
-                "iteration": 0,
-                "timestamp": datetime.utcnow().isoformat(),
-                "stage": "baseline",
-                "config": prompt_config,
-                "score": baseline_score,
-                "experiment_result": experiment_result,
-            }
+        history = HistoryRecord(
+            iteration=0,
+            stage="baseline",
+            score=baseline_score,
+            config=prompt_config,
+            experiment_result=experiment_result,
+            optimizer_name=self.__class__.__name__,
+            metric_name=metric.__class__.__name__,
         )
-        await eval_baseline_rm.on_chain_end(
-            outputs={
-                "experiment_result": experiment_result,
-                "baseline_score": baseline_score,
-            }
-        )
+        histories.append(history)
+        await eval_baseline_rm.on_chain_end(outputs={"history": history})
 
         # Track baseline and best
         best_score = baseline_score
         best_prompt = prompt_config
+        current_experiment_result = (
+            experiment_result  # Separate variable for current iteration result
+        )
 
         # Multi-iteration optimization loop
-        iteration = 0
         previous_iteration_score = baseline_score
 
+        iteration: int = 0
         for iteration in range(1, self.max_iterations + 1):
             optimize_iter_rm, optimize_iter_grp = await new_group(
                 name=f"optimization_iter_{iteration}",
@@ -328,13 +365,13 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             root_cause_analyze_rm, root_cause_analyze_grp = await new_group(
                 name="hierarchical_root_cause_analysis",
                 inputs={
-                    "experiment_result": experiment_result,
+                    "experiment_result": current_experiment_result,
                 },
                 callbacks=optimize_iter_grp,
             )
 
             hierarchical_analysis = await self._hierarchical_analyzer.analyze(
-                experiment_result, root_cause_analyze_grp
+                current_experiment_result, root_cause_analyze_grp
             )
 
             await root_cause_analyze_rm.on_chain_end(
@@ -342,6 +379,12 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             )
 
             # Address each failure mode
+            if not hierarchical_analysis.unified_failure_modes:
+                logger.warning(
+                    "No failure modes detected in hierarchical analysis, skipping iteration"
+                )
+                continue  # Skip to next iteration
+
             for idx, root_cause in enumerate(
                 hierarchical_analysis.unified_failure_modes, 1
             ):
@@ -376,6 +419,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                         n_samples=n_samples,
                         callbacks=gen_and_eval_improve_grp,
                     )
+
                     improved_score = improved_experiment_result.avg_score
 
                     # Check if we got improvement
@@ -395,31 +439,32 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                             f"No improvement after {attempt} attempts for '{root_cause.name}'"
                         )
 
-                history.append(
-                    {
-                        "iteration": iteration,
-                        "timestamp": datetime.utcnow().isoformat(),
-                        "stage": "optimizing",
-                        "config": improved_prompt,
-                        "score": improved_score,
-                        "experiment_result": improved_experiment_result,
+                # Validate we have all required data for history record
+                if improved_prompt is None:
+                    improved_prompt = best_prompt
+                if improved_experiment_result is None:
+                    improved_experiment_result = current_experiment_result
+                if improved_score is None:
+                    improved_score = best_score
+
+                history = HistoryRecord(
+                    iteration=iteration,
+                    stage="optimizing",
+                    score=improved_score,
+                    optimizer_name=self.__class__.__name__,
+                    metric_name=metric.__class__.__name__,
+                    config=improved_prompt,
+                    experiment_result=improved_experiment_result,
+                    metadata={
                         "root_cause": root_cause,
                         "sub_iteration": idx,
-                    }
+                    },
                 )
-                await gen_and_eval_improve_rm.on_chain_end(
-                    outputs={
-                        "improved_prompt": improved_prompt,
-                        "improved_score": improved_score,
-                    }
-                )
+                histories.append(history)
+                await gen_and_eval_improve_rm.on_chain_end(outputs={"history": history})
 
-                # Check if final result is an improvement
-                if (
-                    improved_score is not None
-                    and improved_prompt is not None
-                    and improved_score > best_score
-                ):
+                # Check if final result is an improvement (variables already validated above)
+                if improved_score > best_score:
                     improvement = self.calculate_improvement(improved_score, best_score)
                     logger.info(
                         f"Updated best prompt: score {improved_score:.4f} (+{improvement:.2%})"
@@ -428,7 +473,9 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                     # Update best
                     best_score = improved_score
                     best_prompt = improved_prompt
-                    experiment_result = improved_experiment_result
+                    current_experiment_result = (
+                        improved_experiment_result  # Update current iteration result
+                    )
                 else:
                     logger.debug(
                         f"Keeping previous best prompt, no improvement from '{root_cause.name}'"
@@ -467,10 +514,10 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             best_config=best_prompt,
             best_score=best_score,
             metric_name=metric.__class__.__name__,
-            initial_prompt=prompt_config,
+            initial_config=prompt_config,
             initial_score=baseline_score,
             improvement=final_improvement,
-            history=history,
+            histories=histories,
             details={
                 "model": self.llm,
                 "max_iterations": self.max_iterations,

@@ -1,4 +1,6 @@
-"""优化目标配置基类"""
+"""Base configuration classes for optimization targets."""
+
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -7,43 +9,60 @@ from pydantic import BaseModel, ConfigDict
 
 
 class BaseConfig(BaseModel, ABC):
-    """优化目标配置基类
+    """Base configuration class for optimization targets.
 
-    所有优化目标配置都应继承此类并实现execute方法。
-    配置类负责：
-    1. 存储配置参数
-    2. 验证和格式化输入
-    3. 执行对应的操作（通过注入的依赖）
+    All optimization target configurations should inherit from this class
+    and implement the execute method. Configuration classes are responsible for:
 
-    设计原则：
-    - 配置与执行逻辑分离但自包含
-    - 通过依赖注入实现可测试性
-    - 支持链式调用
+    1. Storing configuration parameters
+    2. Validating and formatting inputs
+    3. Executing corresponding operations (through injected dependencies)
+
+    Design Principles:
+    - Configuration and execution logic are separated but self-contained
+    - Dependency injection for testability
+    - Support for method chaining
+
+    Attributes:
+        None (base class only defines interface)
     """
 
     model_config = ConfigDict(extra="allow", arbitrary_types_allowed=True)
 
     @abstractmethod
     def validate_dependencies(self) -> None:
-        """验证依赖是否已正确注入
+        """Validate that dependencies have been properly injected.
 
-        子类应实现此方法检查必要的依赖是否已设置。
-        如果依赖缺失，应抛出ValueError。
+        Subclasses should implement this method to check that necessary
+        dependencies have been set. If dependencies are missing,
+        a ValueError should be raised.
+
+        Raises
+        ------
+        ValueError
+            If required dependencies are not properly configured
         """
         pass
 
     @abstractmethod
     async def execute(self, input_data: Any, **kwargs) -> Any:
-        """执行配置对应的操作
+        """Execute the operation corresponding to this configuration.
 
-        Args:
-            input_data: 输入数据，具体类型由子类定义
-            **kwargs: 额外参数
+        Parameters
+        ----------
+        input_data : Any
+            Input data, specific type defined by subclass
+        **kwargs : Any
+            Additional parameters
 
-        Returns:
-            执行结果，具体类型由子类定义
+        Returns
+        -------
+        Any
+            Execution result, specific type defined by subclass
 
-        Raises:
-            ValueError: 当依赖未正确配置时
+        Raises
+        ------
+        ValueError
+            When dependencies are not properly configured
         """
         pass

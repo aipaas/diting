@@ -225,7 +225,7 @@ class TestParameterOptimizer:
         assert result.best_score >= 0
         # metric_name 可能是 "MockMetric" 或 "BaseMetric"
         assert "Metric" in result.metric_name
-        assert result.initial_prompt is not None
+        assert result.initial_config is not None
         assert result.initial_score is not None
         assert isinstance(result.improvement, float)
 
@@ -240,11 +240,11 @@ class TestParameterOptimizer:
         assert "parameter_importance" in result.details
 
         # 检查历史记录
-        assert len(result.history) > 0
-        first_entry = result.history[0]
-        assert first_entry["iteration"] == 0
-        assert first_entry["stage"] == "baseline"
-        assert first_entry["score"] == result.initial_score
+        assert len(result.histories) > 0
+        first_entry = result.histories[0]
+        assert first_entry.iteration == 0
+        assert first_entry.stage == "baseline"
+        assert first_entry.score == result.initial_score
 
     @pytest.mark.asyncio
     @patch(

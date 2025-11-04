@@ -3,6 +3,8 @@
 Adapted from Opik's hierarchical_root_cause_analyzer.py with minimal changes for Diting.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 from typing import Any, Callable, Optional
@@ -59,17 +61,17 @@ class HierarchicalRootCauseAnalyzer:
         self.max_parallel_batches = max_parallel_batches
         self.batch_size = batch_size
 
-    # TODO 改进点, 传入case信息: 在小数据量(10) Qwen2.5-32B-Instruct Total Improvement:46.02%
+    # TODO Improvement point: Pass case information: Qwen2.5-32B-Instruct Total Improvement:46.02% on small dataset (10)
     @staticmethod
     def _format_test_results_batch_v2(
         test_results: list[TestResult],
         batch_start: int,
         batch_end: int,
-        severe_threshold: float = 0.3,  # 可调整：严重失败阈值
-        partial_threshold: float = 0.7,  # 可调整：部分失败阈值
+        severe_threshold: float = 0.3,  # Adjustable: severe failure threshold
+        partial_threshold: float = 0.7,  # Adjustable: partial failure threshold
     ) -> str:
         """
-        优化目标：聚焦失败分析，用<>标记边界，按LLM分析逻辑组织信息
+        Optimization objective: Focus on failure analysis, use <> to mark boundaries, organize information according to LLM analysis logic
         """
         formatted_results = []
         valid_results = test_results[batch_start:batch_end]
@@ -78,7 +80,7 @@ class HierarchicalRootCauseAnalyzer:
             tc = test_result.test_case
             mv = test_result.metric_value
 
-            # 1. 提取关键信息（仅保留失败分析必需字段，用N/A补全缺失值）
+            # 1. Extract key information (only keep fields necessary for failure analysis, fill missing values with N/A)
             input_text = tc.user_input or "N/A"
             expected = tc.expected_output or "N/A"
             actual = tc.actual_output or "N/A"
@@ -89,7 +91,7 @@ class HierarchicalRootCauseAnalyzer:
             )
 
             metric = mv.metric_name or "unknown_metric"
-            # 分数处理：None→0.0，同时添加FAIL标记（分数≤0.5视为失败案例）
+            # Score processing: None→0.0, and add FAIL marker (score ≤0.5 considered as failure case)
             score = mv.score if mv.score is not None else 0.0
             if score <= severe_threshold:
                 score_interpret = "severe failure"
@@ -98,14 +100,14 @@ class HierarchicalRootCauseAnalyzer:
             else:
                 score_interpret = "success"
 
-            # 原因处理：优先保留失败原因，无原因时补充默认描述
+            # Reason processing: Prioritize retaining failure reasons, supplement with default description when no reason is provided
             reason = mv.reason or (
                 "No failure reason provided"
                 if score <= 0.5
                 else "No additional notes for passing case"
             )
 
-            # 2. 用<>标记单条测试结果边界，按「输入→预期→实际→结果」逻辑组织
+            # 2. Use <> to mark single test result boundaries, organize according to "Input→Expected→Actual→Result" logic
             result_text = f"""<TestResult id="{dataset_item_id}">
 [TestCase]
 Input: {input_text}
@@ -118,7 +120,7 @@ Reason: {reason}
 </TestResult>"""
             formatted_results.append(result_text)
 
-        # 3. 用空行分隔多条结果，避免标记嵌套干扰
+        # 3. Use blank lines to separate multiple results, avoid marking nesting interference
         return "\n\n".join(formatted_results)
 
     @staticmethod
@@ -155,7 +157,7 @@ Reason: {test_result.metric_value.reason or "N/A"}"""
 
         return "\n\n" + ("=" * 80 + "\n\n").join(formatted_results)
 
-    # TODO 按照opik源码不传入case信息: 在小数据量(10) Qwen2.5-32B-Instruct Total Improvement:3.87%
+    # TODO Following Opik source code without passing case information: Qwen2.5-32B-Instruct Total Improvement:3.87% on small dataset (10)
     @staticmethod
     def _format_test_results_batch(
         test_results: list[TestResult],
@@ -183,7 +185,7 @@ Reason: {test_result.metric_value.reason or "N/A"}"""
                     "dataset_item_id", f"missing_id_{batch_start + idx}"
                 )
                 if test_case.metadata
-                else "missing_id_{batch_start + idx}"
+                else f"missing_id_{batch_start + idx}"
             )
             # Extract scores
             metric_value = test_result.metric_value

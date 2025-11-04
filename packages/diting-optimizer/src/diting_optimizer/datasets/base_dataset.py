@@ -1,83 +1,118 @@
-"""数据集基类
+"""Base dataset classes for optimization.
 
-参考 Opik Dataset 的设计，提供标准的数据集接口。
+References Opik Dataset design to provide standard dataset interfaces.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 
 class BaseDataset(ABC):
-    """优化器数据集基类
+    """Base class for optimizer datasets.
 
-    所有评估数据集都应继承此类并实现 get_items 方法。
+    All evaluation datasets should inherit from this class and implement the get_items method.
 
     Attributes:
-        name: 数据集名称
+        name : str
+            Name of the dataset
     """
 
     def __init__(self, name: str):
-        """初始化数据集
+        """Initialize dataset.
 
-        Args:
-            name: 数据集名称
+        Parameters
+        ----------
+        name : str
+            Name of the dataset
         """
         self.name = name
 
     @abstractmethod
-    def get_items(self, n_samples: Optional[int] = None) -> list[dict[str, Any]]:
-        """获取数据集项目
+    def get_items(self, n_samples: Optional[int] = None) -> List[dict[str, Any]]:
+        """Get dataset items.
 
-        Args:
-            n_samples: 可选，限制返回的项目数量
+        Parameters
+        ----------
+        n_samples : Optional[int]
+            Optional limit on the number of items to return
 
-        Returns:
-            数据项列表，每个项目是一个字典，通常包含：
-            - id: 唯一标识
-            - input: 输入数据
-            - expected_output: 期望输出（如果有）
-            - context: 上下文信息（如果有）
+        Returns
+        -------
+        List[dict[str, Any]]
+            List of data items, where each item is a dictionary typically containing:
+            - id: Unique identifier
+            - input: Input data
+            - expected_output: Expected output (if available)
+            - context: Context information (if available)
+
+        Raises
+        ------
+        NotImplementedError
+            If not implemented by subclass
         """
         raise NotImplementedError
 
     def __len__(self) -> int:
-        """返回数据集大小
+        """Return dataset size.
 
-        Returns:
-            int: 数据集项目数量
+        Returns
+        -------
+        int
+            Number of items in the dataset
         """
         return len(self.get_items())
 
 
 class InMemoryDataset(BaseDataset):
-    """内存数据集实现
+    """In-memory dataset implementation.
 
-    将数据项存储在内存中的简单实现。
+    Simple implementation that stores data items in memory.
 
     Attributes:
-        name: 数据集名称
-        _items: 数据项列表
+        name : str
+            Name of the dataset
+        _items : List[dict[str, Any]]
+            List of data items
     """
 
-    def __init__(self, name: str, items: list[dict[str, Any]]):
-        """初始化内存数据集
+    def __init__(self, name: str, items: List[dict[str, Any]]):
+        """Initialize in-memory dataset.
 
-        Args:
-            name: 数据集名称
-            items: 数据项列表
+        Parameters
+        ----------
+        name : str
+            Name of the dataset
+        items : List[dict[str, Any]]
+            List of data items
         """
         super().__init__(name)
         self._items = items
 
-    def get_items(self, n_samples: Optional[int] = None) -> list[dict[str, Any]]:
-        """获取数据集项目
+    def get_items(self, n_samples: Optional[int] = None) -> List[dict[str, Any]]:
+        """Get dataset items.
 
-        Args:
-            n_samples: 可选，限制返回的项目数量
+        Parameters
+        ----------
+        n_samples : Optional[int]
+            Optional limit on the number of items to return
 
-        Returns:
-            数据项列表
+        Returns
+        -------
+        List[dict[str, Any]]
+            List of data items (limited by n_samples if provided)
         """
         if n_samples is None:
             return self._items
         return self._items[:n_samples]
+
+    def __len__(self) -> int:
+        """Return dataset size.
+
+        Returns
+        -------
+        int
+            Number of items in the dataset
+        """
+        return len(self._items)

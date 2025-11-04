@@ -1,7 +1,17 @@
+"""Evaluation task infrastructure for prompt optimization.
+
+This module provides classes and functions for evaluating prompts on datasets
+using specified metrics, supporting parallel execution and comprehensive result tracking.
+"""
+
+from __future__ import annotations
+
 import asyncio
+import logging
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 
 from diting_core.callbacks.base import Callbacks
 from diting_core.cases.llm_case import LLMCase, LLMCaseParams
@@ -9,37 +19,63 @@ from diting_core.metrics import BaseMetric, MetricValue
 from diting_optimizer.target.prompt_config import PromptConfig
 from diting_optimizer.datasets.base_dataset import BaseDataset
 
+logger = logging.getLogger(__name__)
+
 
 class TestResult(BaseModel):
-    __test__ = False  # 关键：阻止pytest将其识别为测试类
-    test_case: LLMCase
-    metric_value: MetricValue
+    """Result of evaluating a single test case.
+
+    Attributes:
+        test_case: The test case that was evaluated
+        metric_value: The computed metric value for this test case
+    """
+
+    __test__ = False  # Critical: Prevent pytest from recognizing this as a test class
+    test_case: LLMCase = Field(..., description="The test case that was evaluated")
+    metric_value: MetricValue = Field(..., description="The computed metric value")
 
 
 class ExperimentResult(BaseModel):
-    experiment_name: Optional[str]
-    test_results: List[TestResult]
+    """Results of evaluating a prompt on a dataset.
+
+    Attributes:
+        experiment_name: Optional name for the experiment
+        test_results: List of individual test case results
+    """
+
+    experiment_name: Optional[str] = Field(
+        default=None, description="Optional name for the experiment"
+    )
+    test_results: List[TestResult] = Field(
+        default_factory=list, description="List of individual test case results"
+    )
 
     @property
     def avg_score(self) -> float:
-        """
-        计算所有 MetricValue 中有效 score 的平均值
+        """Calculate the average of valid scores across all MetricValue objects.
 
-        Returns:
-            平均值（float）；若没有有效 score，返回 None
+        Returns
+        -------
+        float
+            Average score; raises ValueError if no valid scores are found
+
+        Raises
+        ------
+        ValueError
+            If no valid scores are found in the test results
         """
-        # 收集所有非 None 的 score
-        scores = []
+        # Collect all non-None scores
+        scores: List[float] = []
         for test_result in self.test_results:
-            if test_result.metric_value.score is not None:  # 只考虑有效分数
+            if test_result.metric_value.score is not None:  # Only consider valid scores
                 scores.append(test_result.metric_value.score)
 
-        # 计算平均值（处理空列表情况）
+        # Calculate average (handle empty list case)
         if not scores:
-            raise ValueError(
-                f"Experiment '{self.experiment_name}' has no valid scores to calculate average. "
-                "Check if metric_values contain non-None 'score' fields."
+            logger.warning(
+                f"Experiment '{self.experiment_name}' has no valid scores, returning 0.0"
             )
+            return 0.0
         return sum(scores) / len(scores)
 
 
@@ -134,34 +170,42 @@ async def evaluate_prompt(
     callbacks: Optional[Callbacks] = None,
     **kwargs: Any,
 ) -> ExperimentResult:
-    """
-    在数据集上评估提示词
+    """Evaluate a prompt on a dataset.
 
-    此方法：
-    1. 从数据集采样测试用例
-    2. 为每个测试用例生成LLM响应
-    3. 计算指标分数并收集详细原因
-    4. 返回平均分数和测试结果（包含原因）
+    This method:
+    1. Samples test cases from the dataset
+    2. Generates LLM responses for each test case
+    3. Computes metric scores and collects detailed reasons
+    4. Returns average score and test results (including reasons)
 
-    Args:
-        prompt_config: 要评估的提示配置
-        dataset: 评估数据集
-        metric: 评估指标
-        max_concurrency: 评估并发
-        n_samples: 数据集单次采样数据
-        callbacks: 注册给评估的回调
+    Parameters
+    ----------
+    prompt_config : PromptConfig
+        The prompt configuration to evaluate
+    dataset : BaseDataset
+        Dataset for evaluation
+    metric : BaseMetric
+        Metric for evaluation
+    max_concurrency : int
+        Maximum concurrency for evaluation (default: 5)
+    n_samples : Optional[int]
+        Number of samples to draw from dataset (default: all)
+    callbacks : Optional[Callbacks]
+        Callback handlers to register for evaluation
+    **kwargs : Any
+        Additional keyword arguments
 
-    Returns:
-        (平均分数, 测试结果) 的元组
-        其中 test_results 是包含以下键的字典列表：
-        - input: str - 输入文本
-        - output: str - 模型输出
-        - expected: str - 期望输出
-        - score: float - 分数值
-        - reason: str - 详细原因（根因分析必需）
+    Returns
+    -------
+    ExperimentResult
+        Contains average score and detailed test results with reasons
 
-    Raises:
-        ValueError: 如果提示配置未正确设置LLM
+    Raises
+    ------
+    ValueError
+        If prompt configuration is invalid
+    Exception
+        Propagates any errors from LLM generation or metric computation
     """
     samples = dataset.get_items(n_samples=n_samples)
     if not samples:

@@ -1,19 +1,28 @@
-"""微型测试数据集
+"""Tiny test dataset for quick validation.
 
-用于快速验证优化器功能的小型测试数据集。
+Small test dataset for quickly validating optimizer functionality.
 """
+
+from __future__ import annotations
 
 from diting_core.cases.llm_case import LLMCaseParams
 from diting_optimizer.datasets.base_dataset import BaseDataset, InMemoryDataset
 
 
 def tiny_test() -> BaseDataset:
-    """微型测试数据集，用于快速验证
+    """Create tiny test dataset for quick validation.
 
-    包含 3 个简单的问答样本，适合快速测试和调试。
+    Contains 3 simple question-answer pairs suitable for quick testing and debugging.
 
-    Returns:
-        BaseDataset: 微型测试数据集实例
+    Returns
+    -------
+    BaseDataset
+        Tiny test dataset instance
+
+    Notes:
+        - Contains basic factual questions with clear answers
+        - Suitable for unit tests and quick debugging
+        - Minimal computational overhead
     """
     items = [
         {

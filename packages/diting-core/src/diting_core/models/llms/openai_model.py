@@ -59,6 +59,10 @@ class LangchainLLMWrapper(BaseLLM):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(llm={self.llm.__class__.__name__}(...))"
 
+    @property
+    def model_name(self):
+        return getattr(self.llm, "model_name")
+
     @staticmethod
     def get_temperature(n: int) -> float:
         """Return the temperature to use for completion based on n."""

@@ -1,13 +1,16 @@
-"""Simple Optuna-based optimizer_name for model model_parameters tuning.
+"""Simple Optuna-based optimizer for model parameter tuning.
 
 Adapted from Opik's ParameterOptimizer with minimal changes for Diting.
+Enhanced with basic error handling and code quality improvements.
 """
 
+from __future__ import annotations
+
+import asyncio
 import copy
 import logging
-from datetime import datetime
 from typing import Any, Dict, List, Optional
-
+from concurrent.futures import ThreadPoolExecutor
 import optuna
 from optuna.trial import Trial, TrialState
 
@@ -20,7 +23,7 @@ from diting_optimizer.algorithms.prompt.model_parameters.tpe.search_space import
 )
 from diting_optimizer.base_optimizer import BaseOptimizer
 from diting_optimizer.datasets.base_dataset import BaseDataset
-from diting_optimizer.optimization_result import OptimizationResult
+from diting_optimizer.optimization_result import OptimizationResult, HistoryRecord
 from diting_optimizer.target.base_config import BaseConfig
 from diting_optimizer.target.prompt_config import PromptConfig
 from diting_optimizer.infra.eval_task import (
@@ -31,8 +34,119 @@ from diting_optimizer.infra.eval_task import (
 logger = logging.getLogger(__name__)
 
 
+def run_async(coro):
+    """
+    Safely run async coroutine in sync context.
+    - If no event loop is running, create and close one.
+    - If current event loop is running (e.g., outer async context),
+      run asyncio.run() in a separate thread to avoid nesting.
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        # No event loop running
+        return asyncio.run(coro)
+    else:
+        # Current event loop running -> run new loop in separate thread
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(asyncio.run, coro)
+            return future.result()
+
+
+# Objective function factory
+def make_objective(
+    stage: str,
+    current_space: ParameterSearchSpace,  # Current sampling space
+    parameter_space: ParameterSearchSpace,  # Global space for apply operations
+    prompt_config: PromptConfig,
+    dataset: BaseDataset,
+    metric: BaseMetric,
+    num_eval_threads: int,
+    n_samples: Optional[int],
+    histories: List[HistoryRecord],
+    callbacks: Optional[Callbacks] = None,
+    optimizer_name: str = "ParameterOptimizer (TPE)",
+):
+    """
+    Return a synchronous objective function for Optuna.
+    Each trial triggers a new chain group:
+      - rm: Root manager for the current trial
+      - grp_cb: Child callback manager, passed to evaluate_prompt_sync
+    """
+
+    def _objective(trial: Trial) -> float:
+        """Objective function for Optuna optimization."""
+        # Sample parameters
+        sampled_values = current_space.suggest(trial)
+
+        # Apply parameters to prompt
+        tuned_prompt = parameter_space.apply(
+            prompt_config,
+            sampled_values,
+            base_model_params=copy.deepcopy(prompt_config.model_params or {}),
+        )
+
+        # Create new trial group
+        run_name = f"{stage}_trial_{trial.number}"
+        rm, grp_cb = run_async(
+            new_group(
+                name=run_name,
+                inputs={"stage": stage, "trial": trial.number},
+                callbacks=callbacks,
+            )
+        )
+
+        # Execute evaluation
+        experiment_result = evaluate_prompt_sync(
+            tuned_prompt,
+            dataset,
+            metric,
+            num_eval_threads,
+            n_samples=n_samples,
+            callbacks=grp_cb,
+        )
+
+        # Build HistoryRecord
+        cur_config = prompt_config.deep_copy()
+        cur_config.model_params = tuned_prompt.model_params
+
+        history = HistoryRecord(
+            iteration=trial.number,
+            stage=stage,
+            score=experiment_result.avg_score,
+            optimizer_name=optimizer_name,
+            metric_name=metric.__class__.__name__,
+            config=cur_config,
+            experiment_result=experiment_result,
+            metadata={"parameters": sampled_values},
+        )
+        histories.append(history)
+
+        # Trigger chain end & history callback
+        run_async(rm.on_chain_end(outputs={"history": history}))
+
+        # Record trial attributes
+        trial.set_user_attr("parameters", sampled_values)
+        trial.set_user_attr("model_params", tuned_prompt.model_params)
+
+        return experiment_result.avg_score
+
+    return _objective
+
+
 class ParameterOptimizer(BaseOptimizer):
-    """Optimizer that tunes model call parameters (temperature, top_p, etc.)."""
+    """Optimizer that tunes model call parameters (temperature, top_p, etc.).
+
+    Uses Tree-structured Parzen Estimator (TPE) from Optuna for efficient
+    hyperparameter optimization with basic error handling.
+
+    Attributes:
+        max_iterations: Maximum number of optimization iterations
+        seed: Random seed for reproducible results
+        local_search_ratio: Ratio of trials allocated to local search (0.0-1.0)
+        local_search_scale: Scale factor for local search range reduction
+        num_eval_threads: Number of parallel threads for evaluation
+    """
 
     DEFAULT_MAX_ITERATIONS = 20
 
@@ -63,7 +177,7 @@ class ParameterOptimizer(BaseOptimizer):
         callbacks: Optional[Callbacks] = None,
         **kwargs: Any,
     ) -> OptimizationResult:
-        # 验证配置类型
+        # Validate configuration type
         if not isinstance(config, PromptConfig):
             raise ValueError(
                 f"ParameterOptimizer requires PromptConfig, got {type(config).__name__}"
@@ -74,14 +188,14 @@ class ParameterOptimizer(BaseOptimizer):
         if parameter_space is None:
             raise ValueError(
                 "ParameterOptimizer requires parameter_space argument. "
-                "Example: optimizer_name.optimize_prompt(..., parameter_space={...})"
+                "Example: optimizer.optimize_prompt(..., parameter_space={...})"
             )
 
         if not isinstance(parameter_space, ParameterSearchSpace):
             parameter_space = ParameterSearchSpace.model_validate(parameter_space)
 
         prompt_config = config
-        history: List[Dict[str, Any]] = []
+        histories: List[HistoryRecord] = []
 
         run_manager, grp_cb = await new_group(
             name="optimize",
@@ -110,24 +224,18 @@ class ParameterOptimizer(BaseOptimizer):
         )
 
         baseline_score = experiment_result.avg_score
-        history.append(
-            {
-                "iteration": 0,
-                "timestamp": datetime.utcnow().isoformat(),
-                "stage": "baseline",
-                "config": copy.deepcopy(prompt_config.model_params or {}),
-                "score": baseline_score,
-                "experiment_result": experiment_result,
-                "parameters": {},
-            }
+        history = HistoryRecord(
+            iteration=0,
+            stage="baseline",
+            score=baseline_score,
+            optimizer_name=self.__class__.__name__,
+            metric_name=metric.__class__.__name__,
+            config=prompt_config,
+            experiment_result=experiment_result,
         )
+        histories.append(history)
 
-        await eval_baseline_rm.on_chain_end(
-            outputs={
-                "baseline_score": baseline_score,
-                "experiment_result": experiment_result,
-            }
-        )
+        await eval_baseline_rm.on_chain_end(outputs={"history": history})
 
         parameter_search_rm, parameter_search_grp = await new_group(
             name="parameter_search",
@@ -159,62 +267,34 @@ class ParameterOptimizer(BaseOptimizer):
             global_trials = 1
             local_trials = total_trials - 1
 
-        current_space = parameter_space
-        current_stage = "global"
+        # Initialize search ranges with both global and local entries
         search_ranges: Dict[str, Dict[str, Any]] = {}
-
-        # Objective function
-        def objective(trial: Trial) -> float:
-            sampled_values = current_space.suggest(trial)
-            tuned_prompt = parameter_space.apply(
-                prompt_config,
-                sampled_values,
-                base_model_params=copy.deepcopy(prompt_config.model_params or {}),
-            )
-
-            # Use synchronous evaluation
-            _experiment_result = evaluate_prompt_sync(
-                tuned_prompt,
-                dataset,
-                metric,
-                self.num_eval_threads,
-                n_samples=n_samples,
-                callbacks=parameter_search_grp,
-            )
-
-            trial.set_user_attr("parameters", sampled_values)
-            trial.set_user_attr(
-                "model_params", copy.deepcopy(tuned_prompt.model_params)
-            )
-            trial.set_user_attr("experiment_result", _experiment_result)
-            trial.set_user_attr("stage", current_stage)
-            return _experiment_result.avg_score
 
         # Global search
         global_range = parameter_space.describe()
         search_ranges["global"] = global_range
+        search_ranges[
+            "local"
+        ] = {}  # Initialize local range, will be updated if local search runs
 
         if global_trials > 0:
             logger.info(f"Starting global search: {global_trials} trials")
-            study.optimize(objective, n_trials=global_trials, show_progress_bar=False)
-
-        # Record global search history
-        for trial in study.trials:
-            if trial.state != TrialState.COMPLETE or trial.value is None:
-                continue
-            timestamp = (
-                trial.datetime_complete or trial.datetime_start or datetime.utcnow()
-            )
-            history.append(
-                {
-                    "iteration": trial.number + 1,
-                    "timestamp": timestamp.isoformat(),
-                    "stage": trial.user_attrs.get("stage", "global"),
-                    "config": trial.user_attrs.get("model_params"),
-                    "score": float(trial.value),
-                    "experiment_result": trial.user_attrs.get("experiment_result", {}),
-                    "parameters": trial.user_attrs.get("parameters", {}),
-                }
+            study.optimize(
+                make_objective(
+                    "global",
+                    parameter_space,
+                    parameter_space,
+                    prompt_config,
+                    dataset,
+                    metric,
+                    self.num_eval_threads,
+                    n_samples,
+                    histories,
+                    parameter_search_grp,
+                    self.__class__.__name__,
+                ),
+                n_trials=global_trials,
+                show_progress_bar=False,
             )
 
         # Find current best parameters
@@ -229,13 +309,12 @@ class ParameterOptimizer(BaseOptimizer):
 
         if completed_trials:
             best_trial = max(completed_trials, key=lambda t: t.value)  # type: ignore
-            if best_trial.value:
-                # Even if score didn't improve, record best trial parameters
-                if best_trial.value > best_score:
-                    best_score = float(best_trial.value)
-                # Always record best trial parameters (even if score didn't improve)
-                best_parameters = best_trial.user_attrs.get("parameters", {})
-                best_model_params = best_trial.user_attrs.get("model_params", {})
+            # Update best score if improved
+            if best_trial.value > best_score:
+                best_score = float(best_trial.value)
+            # Always record best trial parameters (even if score didn't improve)
+            best_parameters = best_trial.user_attrs.get("parameters", {})
+            best_model_params = best_trial.user_attrs.get("model_params", {})
 
         # Local search
         if (
@@ -248,16 +327,31 @@ class ParameterOptimizer(BaseOptimizer):
             )
         ):
             logger.info(f"Starting local search: {local_trials} trials")
-            current_stage = "local"
-            current_space = parameter_space.narrow_around(
+            local_space = parameter_space.narrow_around(
                 best_parameters, self.local_search_scale
             )
-            local_range = current_space.describe()
+            local_range = local_space.describe()
             search_ranges["local"] = local_range
 
-            study.optimize(objective, n_trials=local_trials, show_progress_bar=False)
+            study.optimize(
+                make_objective(
+                    "local",
+                    local_space,
+                    parameter_space,
+                    prompt_config,
+                    dataset,
+                    metric,
+                    self.num_eval_threads,
+                    n_samples,
+                    histories,
+                    parameter_search_grp,
+                    self.__class__.__name__,
+                ),
+                n_trials=local_trials,
+                show_progress_bar=False,
+            )
 
-            # Update best results
+            # Update best results - refresh completed_trials since new trials were added
             completed_trials = [
                 t
                 for t in study.trials
@@ -265,7 +359,7 @@ class ParameterOptimizer(BaseOptimizer):
             ]
             if completed_trials:
                 new_best = max(completed_trials, key=lambda t: t.value)  # type: ignore
-                if new_best.value and new_best.value > best_score:
+                if new_best.value > best_score:
                     best_score = float(new_best.value)
                     best_parameters = new_best.user_attrs.get("parameters", {})
                     best_model_params = new_best.user_attrs.get("model_params", {})
@@ -294,10 +388,10 @@ class ParameterOptimizer(BaseOptimizer):
             best_config=best_prompt,
             best_score=best_score,
             metric_name=metric.__class__.__name__,
-            initial_prompt=prompt_config,
+            initial_config=prompt_config,
             initial_score=baseline_score,
             improvement=final_improvement,
-            history=history,
+            histories=histories,
             details={
                 "optimized_parameters": best_parameters,
                 "optimized_model_params": best_model_params,

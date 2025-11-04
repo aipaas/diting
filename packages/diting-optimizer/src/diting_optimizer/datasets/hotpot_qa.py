@@ -1,7 +1,9 @@
-"""HotpotQA 数据集
+"""HotpotQA dataset implementations.
 
-参考 Opik 的实现，提供 HotpotQA 多跳问答数据集。
+References Opik's implementation to provide HotpotQA multi-hop question answering dataset.
 """
+
+from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -11,26 +13,33 @@ from diting_optimizer.datasets.base_dataset import BaseDataset, InMemoryDataset
 
 
 def hotpot_300(test_mode: bool = False) -> BaseDataset:
-    """HotpotQA 数据集前 300 个样本
+    """Load HotpotQA dataset with first 300 samples.
 
-    参考 Opik 的实现：
-    - 从 JSON 文件加载数据
-    - 支持 test_mode（仅5个样本用于测试）
+    References Opik's implementation:
+    - Load data from JSON file
+    - Support test_mode (only 5 samples for testing)
 
-    Args:
-        test_mode: 是否使用测试模式（仅返回5个样本）
+    Parameters
+    ----------
+    test_mode : bool
+        Whether to use test mode (only return 5 samples)
 
-    Returns:
-        BaseDataset: HotpotQA 数据集实例
+    Returns
+    -------
+    BaseDataset
+        HotpotQA dataset instance
+
+    Notes:
+        If the data file is not found, returns an empty dataset with a warning message.
     """
     nb_items = 300 if not test_mode else 5
     dataset_name = f"hotpot_300{'_test' if test_mode else ''}"
 
-    # 加载数据文件
+    # Load data file
     data_file = Path(__file__).parent / "data" / "hotpot-500.json"
 
     if not data_file.exists():
-        # 如果数据文件不存在，返回空数据集并给出提示
+        # If data file doesn't exist, return empty dataset with warning
         print(
             f"Warning: {data_file} not found. Returning empty dataset. "
             "Please add hotpot-500.json to the data/ directory."
@@ -40,10 +49,10 @@ def hotpot_300(test_mode: bool = False) -> BaseDataset:
     with open(data_file, encoding="utf-8") as f:
         all_data = json.load(f)
 
-    # 取前 nb_items 个样本
+    # Take first nb_items samples
     items = all_data[:nb_items]
 
-    # 标准化数据格式
+    # Standardize data format
     formatted_items = []
     for idx, item in enumerate(items):
         formatted_items.append(
@@ -59,13 +68,17 @@ def hotpot_300(test_mode: bool = False) -> BaseDataset:
 
 
 def hotpot_500(test_mode: bool = False) -> BaseDataset:
-    """HotpotQA 数据集前 500 个样本
+    """Load HotpotQA dataset with first 500 samples.
 
-    Args:
-        test_mode: 是否使用测试模式（仅返回5个样本）
+    Parameters
+    ----------
+    test_mode : bool
+        Whether to use test mode (only return 5 samples)
 
-    Returns:
-        BaseDataset: HotpotQA 数据集实例
+    Returns
+    -------
+    BaseDataset
+        HotpotQA dataset instance
     """
     nb_items = 500 if not test_mode else 5
     dataset_name = f"hotpot_500{'_test' if test_mode else ''}"

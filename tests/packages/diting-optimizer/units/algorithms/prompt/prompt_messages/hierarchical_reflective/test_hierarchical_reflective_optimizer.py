@@ -119,7 +119,7 @@ class TestHierarchicalReflectiveOptimizer:
         # Check result structure
         assert result is not None
         assert result.best_config is not None
-        assert result.initial_prompt is not None
+        assert result.initial_config is not None
         assert result.best_score >= 0
         assert result.initial_score >= 0
         assert result.optimizer_name == "HierarchicalReflectiveOptimizer"
@@ -171,7 +171,7 @@ class TestHierarchicalReflectiveOptimizer:
 
         # Test with zero baseline
         improvement = optimizer.calculate_improvement(0.5, 0.0)
-        assert improvement == 0
+        assert improvement == float("inf")
 
     @pytest.mark.asyncio
     @patch(
@@ -181,7 +181,7 @@ class TestHierarchicalReflectiveOptimizer:
     async def test_optimization_history(
         self, initial_prompt, mock_dataset, mock_metric
     ):
-        """Test that optimization history is tracked"""
+        """Test that optimization histories is tracked"""
         optimizer = HierarchicalReflectiveOptimizer(
             seed=42,
             max_iterations=1,
@@ -196,4 +196,4 @@ class TestHierarchicalReflectiveOptimizer:
         )
 
         # History should be tracked
-        assert len(result.history) > 0
+        assert len(result.histories) > 0

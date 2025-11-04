@@ -74,21 +74,23 @@ class TestParameterSpec:
 
     def test_invalid_float_parameter_no_bounds(self):
         """测试创建无边界的 float 参数应失败"""
-        with pytest.raises(ValueError, match="float/int 类型需要 min 和 max"):
+        with pytest.raises(ValueError, match="float/int type requires min and max"):
             ParameterSpec(
                 name="temp", distribution=ParameterType.FLOAT, low=None, high=None
             )
 
     def test_invalid_float_parameter_inverted_bounds(self):
         """测试创建边界倒置的 float 参数应失败"""
-        with pytest.raises(ValueError, match="min 必须小于 max"):
+        with pytest.raises(ValueError, match="min must be less than max"):
             ParameterSpec(
                 name="temp", distribution=ParameterType.FLOAT, low=1.0, high=0.0
             )
 
     def test_invalid_log_scale_with_negative_bounds(self):
         """测试对数缩放负边界应失败"""
-        with pytest.raises(ValueError, match="log 缩放需要正数边界"):
+        with pytest.raises(
+            ValueError, match="log scaling requires positive boundaries"
+        ):
             ParameterSpec(
                 name="temp",
                 distribution=ParameterType.FLOAT,
@@ -99,7 +101,7 @@ class TestParameterSpec:
 
     def test_invalid_categorical_no_choices(self):
         """测试创建无选项的 categorical 参数应失败"""
-        with pytest.raises(ValueError, match="categorical 类型需要 choices"):
+        with pytest.raises(ValueError, match="categorical type requires choices"):
             ParameterSpec(name="model", distribution=ParameterType.CATEGORICAL)
 
     def test_suggest_float_parameter(self):
@@ -251,7 +253,7 @@ class TestParameterSearchSpace:
 
     def test_duplicate_parameter_names(self):
         """测试重复参数名应失败"""
-        with pytest.raises(ValueError, match="参数名称重复"):
+        with pytest.raises(ValueError, match="Duplicate parameter names"):
             ParameterSearchSpace(
                 parameters=[
                     ParameterSpec(
@@ -271,7 +273,7 @@ class TestParameterSearchSpace:
 
     def test_empty_search_space(self):
         """测试空搜索空间应失败"""
-        with pytest.raises(ValueError, match="参数搜索空间不能为空"):
+        with pytest.raises(ValueError, match="Parameter search space cannot be empty"):
             ParameterSearchSpace(parameters=[])
 
     def test_suggest_all_parameters(self):

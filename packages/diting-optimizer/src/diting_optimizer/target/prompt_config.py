@@ -1,65 +1,109 @@
-"""提示词配置类
+"""Prompt configuration classes for language model optimization.
 
-存放在 target/ 目录下，与未来的 parameter_config.py、tool_config.py 等并列，
-体现优化目标的扩展性设计。
+Located in the target/ directory, alongside future parameter_config.py,
+tool_config.py, etc., demonstrating the extensible design of optimization targets.
 
-设计理念：
-- 配置类自包含执行逻辑
-- 通过依赖注入实现可测试性
-- 支持链式调用和工厂方法
+Design Philosophy:
+- Configuration classes with self-contained execution logic
+- Dependency injection for testability
+- Support for method chaining and factory methods
 """
+
+from __future__ import annotations
 
 import copy
 from typing import Any, Dict, List, Optional
 
 from pydantic import Field, field_validator
 
-from diting_optimizer.target.base_config import BaseConfig
 from diting_core.models.llms.base_model import BaseLLM
+from diting_optimizer.target.base_config import BaseConfig
 
 
 class PromptConfig(BaseConfig):
-    """提示词配置类，适配 Opik 的 ChatPrompt
+    """Prompt configuration class, adapted from Opik's ChatPrompt.
 
-    支持两种提示格式：
-    1. 系统提示 + 用户提示
-    2. 消息列表格式
+    Supports two prompt formats:
+    1. System prompt + User prompt
+    2. Message list format
 
-    Attributes:
-        system: 系统提示词
-        user: 用户提示词
-        messages: 消息列表格式 [{"role": "system", "content": "..."}]
-        model_params: 模型参数（temperature、max_tokens、top_p、top_k 等）
+    Parameters
+    ----------
+    name : Optional[str]
+        Name of the prompt configuration. Defaults to "chat-prompt"
+    system : Optional[str]
+        System prompt text
+    user : Optional[str]
+        User prompt text
+    messages : Optional[List[Dict[str, str]]]
+        Message list format: [{"role": "system", "content": "..."}]
+    model_params : Optional[Dict[str, Any]]
+        Model parameters (temperature, max_tokens, top_p, top_k, etc.)
+    llm : Optional[BaseLLM]
+        Language model to use for execution
+
+    Notes:
+        - When using system/user format, both should be provided
+        - When using messages format, it takes precedence over system/user
+        - Model parameters are merged with any additional params during execution
+        - The llm field is excluded from JSON serialization by default
     """
 
-    name: Optional[str] = Field(default="chat-prompt", description="提示词名称")
-    system: Optional[str] = Field(default=None, description="系统提示词")
-    user: Optional[str] = Field(default=None, description="用户提示词")
+    name: Optional[str] = Field(default="chat-prompt", description="Prompt name")
+    system: Optional[str] = Field(default=None, description="System prompt text")
+    user: Optional[str] = Field(default=None, description="User prompt text")
     messages: Optional[List[Dict[str, str]]] = Field(
-        default=None, description="消息列表格式"
+        default=None, description="Message list format"
     )
     model_params: Optional[Dict[str, Any]] = Field(
-        default=None, description="模型参数（temperature、max_tokens、top_p、top_k 等）"
+        default=None,
+        description="Model parameters (temperature, max_tokens, top_p, top_k, etc.)",
     )
 
-    llm: Optional[BaseLLM] = Field(default=None, description="使用的模型")
+    llm: Optional[BaseLLM] = Field(
+        default=None, description="Language model to use", exclude=True
+    )
 
     @field_validator("messages")
     @classmethod
     def validate_messages(
         cls, v: Optional[List[Dict[str, str]]]
     ) -> Optional[List[Dict[str, str]]]:
-        """验证消息格式"""
+        """Validate message format.
+
+        Parameters
+        ----------
+        v : Optional[List[Dict[str, str]]]
+            List of messages to validate
+
+        Returns
+        -------
+        Optional[List[Dict[str, str]]]
+            Validated message list
+
+        Raises
+        ------
+        ValueError
+            If any message is missing required 'role' or 'content' fields
+        """
         if v is not None:
             for msg in v:
                 if "role" not in msg or "content" not in msg:
-                    raise ValueError("messages 中每个消息必须包含 'role' 和 'content'")
+                    raise ValueError(
+                        "Each message in 'messages' must contain 'role' and 'content' fields"
+                    )
         return v
 
     def validate_dependencies(self) -> None:
-        """验证依赖是否已注入"""
+        """Validate that dependencies have been properly injected.
+
+        Raises
+        ------
+        ValueError
+            If LLM is not configured
+        """
         if not self.llm:
-            raise ValueError("LLM not configured. set llm first.")
+            raise ValueError("LLM not configured. Set llm first.")
 
     def deep_copy(self) -> "PromptConfig":
         """Shallow clone preserving model configuration and tools."""
@@ -79,39 +123,51 @@ class PromptConfig(BaseConfig):
     async def execute(
         self, dataset_item: dict[str, str] | None = None, **kwargs
     ) -> str:
-        """执行提示词生成
+        """Execute prompt generation using the configured LLM.
 
-        Args:
-            dataset_item: 测试数据
-            **kwargs: 额外参数传递给LLM
-        Returns:
-            LLM生成的响应
+        Parameters
+        ----------
+        dataset_item : Optional[Dict[str, str]]
+            Test data item for template substitution (e.g., {input} placeholders)
+        **kwargs : Any
+            Additional parameters passed to the LLM
 
-        Raises:
-            ValueError: 当LLM未配置时
+        Returns
+        -------
+        str
+            Response generated by the LLM
+
+        Raises
+        ------
+        ValueError
+            When LLM is not configured
         """
         self.validate_dependencies()
 
-        # 格式化提示词
+        # Format prompt
         messages = self.get_messages(dataset_item)
         prompt_str = self.format_messages(messages)
 
-        # 获取模型参数并合并额外参数
+        # Get model parameters and merge with additional parameters
         model_params = self._get_model_params()
         final_kwargs = {**model_params, **kwargs}
 
-        # 调用LLM生成
+        # Call LLM for generation
         return await self.llm.generate(prompt_str, **final_kwargs)
 
     @staticmethod
     def format_messages(messages: List[Dict[str, str]]) -> str:
-        """格式化消息列表为字符串
+        """Format message list as string.
 
-        Args:
-            messages: 消息列表
+        Parameters
+        ----------
+        messages : List[Dict[str, str]]
+            List of messages to format
 
-        Returns:
-            格式化后的提示词
+        Returns
+        -------
+        str
+            Formatted prompt string
         """
         formatted_parts = []
         for msg in messages:
@@ -121,28 +177,35 @@ class PromptConfig(BaseConfig):
         return "\n\n".join(formatted_parts)
 
     def _get_model_params(self) -> Dict[str, Any]:
-        """获取模型参数
+        """Get model parameters.
 
-        Returns:
-            模型参数字典
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary of model parameters
         """
         return self.model_params or {}
 
     def get_messages(
         self, dataset_item: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, str]]:
-        """获取格式化的消息列表
+        """Get formatted message list.
 
-        参考 Opik ChatPrompt.get_messages() 方法。
-        将配置转换为标准消息格式，并可选地替换数据集字段。
+        References Opik ChatPrompt.get_messages() method.
+        Converts configuration to standard message format and optionally
+        substitutes dataset fields.
 
-        Args:
-            dataset_item: 数据集项，用于替换消息中的占位符（如 {input}）
+        Parameters
+        ----------
+        dataset_item : Optional[Dict[str, Any]]
+            Dataset item for replacing placeholders in messages (e.g., {input})
 
-        Returns:
-            标准化的消息列表
+        Returns
+        -------
+        List[Dict[str, str]]
+            Standardized message list
         """
-        # 标准化为消息格式
+        # Normalize to message format
         messages_list: List[Dict[str, str]] = []
 
         if self.system:
@@ -154,7 +217,7 @@ class PromptConfig(BaseConfig):
         if self.user:
             messages_list.append({"role": "user", "content": self.user})
 
-        # 替换数据集字段
+        # Substitute dataset fields
         if dataset_item:
             for key, value in dataset_item.items():
                 label = "{" + key + "}"
@@ -167,12 +230,14 @@ class PromptConfig(BaseConfig):
         return messages_list
 
     def set_messages(self, messages: List[Dict[str, str]]) -> None:
-        """设置消息列表并清空其他提示字段
+        """Set message list and clear other prompt fields.
 
-        参考 Opik ChatPrompt.set_messages() 方法。
+        References Opik ChatPrompt.set_messages() method.
 
-        Args:
-            messages: 新的消息列表
+        Parameters
+        ----------
+        messages : List[Dict[str, str]]
+            New message list
         """
         self.system = None
         self.user = None

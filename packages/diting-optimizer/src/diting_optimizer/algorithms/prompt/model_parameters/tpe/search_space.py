@@ -1,7 +1,9 @@
-"""参数搜索空间定义
+"""Parameter search space definitions.
 
-参考 Opik ParameterSpec 和 ParameterSearchSpace 实现。
+Reference implementation based on Opik ParameterSpec and ParameterSearchSpace.
 """
+
+from __future__ import annotations
 
 import copy
 import math
@@ -17,30 +19,35 @@ from diting_optimizer.target.prompt_config import PromptConfig
 
 
 class ParameterSpec(BaseModel):
-    """单个参数的定义
+    """Definition of a single parameter.
 
     Attributes:
-        name: 参数名称
-        description: 参数描述
-        distribution: 参数类型（float/int/categorical）
-        low: 最小值（用于 float/int）
-        high: 最大值（用于 float/int）
-        step: 步长（用于离散采样）
-        scale: 缩放类型（linear/log）
-        choices: 可选值列表（用于 categorical）
-        target: 参数应用目标（如 "model_params.temperature"）
+        name: Parameter name
+        description: Parameter description
+        distribution: Parameter type (float/int/categorical)
+        low: Minimum value (for float/int)
+        high: Maximum value (for float/int)
+        step: Step size (for discrete sampling)
+        scale: Scaling type (linear/log)
+        choices: List of choices (for categorical)
+        target: Parameter application target (e.g., "model_params.temperature")
     """
 
-    name: str = Field(description="参数名称")
-    description: Optional[str] = Field(default=None, description="参数描述")
-    distribution: ParameterType = Field(description="参数类型")
-    low: Optional[float] = Field(default=None, description="最小值")
-    high: Optional[float] = Field(default=None, description="最大值")
-    step: Optional[float] = Field(default=None, description="步长")
-    scale: Literal["linear", "log"] = Field(default="linear", description="缩放类型")
-    choices: Optional[List[Any]] = Field(default=None, description="可选值列表")
+    name: str = Field(description="Parameter name")
+    description: Optional[str] = Field(
+        default=None, description="Parameter description"
+    )
+    distribution: ParameterType = Field(description="Parameter type")
+    low: Optional[float] = Field(default=None, description="Minimum value")
+    high: Optional[float] = Field(default=None, description="Maximum value")
+    step: Optional[float] = Field(default=None, description="Step size")
+    scale: Literal["linear", "log"] = Field(
+        default="linear", description="Scaling type"
+    )
+    choices: Optional[List[Any]] = Field(default=None, description="List of choices")
     target: Optional[str] = Field(
-        default=None, description="参数应用目标（默认为 model_params.{name}）"
+        default=None,
+        description="Parameter application target (defaults to model_params.{name})",
     )
 
     model_config = ConfigDict(
@@ -52,38 +59,40 @@ class ParameterSpec(BaseModel):
     @field_validator("distribution", mode="before")
     @classmethod
     def validate_distribution(cls, v: Any) -> ParameterType:
-        """验证并转换参数类型"""
+        """Validate and convert parameter type."""
         if isinstance(v, ParameterType):
             return v
         if isinstance(v, str):
             return ParameterType(v)
-        raise ValueError(f"无效的参数类型: {v}")
+        raise ValueError(f"Invalid parameter type: {v}")
 
     @model_validator(mode="after")
     def validate_spec(self) -> "ParameterSpec":
-        """验证参数定义的完整性"""
+        """Validate the completeness of parameter definition."""
         if self.distribution in {ParameterType.FLOAT, ParameterType.INT}:
             if self.low is None or self.high is None:
-                raise ValueError(f"{self.name}: float/int 类型需要 min 和 max")
+                raise ValueError(f"{self.name}: float/int type requires min and max")
             if self.low >= self.high:
-                raise ValueError(f"{self.name}: min 必须小于 max")
+                raise ValueError(f"{self.name}: min must be less than max")
             if self.scale == "log" and (self.low <= 0 or self.high <= 0):
-                raise ValueError(f"{self.name}: log 缩放需要正数边界")
+                raise ValueError(
+                    f"{self.name}: log scaling requires positive boundaries"
+                )
 
         elif self.distribution == ParameterType.CATEGORICAL:
             if not self.choices:
-                raise ValueError(f"{self.name}: categorical 类型需要 choices")
+                raise ValueError(f"{self.name}: categorical type requires choices")
 
         return self
 
     def suggest(self, trial: Trial) -> Any:
-        """使用 Optuna trial 采样参数值
+        """Sample parameter values using Optuna trial.
 
         Args:
-            trial: Optuna Trial 对象
+            trial: Optuna Trial object
 
         Returns:
-            采样的参数值
+            Sampled parameter value
         """
         if self.distribution == ParameterType.FLOAT:
             assert self.low is not None and self.high is not None
@@ -107,16 +116,16 @@ class ParameterSpec(BaseModel):
             assert self.choices is not None
             return trial.suggest_categorical(self.name, self.choices)
 
-        raise RuntimeError(f"不支持的参数类型: {self.distribution}")
+        raise RuntimeError(f"Unsupported parameter type: {self.distribution}")
 
     def apply_to_prompt(self, prompt: PromptConfig, value: Any) -> None:
-        """将采样值应用到 PromptConfig
+        """Apply sampled values to PromptConfig.
 
         Args:
-            prompt: 提示配置对象
-            value: 采样的参数值
+            prompt: Prompt configuration object
+            value: Sampled parameter value
         """
-        # 所有参数统一放入 model_params 中管理
+        # All parameters are uniformly managed in model_params
         target = self.target or f"model_params.{self.name}"
 
         if target.startswith("model_params."):
@@ -125,22 +134,22 @@ class ParameterSpec(BaseModel):
                 prompt.model_params = {}
             prompt.model_params[param_name] = value
         else:
-            # 默认放入 model_params
+            # Default to putting in model_params
             if prompt.model_params is None:
                 prompt.model_params = {}
             prompt.model_params[self.name] = value
 
     def narrow(self, center: Any, scale: float) -> "ParameterSpec":
-        """在中心值周围缩小搜索范围
+        """Narrow search range around center value.
 
-        参考 Opik ParameterSpec.narrow() 实现，用于局部搜索。
+        Reference implementation based on Opik ParameterSpec.narrow() for local search.
 
         Args:
-            center: 中心值
-            scale: 缩放因子（0.0-1.0）
+            center: Center value
+            scale: Scaling factor (0.0-1.0)
 
         Returns:
-            缩小范围后的新 ParameterSpec
+            New ParameterSpec with narrowed range
         """
         if center is None or scale <= 0:
             return self
@@ -165,7 +174,7 @@ class ParameterSpec(BaseModel):
             if new_low >= new_high:
                 return self
 
-            # 创建新的 spec
+            # Create new spec
             return ParameterSpec(
                 name=self.name,
                 description=self.description,
@@ -177,17 +186,17 @@ class ParameterSpec(BaseModel):
                 target=self.target,
             )
 
-        # 分类参数不缩小
+        # Categorical parameters are not narrowed
         return self
 
 
 class ParameterSearchSpace(BaseModel):
-    """参数搜索空间
+    """Parameter search space.
 
-    包含多个参数的搜索空间定义。
+    Contains search space definitions for multiple parameters.
 
     Attributes:
-        parameters: 参数列表
+        parameters: List of parameters
     """
 
     parameters: List[ParameterSpec] = Field(default_factory=list)
@@ -197,12 +206,12 @@ class ParameterSearchSpace(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def normalize_input(cls, data: Any) -> Any:
-        """标准化输入格式
+        """Normalize input format.
 
-        支持字典格式：{"temp": {"type": "float", "min": 0, "max": 1}}
+        Supports dictionary format: {"temp": {"type": "float", "min": 0, "max": 1}}
         """
         if isinstance(data, dict) and "parameters" not in data:
-            # 将字典转换为参数列表
+            # Convert dictionary to parameter list
             parameters = []
             for name, spec_dict in data.items():
                 if isinstance(spec_dict, dict):
@@ -214,23 +223,25 @@ class ParameterSearchSpace(BaseModel):
 
     @model_validator(mode="after")
     def validate_unique_names(self) -> "ParameterSearchSpace":
-        """验证参数名称唯一性"""
+        """Validate parameter name uniqueness."""
         names = [spec.name for spec in self.parameters]
         if len(names) != len(set(names)):
             duplicates = {name for name in names if names.count(name) > 1}
-            raise ValueError(f"参数名称重复: {', '.join(sorted(duplicates))}")
+            raise ValueError(
+                f"Duplicate parameter names: {', '.join(sorted(duplicates))}"
+            )
         if not self.parameters:
-            raise ValueError("参数搜索空间不能为空")
+            raise ValueError("Parameter search space cannot be empty")
         return self
 
     def suggest(self, trial: Trial) -> Dict[str, Any]:
-        """采样所有参数的值
+        """Sample values for all parameters.
 
         Args:
-            trial: Optuna Trial 对象
+            trial: Optuna Trial object
 
         Returns:
-            参数名到值的字典
+            Dictionary mapping parameter names to values
         """
         return {spec.name: spec.suggest(trial) for spec in self.parameters}
 
@@ -241,23 +252,23 @@ class ParameterSearchSpace(BaseModel):
         *,
         base_model_params: Optional[Dict[str, Any]] = None,
     ) -> PromptConfig:
-        """将参数值应用到提示配置
+        """Apply parameter values to prompt configuration.
 
         Args:
-            prompt: 基础提示配置
-            values: 参数值字典
-            base_model_params: 基础模型参数（可选）
+            prompt: Base prompt configuration
+            values: Parameter value dictionary
+            base_model_params: Base model parameters (optional)
 
         Returns:
-            应用参数后的新 PromptConfig
+            New PromptConfig with applied parameters
         """
         prompt_copy = prompt.deep_copy()
 
-        # 重置 model_params
+        # Reset model_params
         if base_model_params is not None:
             prompt_copy.model_params = copy.deepcopy(base_model_params)
 
-        # 应用所有参数
+        # Apply all parameters
         for spec in self.parameters:
             if spec.name in values:
                 spec.apply_to_prompt(prompt_copy, values[spec.name])
@@ -267,16 +278,16 @@ class ParameterSearchSpace(BaseModel):
     def narrow_around(
         self, values: Dict[str, Any], scale: float
     ) -> "ParameterSearchSpace":
-        """在给定值周围缩小搜索空间
+        """Narrow search space around given values.
 
-        用于局部搜索阶段。
+        Used for local search phase.
 
         Args:
-            values: 中心参数值
-            scale: 缩放因子
+            values: Center parameter values
+            scale: Scaling factor
 
         Returns:
-            缩小后的新搜索空间
+            New narrowed search space
         """
         narrowed_params = [
             spec.narrow(values.get(spec.name), scale) for spec in self.parameters
@@ -284,10 +295,10 @@ class ParameterSearchSpace(BaseModel):
         return ParameterSearchSpace(parameters=narrowed_params)
 
     def describe(self) -> Dict[str, Dict[str, Any]]:
-        """返回搜索空间的描述
+        """Return description of the search space.
 
         Returns:
-            参数名到描述信息的字典
+            Dictionary mapping parameter names to description information
         """
         summary: Dict[str, Dict[str, Any]] = {}
         for spec in self.parameters:

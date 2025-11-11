@@ -28,11 +28,23 @@ class TestResult(BaseModel):
     Attributes:
         test_case: The test case that was evaluated
         metric_value: The computed metric value for this test case
+        execution_failed: Flag indicating if execution failed (e.g., LLM generation failed)
+        execution_error: Error message if execution failed
     """
 
     __test__ = False  # Critical: Prevent pytest from recognizing this as a test class
     test_case: LLMCase = Field(..., description="The test case that was evaluated")
-    metric_value: MetricValue = Field(..., description="The computed metric value")
+    metric_value: Optional[MetricValue] = Field(
+        default=None,
+        description="The computed metric value for this test case (None if execution failed)",
+    )
+    execution_failed: bool = Field(
+        default=False,
+        description="Flag indicating if execution failed (e.g., LLM generation failed)",
+    )
+    execution_error: Optional[str] = Field(
+        default=None, description="Error message if execution failed"
+    )
 
 
 class ExperimentResult(BaseModel):
@@ -52,7 +64,7 @@ class ExperimentResult(BaseModel):
 
     @property
     def avg_score(self) -> float:
-        """Calculate the average of valid scores across all MetricValue objects.
+        """Calculate the average of valid scores across all successful test cases.
 
         Returns
         -------
@@ -64,19 +76,51 @@ class ExperimentResult(BaseModel):
         ValueError
             If no valid scores are found in the test results
         """
-        # Collect all non-None scores
+        # Collect scores from successful executions only
         scores: List[float] = []
+        successful_count = 0
+        failed_count = 0
+
         for test_result in self.test_results:
-            if test_result.metric_value.score is not None:  # Only consider valid scores
+            if test_result.execution_failed:
+                failed_count += 1
+                continue
+
+            # Only consider successful executions
+            successful_count += 1
+            if test_result.metric_value and test_result.metric_value.score is not None:
                 scores.append(test_result.metric_value.score)
 
         # Calculate average (handle empty list case)
         if not scores:
             logger.warning(
-                f"Experiment '{self.experiment_name}' has no valid scores, returning 0.0"
+                f"Experiment '{self.experiment_name}' has no valid scores from successful executions. "
+                f"Total: {len(self.test_results)}, Successful: {successful_count}, Failed: {failed_count}. "
+                f"Returning 0.0"
             )
             return 0.0
-        return sum(scores) / len(scores)
+
+        avg = sum(scores) / len(scores)
+        logger.info(
+            f"Experiment '{self.experiment_name}' average score calculated from {len(scores)} successful tests "
+            f"(Total: {len(self.test_results)}, Failed: {failed_count}): {avg:.4f}"
+        )
+        return avg
+
+    @property
+    def success_rate(self) -> float:
+        """Calculate the success rate of test executions.
+
+        Returns
+        -------
+        float
+            Success rate (0.0 to 1.0)
+        """
+        if not self.test_results:
+            return 0.0
+
+        successful = sum(1 for tr in self.test_results if not tr.execution_failed)
+        return successful / len(self.test_results)
 
 
 def sort_test_results_by_failure(
@@ -222,19 +266,44 @@ async def evaluate_prompt(
             user_input = sample.get(LLMCaseParams.USER_INPUT.value, "")
             expected_output = sample.get(LLMCaseParams.EXPECTED_OUTPUT.value, "")
             context = sample.get(LLMCaseParams.CONTEXT.value)
-            actual_output = await prompt_config.execute(sample)
 
+            # Create test case first
             test_case = LLMCase(
                 user_input=user_input,
-                actual_output=actual_output,
+                actual_output="",
                 expected_output=expected_output,
                 context=context if isinstance(context, list) else None,
                 metadata={"dataset_item_id": sample.get("id")},
             )
-            metric_value = await metric.compute(test_case, callbacks=callbacks)
-            final_results.append(
-                TestResult(test_case=test_case, metric_value=metric_value)
-            )
+
+            try:
+                # Try to generate output
+                actual_output = await prompt_config.execute(sample)
+                test_case.actual_output = actual_output
+
+                # Compute metric value
+                metric_value = await metric.compute(test_case, callbacks=callbacks)
+                final_results.append(
+                    TestResult(
+                        test_case=test_case,
+                        metric_value=metric_value,
+                        execution_failed=False,
+                    )
+                )
+            except Exception as e:
+                # Handle execution failure (e.g., LLM generation failed)
+                logger.error(
+                    f"Failed to evaluate sample {sample.get('id', 'unknown')}: {str(e)}"
+                )
+                test_case.actual_output = f"[EXECUTION_ERROR] {str(e)}"
+                final_results.append(
+                    TestResult(
+                        test_case=test_case,
+                        metric_value=None,
+                        execution_failed=True,
+                        execution_error=str(e),
+                    )
+                )
 
     await asyncio.gather(
         *(_evaluate_single(sample, test_results) for sample in samples)

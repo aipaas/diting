@@ -108,7 +108,7 @@ include = [
     # "tests",
 ]
 exclude = [
-    "packages/diting-optimizer/src/diting_optimizer/",
+    "packages/diting-optimizer/src/",
 ]
 venvPath = '.'
 venv = ".venv"
@@ -119,5 +119,5 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 exclude = [
-    "^packages/diting-optimizer/src/diting_optimizer/",
+    "^packages/diting-optimizer/src/",
 ]

@@ -176,7 +176,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             callbacks=callbacks,
         )
 
-        return improve_prompt_response
+        return ImprovedPrompt.model_validate(improve_prompt_response)
 
     async def _generate_and_evaluate_improvement(
         self,
@@ -338,6 +338,9 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             optimizer_name=self.__class__.__name__,
             metric_name=metric.__class__.__name__,
         )
+        logger.info(
+            f"Updated history: {history.model_dump_json(exclude={'experiment_result'})}"
+        )
         histories.append(history)
         await eval_baseline_rm.on_chain_end(outputs={"history": history})
 
@@ -459,6 +462,9 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                         "root_cause": root_cause,
                         "sub_iteration": idx,
                     },
+                )
+                logger.info(
+                    f"Updated history: {history.model_dump_json(exclude={'experiment_result'})}"
                 )
                 histories.append(history)
                 await gen_and_eval_improve_rm.on_chain_end(outputs={"history": history})

@@ -1,13 +1,13 @@
 import asyncio
 
+from diting_core.metrics import AnswerCorrectness
+from diting_core.models.embeddings.factory import embedding_factory
 from diting_core.models.llms.factory import llm_factory
 from diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer import (
     HierarchicalReflectiveOptimizer,
 )
-
+from diting_optimizer.datasets.rag_robot_qa import rag_qa_10
 from diting_optimizer.target.prompt_config import PromptConfig
-from examples.accuracy_metric import AccuracyAndConciseMetric
-from examples.data.fund_manager_robot_qa import fund_manager_qa_10
 
 FASTGPT_PROMPT = """
 ## 任务描述
@@ -39,7 +39,7 @@ FASTGPT_PROMPT = """
 
 async def prompt_optimize(n_samples: int):
     # prepare dataset for eval and optimize
-    dataset = fund_manager_qa_10()
+    dataset = rag_qa_10()
     # prepare optimize target
     # generate_llm = llm_factory(
     #     model="THUDM/GLM-4-9B-0414",
@@ -73,16 +73,15 @@ async def prompt_optimize(n_samples: int):
         base_url="https://integrate.api.nvidia.com/v1",
         api_key="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",
     )
-    # embedding_model = embedding_factory(
-    #     model="embedding-3",
-    #     base_url="https://open.bigmodel.cn/api/paas/v4/",
-    #     api_key="7f08f66caad549708238a57e0f7f33f7.EfQ9HoYpYZqBCRFX",
+    # metric = AccuracyAndConciseMetric(
+    #     model=eval_llm,
     # )
-    # metric = AnswerCorrectness(model=eval_llm, embedding_model=embedding_model)
-
-    metric = AccuracyAndConciseMetric(
-        model=eval_llm,
+    embedding_model = embedding_factory(
+        model="embedding-3",
+        base_url="https://open.bigmodel.cn/api/paas/v4/",
+        api_key="7f08f66caad549708238a57e0f7f33f7.EfQ9HoYpYZqBCRFX",
     )
+    metric = AnswerCorrectness(model=eval_llm, embedding_model=embedding_model)
 
     # config the optimizer
     # optimize_llm = llm_factory(
@@ -90,16 +89,16 @@ async def prompt_optimize(n_samples: int):
     #     base_url="https://api.siliconflow.cn/v1/",
     #     api_key="sk-xypapgifezpiclqwvjxicqtzizarklpownliqpkdlgvzkkwh",
     # )
-    optimize_llm = llm_factory(
-        model="openai/gpt-oss-120b",
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key="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",
-    )
     # optimize_llm = llm_factory(
-    #     model="qwen/qwen3-next-80b-a3b-thinking",
+    #     model="openai/gpt-oss-120b",
     #     base_url="https://integrate.api.nvidia.com/v1",
-    #     api_key="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",
+    #     api_key="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",
     # )
+    optimize_llm = llm_factory(
+        model="qwen/qwen3-next-80b-a3b-instruct",
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key="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",
+    )
 
     # firstly, optimize the prompt str using HierarchicalReflectiveOptimizer
     optimizer = HierarchicalReflectiveOptimizer(
@@ -110,11 +109,11 @@ async def prompt_optimize(n_samples: int):
         dataset,
         metric,
         n_samples=n_samples,
-        verbose=True,
+        verbose=False,
     )
 
     optimization_result.to_markdown(
-        f"fund_robot_optimize_{metric.name}_{optimize_llm.model_name}.md"
+        f"customer_robot_optimize_{metric.name}_{optimize_llm.model_name}.md"
     )
     # best_config = optimization_result.best_config
     # best_config = cast(PromptConfig, best_config)

@@ -341,10 +341,11 @@ Scores:
         Perform hierarchical root cause analysis on evaluation results asynchronously.
 
         This method:
-        1. Validates that test results include reasons (critical for analysis)
-        2. Splits test results into batches of batch_size
-        3. Analyzes batches concurrently (up to max_parallel_batches at once)
-        4. Synthesizes batch analyses into unified failure modes
+        1. Filters out execution failures
+        2. Validates that test results include reasons (critical for analysis)
+        3. Splits test results into batches of batch_size
+        4. Analyzes batches concurrently (up to max_parallel_batches at once)
+        5. Synthesizes batch analyses into unified failure modes
 
         Args:
             experiment_result: The evaluation result to analyze
@@ -356,7 +357,16 @@ Scores:
         Raises:
             ValueError: If test results don't include reasons, which are critical for analysis
         """
-        test_results = experiment_result.test_results
+        # Filter out execution failures - only analyze successful executions
+        all_test_results = experiment_result.test_results
+        test_results = [tr for tr in all_test_results if not tr.execution_failed]
+        failed_count = len(all_test_results) - len(test_results)
+
+        if failed_count > 0:
+            logger.warning(
+                f"Filtering out {failed_count} failed executions from root cause analysis. "
+                f"Analyzing {len(test_results)} successful results only."
+            )
 
         num_test_results = len(test_results)
 
@@ -383,12 +393,13 @@ Scores:
             batch_number += 1
 
         # Process batches with semaphore to limit concurrency
+        parallel_batches = min(len(batch_tasks), self.max_parallel_batches)
         logger.info(
             f"Processing {len(batch_tasks)} batches concurrently "
             f"(max {self.max_parallel_batches} at once)"
         )
 
-        semaphore = asyncio.Semaphore(self.max_parallel_batches)
+        semaphore = asyncio.Semaphore(parallel_batches)
 
         async def run_with_semaphore(
             batch_num: int, task: Any

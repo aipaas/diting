@@ -6,7 +6,8 @@ References Opik Dataset design to provide standard dataset interfaces.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
+import random
 
 
 class BaseDataset(ABC):
@@ -46,6 +47,36 @@ class BaseDataset(ABC):
             - input: Input data
             - expected_output: Expected output (if available)
             - context: Context information (if available)
+
+        Raises
+        ------
+        NotImplementedError
+            If not implemented by subclass
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def split(
+        self,
+        train_ratio: float = 0.8,
+        shuffle: bool = True,
+        random_state: Optional[int] = None,
+    ) -> Tuple["BaseDataset", "BaseDataset"]:
+        """Split dataset into training and testing sets.
+
+        Parameters
+        ----------
+        train_ratio : float, default 0.8
+            Ratio of data to allocate to training set (0.0-1.0)
+        shuffle : bool, default True
+            Whether to shuffle data before splitting
+        random_state : Optional[int], default None
+            Random seed for reproducible splits
+
+        Returns
+        -------
+        Tuple[BaseDataset, BaseDataset]
+            Tuple of (train_dataset, test_dataset)
 
         Raises
         ------
@@ -116,3 +147,44 @@ class InMemoryDataset(BaseDataset):
             Number of items in the dataset
         """
         return len(self._items)
+
+    def split(
+        self,
+        train_ratio: float = 0.8,
+        shuffle: bool = True,
+        random_state: Optional[int] = None,
+    ) -> Tuple["BaseDataset", "BaseDataset"]:
+        """Split dataset into training and testing sets.
+
+        Parameters
+        ----------
+        train_ratio : float, default 0.8
+            Ratio of data to allocate to training set (0.0-1.0)
+        shuffle : bool, default True
+            Whether to shuffle data before splitting
+        random_state : Optional[int], default None
+            Random seed for reproducible splits
+
+        Returns
+        -------
+        Tuple[BaseDataset, BaseDataset]
+            Tuple of (train_dataset, test_dataset)
+        """
+        if not 0.0 <= train_ratio <= 1.0:
+            raise ValueError("train_ratio must be between 0.0 and 1.0")
+
+        items = self._items.copy()
+
+        if shuffle:
+            if random_state is not None:
+                random.seed(random_state)
+            random.shuffle(items)
+
+        split_index = int(len(items) * train_ratio)
+        train_items = items[:split_index]
+        test_items = items[split_index:]
+
+        train_dataset = InMemoryDataset(f"{self.name}_train", train_items)
+        test_dataset = InMemoryDataset(f"{self.name}_test", test_items)
+
+        return train_dataset, test_dataset

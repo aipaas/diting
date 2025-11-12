@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import typing as t
 from pydantic import BaseModel
 
+from diting_core.utilities.cache import CacheInterface, cacher  # type: ignore
 from diting_core.utilities.slug import camel_to_snake
 
 DictOrPydanticClass = t.Union[t.Dict[str, t.Any], t.Type[BaseModel]]
@@ -11,6 +12,17 @@ PydanticClass = type[BaseModel]
 
 
 class BaseLLM(ABC):
+    cache: t.Optional[CacheInterface] = None
+
+    def __init__(self, cache: t.Optional[CacheInterface] = None):
+        self.cache = cache
+        # If a cache_backend is provided, wrap the implementation methods at construction time.
+        if self.cache is not None:
+            self.generate = cacher(cache_backend=self.cache)(self.generate)
+            self.generate_structured_output = cacher(cache_backend=self.cache)(
+                self.generate_structured_output
+            )
+
     @property
     def model_name(self) -> str:
         return camel_to_snake(self.__class__.__name__)

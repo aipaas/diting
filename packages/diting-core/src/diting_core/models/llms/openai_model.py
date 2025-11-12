@@ -17,6 +17,7 @@ from diting_core.models.llms.base_model import (
     PydanticClass,
 )
 from diting_core.models.utils import filter_model_output
+from diting_core.utilities.cache import CacheInterface
 from diting_core.utilities.json_retry import JsonRetryHandler, create_enhanced_prompt
 
 MULTIPLE_COMPLETION_SUPPORTED = [
@@ -50,8 +51,9 @@ class LangchainLLMWrapper(BaseLLM):
         llm: BaseLanguageModel[BaseMessage],  # pyright: ignore[reportInvalidTypeArguments]
         is_guided_json_support: bool = False,
         json_retry_handler: Optional[JsonRetryHandler] = None,
+        cache: Optional[CacheInterface] = None,
     ):
-        super().__init__()
+        super().__init__(cache=cache)
         self.llm = llm
         self.is_guided_json_support: bool = is_guided_json_support
         self.json_retry_handler = json_retry_handler or JsonRetryHandler()

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Any, List
+from typing import Any, List, Optional
+
 from langchain_core.embeddings import Embeddings
 from pydantic import BaseModel, Field
 
-from diting_core.models.embeddings.base_model import BaseEmbeddings
-from diting_core.callbacks.manager import new_group
 from diting_core.callbacks.base import ChainType
+from diting_core.callbacks.manager import new_group
+from diting_core.models.embeddings.base_model import BaseEmbeddings
+from diting_core.utilities.cache import CacheInterface
 
 
 class PrivateEmbeddings(BaseModel, BaseEmbeddings):
@@ -14,7 +16,9 @@ class PrivateEmbeddings(BaseModel, BaseEmbeddings):
     client: Any = Field(default=None, exclude=True)
     async_client: Any = Field(default=None, exclude=True)
 
-    async def aembed_query(self, text: str, **kwargs: Any) -> List[float]:
+    cache: Optional[CacheInterface] = None
+
+    async def embed_text(self, text: str, **kwargs: Any) -> List[float]:
         run_manager, _ = await new_group(
             name=self.__repr__(),
             inputs={"embed_input": text},
@@ -30,9 +34,7 @@ class PrivateEmbeddings(BaseModel, BaseEmbeddings):
         )
         return result.data[0].embedding
 
-    async def aembed_documents(
-        self, texts: List[str], **kwargs: Any
-    ) -> List[List[float]]:
+    async def embed_texts(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
         run_manager, _ = await new_group(
             name=self.__repr__(),
             inputs={"embed_input": texts},
@@ -54,14 +56,11 @@ class LangchainEmbeddingsWrapper(BaseEmbeddings):
     Wrapper for any embeddings from langchain.
     """
 
-    def __init__(
-        self,
-        embeddings: Embeddings,
-    ):
+    def __init__(self, embeddings: Embeddings, cache: Optional[CacheInterface] = None):
         self.embeddings = embeddings
-        super().__init__()
+        super().__init__(cache=cache)
 
-    async def aembed_query(self, text: str, **kwargs: Any) -> List[float]:
+    async def embed_text(self, text: str, **kwargs: Any) -> List[float]:
         """
         Asynchronously embed a single query text.
         """
@@ -69,9 +68,7 @@ class LangchainEmbeddingsWrapper(BaseEmbeddings):
             raise TypeError(f"text must be str, got {type(text)}")
         return await self.embeddings.aembed_query(text)
 
-    async def aembed_documents(
-        self, texts: List[str], **kwargs: Any
-    ) -> List[List[float]]:
+    async def embed_texts(self, texts: List[str], **kwargs: Any) -> List[List[float]]:
         """
         Asynchronously embed multiple documents.
         """

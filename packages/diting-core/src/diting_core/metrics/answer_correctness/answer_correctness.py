@@ -37,7 +37,7 @@ class AnswerCorrectness(BaseMetric):
     Attributes:
         model (BaseLLM): The model used to compute this metric.
         weights (List[float]): Weights for combining factual accuracy and semantic similarity scores. It is expected to contain exactly two weights.
-        beta (float): A model_parameters that influences the balance between precision and recall in the evaluation of factual correctness.
+        beta (float): A parameter that influences the balance between precision and recall in the evaluation of factual correctness.
         answer_similarity (Optional[AnswerSimilarity]): An optional metric for computing semantic similarity between actual and expected outputs.
         evaluation_template (Type[AnswerCorrectnessTemplate]): The prompt template used for evaluating correctness.
     """

@@ -23,11 +23,11 @@ class TestPrivateEmbeddingsAsync(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_aembed_query(self):
-        result = await self.emb.aembed_query("async-hello")
+        result = await self.emb.embed_text("async-hello")
         self.assertEqual(result, [0.1, 0.2, 0.3])
 
     async def test_aembed_documents(self):
-        result = await self.emb.aembed_documents(["x", "y"])
+        result = await self.emb.embed_texts(["x", "y"])
         self.assertEqual(result, [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
 
 
@@ -53,20 +53,20 @@ class TestLangchainEmbeddingsWrapper(unittest.IsolatedAsyncioTestCase):
         self.assertIn("LangchainEmbeddingsWrapper", repr(self.wrapper))
 
     async def test_aembed_query(self):
-        result = await self.wrapper.aembed_query("query")
+        result = await self.wrapper.embed_text("query")
         self.assertEqual(result, [1.1, 1.2, 1.3])
 
     async def test_aembed_documents(self):
-        result = await self.wrapper.aembed_documents(["d1", "d2"])
+        result = await self.wrapper.embed_texts(["d1", "d2"])
         self.assertEqual(result, [[1.1, 1.2, 1.3], [1.1, 1.2, 1.3]])
 
     async def test_aembed_query_type_error(self):
         with self.assertRaises(TypeError):
-            await self.wrapper.aembed_query(123)  # type: ignore
+            await self.wrapper.embed_text(123)  # type: ignore
 
     async def test_aembed_documents_type_error(self):
         with self.assertRaises(TypeError):
-            await self.wrapper.aembed_documents("not-a-list")  # type: ignore
+            await self.wrapper.embed_texts("not-a-list")  # type: ignore
 
 
 if __name__ == "__main__":

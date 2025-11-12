@@ -120,6 +120,7 @@ class TestTaskConfig:
     prompt_template: str
     n_samples: int = 10
     description: Optional[str] = None
+    parameter_space: Optional[Dict[str, Any]] = None  # ParameterOptimizer需要的参数空间
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -130,6 +131,7 @@ class TestTaskConfig:
             "prompt_template": self.prompt_template,
             "n_samples": self.n_samples,
             "description": self.description,
+            "parameter_space": self.parameter_space,
         }
 
 
@@ -224,6 +226,9 @@ class OptimizerTestConfig:
                 prompt_template=task_data["prompt_template"],
                 n_samples=task_data.get("n_samples", 10),
                 description=task_data.get("description"),
+                parameter_space=task_data.get(
+                    "parameter_space"
+                ),  # 添加parameter_space支持
             )
             config.tasks.append(task)
 

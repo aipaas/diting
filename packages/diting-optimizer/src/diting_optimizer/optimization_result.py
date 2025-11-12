@@ -312,6 +312,14 @@ class OptimizationResult(BaseModel):
     best_config: BaseConfig = Field(description="Best optimized configuration")
     best_score: float = Field(description="Best performance score achieved")
 
+    initial_score_on_test: Optional[float] = Field(
+        default=None, description="Initial performance score (testset)"
+    )
+
+    final_score_on_test: Optional[float] = Field(
+        default=None, description="Final performance score (testset)"
+    )
+
     # Baseline information (reference Opik)
     initial_config: Optional[BaseConfig] = Field(
         default=None, description="Initial configuration (baseline)"
@@ -704,14 +712,15 @@ class OptimizationResult(BaseModel):
         lines.append("## 性能指标")
         lines.append("")
 
-        initial_score_str = (
-            _format_float(self.initial_score)
-            if isinstance(self.initial_score, (int, float))
-            else "N/A"
-        )
+        initial_score_str = _format_float(self.initial_score)
         final_score_str = _format_float(self.best_score)
         improvement_str = self._calculate_improvement_str()
 
+        initial_score_on_test_str = _format_float(self.initial_score_on_test)
+        final_score_on_test_str = _format_float(self.final_score_on_test)
+        lines.append(f"- **测试集初始分数**: {initial_score_on_test_str}")
+        lines.append(f"- **测试集最终分数**: {final_score_on_test_str}")
+        lines.append("训练集：")
         lines.append(f"- **初始分数**: {initial_score_str}")
         lines.append(f"- **最佳分数**: {final_score_str}")
         lines.append(f"- **改进幅度**: {improvement_str}")

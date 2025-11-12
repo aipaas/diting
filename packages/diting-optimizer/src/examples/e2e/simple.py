@@ -19,7 +19,7 @@ from diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.
 )
 from diting_optimizer.datasets.hotpot_qa import hotpot_300
 from diting_optimizer.target.prompt_config import PromptConfig
-from examples.accuracy_metric import AccuracyAndConciseMetric
+from examples.metric.accuracy_metric import AccuracyAndConciseMetric
 
 
 def display_format_test_results_batch():

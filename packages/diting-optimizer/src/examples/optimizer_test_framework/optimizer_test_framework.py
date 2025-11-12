@@ -184,12 +184,19 @@ class OptimizerTestFramework:
 
         # 执行优化
         start_time = datetime.now()
+
+        # 准备优化参数
+        optimize_kwargs = {
+            "n_samples": task_config.n_samples,
+            "verbose": False,
+        }
+
+        # 如果是ParameterOptimizer，添加parameter_space参数
+        if task_config.parameter_space:
+            optimize_kwargs["parameter_space"] = task_config.parameter_space
+
         optimization_result = await optimizer.optimize(
-            prompt_config,
-            dataset,
-            metric,
-            n_samples=task_config.n_samples,
-            verbose=False,
+            prompt_config, dataset, metric, **optimize_kwargs
         )
         end_time = datetime.now()
 

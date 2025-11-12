@@ -300,8 +300,29 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
                 f"got {type(config).__name__}"
             )
 
-        prompt_config = config
+        dataset, test_dataset = dataset.split()
+        initial_config = config
         histories: List[HistoryRecord] = []
+
+        init_test_result = await evaluate_prompt(
+            prompt_config=config,
+            dataset=test_dataset,
+            metric=metric,
+            max_concurrency=self.num_eval_threads,
+            n_samples=n_samples,
+            callbacks=callbacks,
+        )
+        history = HistoryRecord(
+            iteration=0,
+            stage="init",
+            score=init_test_result.avg_score,
+            config=initial_config,
+            experiment_result=init_test_result,
+            optimizer_name=self.__class__.__name__,
+            metric_name=metric.__class__.__name__,
+        )
+        logger.info(f"initial_score_on_test: {init_test_result.avg_score}")
+        histories.append(history)
 
         run_manager, grp_cb = await new_group(
             name="optimize",
@@ -321,7 +342,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
         )
 
         experiment_result = await evaluate_prompt(
-            prompt_config=prompt_config,
+            prompt_config=initial_config,
             dataset=dataset,
             metric=metric,
             max_concurrency=self.num_eval_threads,
@@ -333,7 +354,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
             iteration=0,
             stage="baseline",
             score=baseline_score,
-            config=prompt_config,
+            config=initial_config,
             experiment_result=experiment_result,
             optimizer_name=self.__class__.__name__,
             metric_name=metric.__class__.__name__,
@@ -346,7 +367,7 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
 
         # Track baseline and best
         best_score = baseline_score
-        best_prompt = prompt_config
+        best_prompt = initial_config
         current_experiment_result = (
             experiment_result  # Separate variable for current iteration result
         )
@@ -515,13 +536,36 @@ class HierarchicalReflectiveOptimizer(BaseOptimizer):
         # Calculate final improvement
         final_improvement = self.calculate_improvement(best_score, baseline_score)
 
+        final_test_result = await evaluate_prompt(
+            prompt_config=best_prompt,
+            dataset=test_dataset,
+            metric=metric,
+            max_concurrency=self.num_eval_threads,
+            n_samples=n_samples,
+            callbacks=callbacks,
+        )
+
+        history = HistoryRecord(
+            iteration=0,
+            stage="final",
+            score=final_test_result.avg_score,
+            config=best_prompt,
+            experiment_result=final_test_result,
+            optimizer_name=self.__class__.__name__,
+            metric_name=metric.__class__.__name__,
+        )
+        logger.info(f"final_test_result: {final_test_result.avg_score}")
+        histories.append(history)
+
         optimization_result = OptimizationResult(
             optimizer_name=self.__class__.__name__,
             best_config=best_prompt,
             best_score=best_score,
             metric_name=metric.__class__.__name__,
-            initial_config=prompt_config,
+            initial_config=initial_config,
             initial_score=baseline_score,
+            initial_score_on_test=init_test_result.avg_score,
+            final_score_on_test=final_test_result.avg_score,
             improvement=final_improvement,
             histories=histories,
             details={

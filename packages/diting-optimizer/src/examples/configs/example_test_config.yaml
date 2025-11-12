@@ -31,9 +31,253 @@ embedding:
 
 # 测试任务列表
 tasks:
-  # 任务1: 基金经理机器人 - 使用准确性评估
+  ################# ParameterOptimizer ################################
+  #  - name: "fund_manager_accuracy_based_optimize_model_parameters"
+  #    description: "基金经理机器人使用准确性和简洁性指标测试并优化模型参数"
+  #    dataset:
+  #      name: "fund_manager_qa_10"
+  #      module_path: "examples.data.fund_manager_robot_qa"
+  #      function_name: "fund_manager_qa_10"
+  #      description: "基金经理问答数据集"
+  #      size: 10
+  #    metric:
+  #      name: "AccuracyAndConciseMetric"
+  #      module_path: "examples.metric.accuracy_metric"
+  #      class_name: "AccuracyAndConciseMetric"
+  #      params:
+  #        model: "eval"
+  #      description: "准确性和简洁性评估指标"
+  #    optimizer:
+  #      name: "ParameterOptimizer"
+  #      module_path: "diting_optimizer.algorithms.prompt.model_parameters.tpe.optimizer"
+  #      class_name: "ParameterOptimizer"
+  #      params:
+  #        num_eval_threads: 10
+  #      description: "TPE参数优化器"
+  #    prompt_template: |
+  #      ## 任务描述
+  #      你是一个知识库回答助手，可以使用 <Cites></Cites> 中的内容作为你本次回答的参考。
+  #      同时，为了使回答结果更加可信并且可追溯，你需要在适当的地方添加引用标记，标识参考了哪些内容。
+  #
+  #      ## 追溯展示规则
+  #
+  #      - 使用 [id](CITE) 的格式来引用 <Cites></Cites> 中的知识，其中 CITE 是固定常量, id 为引文中的 id。
+  #      - **仅在陈述非显而易见、具体或直接来源于 <Cites></Cites> 的信息时添加引用**。对于通用知识、常识性内容或简洁陈述，无需添加引用。
+  #      - 引用必须自然地整合在相关句子结尾。例如: "Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)。"
+  #      - 多个引用时按顺序排列，例如: "Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)[67e517e74767063e882d6862](CITE)。它的特点是非常轻量[67e517e74767063e882d6863](CITE)。"
+  #      - 不要把示例作为知识点。
+  #      - 不要伪造 id，返回的 id 必须都存在 <Cites></Cites> 中！
+  #      - **避免为简洁性或通用事实添加冗余引用。内部文档风格优先考虑清晰与精炼，而非强制每段必引。**
+  #
+  #      ## 通用规则
+  #
+  #      - 如果你不清楚答案，你需要澄清。
+  #      - 保持答案与 <Cites></Cites> 中描述的一致。但是要避免提及你是从 <Cites></Cites> 获取的知识。
+  #      - 使用 Markdown 语法优化回答格式。尤其是图片、表格、序列号等内容，需严格完整输出。
+  #      - 如果有合适的图片作为回答，则必须输出图片。输出图片时，仅需输出图片的 url，不要输出图片描述，例如：[](url)。
+  #      - 使用与问题相同的语言回答。
+  #
+  #      <Cites>
+  #      {context}
+  #      </Cites>
+  #    n_samples: 10
+  #    parameter_space:
+  #      parameters:
+  #        - name: "temperature"
+  #          distribution: "float"
+  #          low: 0.0
+  #          high: 1.0
+  #          scale: "linear"
+  #          description: "模型生成温度参数"
+  #        - name: "top_p"
+  #          distribution: "float"
+  #          low: 0.1
+  #          high: 1.0
+  #          scale: "linear"
+  #          description: "核采样阈值参数"
+  #        - name: "max_tokens"
+  #          distribution: "int"
+  #          low: 128
+  #          high: 8096
+  #          step: 64
+  #          scale: "linear"
+  #          description: "最大生成token数"
+  #
+  #  - name: "fund_manager_correctness_based_optimize_model_parameters"
+  #    description: "基金经理机器人使用答案正确性指标测试并优化模型参数"
+  #    dataset:
+  #      name: "fund_manager_qa_10"
+  #      module_path: "examples.data.fund_manager_robot_qa"
+  #      function_name: "fund_manager_qa_10"
+  #      description: "基金经理问答数据集"
+  #      size: 10
+  #    metric:
+  #      name: "AnswerCorrectness"
+  #      module_path: "diting_core.metrics"
+  #      class_name: "AnswerCorrectness"
+  #      params:
+  #        model: "eval"
+  #        embedding_model: "embedding"
+  #      description: "答案正确性评估指标"
+  #    optimizer:
+  #      name: "ParameterOptimizer"
+  #      module_path: "diting_optimizer.algorithms.prompt.model_parameters.tpe.optimizer"
+  #      class_name: "ParameterOptimizer"
+  #      params:
+  #        num_eval_threads: 10
+  #      description: "TPE参数优化器"
+  #    prompt_template: |
+  #      ## 任务描述
+  #      你是一个知识库回答助手，可以使用 <Cites></Cites> 中的内容作为你本次回答的参考。
+  #      同时，为了使回答结果更加可信并且可追溯，你需要在每段话结尾添加引用标记，标识参考了哪些内容。
+  #
+  #      ## 追溯展示规则
+  #
+  #      - 使用 [id](CITE) 的格式来引用 <Cites></Cites> 中的知识，其中 CITE 是固定常量, id 为引文中的 id。
+  #      - 在 **每段话结尾** 自然地整合引用。例如: "Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)。"。
+  #      - 每段话**至少包含一个引用**，多个引用时按顺序排列，例如："Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)[67e517e74767063e882d6862](CITE)。
+  #       它的特点是非常轻量[67e517e74767063e882d6863](CITE)。"
+  #      - 不要把示例作为知识点。
+  #      - 不要伪造 id，返回的 id 必须都存在 <Cites></Cites> 中！
+  #
+  #      ## 通用规则
+  #
+  #      - 如果 <Cites> 中没有相关信息，必须明确说明无法基于现有上下文回答，不得进行任何推测或编造。
+  #      - 所有回答内容必须严格基于 <Cites> 中明确陈述的信息，不得添加任何未明确陈述的细节、假设、推断、计算、或外部知识。例如，若<Cites>中未提及具体费用类别，则不得添加任何费用类别；若未提及政策步骤，则不得编造步骤顺序。
+  #      - 在生成回答前，逐项检查每个陈述是否在<Cites>中有明确对应的原文，若无则必须删除。
+  #      - 使用 Markdown 语法优化回答格式。尤其是图片、表格、序列号等内容，需严格完整输出。
+  #      - 如果有合适的图片作为回答，则必须输出图片。输出图片时，仅需输出图片的 url，不要输出图片描述，例如：[](url)。
+  #      - 使用与问题相同的语言回答。
+  #
+  #      <Cites>
+  #      {context}
+  #      </Cites>
+  #    n_samples: 10
+  #    parameter_space:
+  #      parameters:
+  #        - name: "temperature"
+  #          distribution: "float"
+  #          low: 0.0
+  #          high: 1.0
+  #          step: 0.1
+  #          scale: "linear"
+  #          description: "模型生成温度参数"
+  #        - name: "top_p"
+  #          distribution: "float"
+  #          low: 0.1
+  #          high: 1.0
+  #          step: 0.1
+  #          scale: "linear"
+  #          description: "核采样阈值参数"
+  #        - name: "max_tokens"
+  #          distribution: "int"
+  #          low: 128
+  #          high: 8096
+  #          step: 64
+  #          scale: "linear"
+  #          description: "最大生成token数"
+  ################# HierarchicalReflectiveOptimizer ################################
+  # 任务0: fastgpt提示词 - 使用aspect评估
+  - name: "fastgpt_hotpotqa-aspect_test"
+    description: "fastgpt_hotpotqa-aspect_test"
+    dataset:
+      name: "hotpotqa_rag_500"
+      module_path: "examples.data.hotpot_qa"
+      function_name: "hotpot_qa_rag_500"
+      description: "hotpot qa rag数据集"
+      size: 500
+    metric:
+      name: "Aspect"
+      module_path: "examples.metric.aspect"
+      class_name: "Aspect"
+      params:
+        model: "eval"
+      description: "aspect评估指标"
+    optimizer:
+      name: "HierarchicalReflectiveOptimizer"
+      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
+      class_name: "HierarchicalReflectiveOptimizer"
+      params:
+        num_eval_threads: 10
+      description: "分层反射优化器"
+    prompt_template: |
+      ## 任务描述
+      你是一个知识库回答助手，可以使用 <Cites></Cites> 中的内容作为你本次回答的参考。
+      同时，为了使回答结果更加可信并且可追溯，你需要在每段话结尾添加引用标记，标识参考了哪些内容。
+
+      ## 追溯展示规则
+
+      - 使用 [id](CITE) 的格式来引用 <Cites></Cites> 中的知识，其中 CITE 是固定常量, id 为引文中的 id。
+      - 在 **每段话结尾** 自然地整合引用。例如: "Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)。"。
+      - 每段话**至少包含一个引用**，多个引用时按顺序排列，例如："Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)[67e517e74767063e882d6862](CITE)。
+        它的特点是非常轻量[67e517e74767063e882d6863](CITE)。"
+      - 不要把示例作为知识点。
+      - 不要伪造 id，返回的 id 必须都存在 <Cites></Cites> 中！
+
+      ## 通用规则
+
+      - 如果你不清楚答案，你需要澄清。
+      - 保持答案与 <Cites></Cites> 中描述的一致。但是要避免提及你是从 <Cites></Cites> 获取的知识。
+      - 使用 Markdown 语法优化回答格式。尤其是图片、表格、序列号等内容，需严格完整输出。
+      - 如果有合适的图片作为回答，则必须输出图片。输出图片时，仅需输出图片的 url，不要输出图片描述，例如：[](url)。
+      - 使用与问题相同的语言回答。
+
+      <Cites>
+      {context}
+      </Cites>
+    n_samples: 500
+
+#  - name: "fastgpt_xquad-aspect_test"
+#    description: "fastgpt_xquad-aspect_test"
+#    dataset:
+#      name: "xquad_qa_500"
+#      module_path: "examples.data.xquad_qa"
+#      function_name: "xquad_qa_500"
+#      description: "xquad rag数据集"
+#      size: 500
+#    metric:
+#      name: "Aspect"
+#      module_path: "examples.metric.aspect"
+#      class_name: "Aspect"
+#      params:
+#        model: "eval"
+#      description: "aspect评估指标"
+#    optimizer:
+#      name: "HierarchicalReflectiveOptimizer"
+#      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
+#      class_name: "HierarchicalReflectiveOptimizer"
+#      params:
+#        num_eval_threads: 10
+#      description: "分层反射优化器"
+#    prompt_template: |
+#      ## 任务描述
+#      你是一个知识库回答助手，可以使用 <Cites></Cites> 中的内容作为你本次回答的参考。
+#      同时，为了使回答结果更加可信并且可追溯，你需要在每段话结尾添加引用标记，标识参考了哪些内容。
+#
+#      ## 追溯展示规则
+#
+#      - 使用 [id](CITE) 的格式来引用 <Cites></Cites> 中的知识，其中 CITE 是固定常量, id 为引文中的 id。
+#      - 在 **每段话结尾** 自然地整合引用。例如: "Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)。"。
+#      - 每段话**至少包含一个引用**，多个引用时按顺序排列，例如："Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)[67e517e74767063e882d6862](CITE)。
+#        它的特点是非常轻量[67e517e74767063e882d6863](CITE)。"
+#      - 不要把示例作为知识点。
+#      - 不要伪造 id，返回的 id 必须都存在 <Cites></Cites> 中！
+#
+#      ## 通用规则
+#
+#      - 如果你不清楚答案，你需要澄清。
+#      - 保持答案与 <Cites></Cites> 中描述的一致。但是要避免提及你是从 <Cites></Cites> 获取的知识。
+#      - 使用 Markdown 语法优化回答格式。尤其是图片、表格、序列号等内容，需严格完整输出。
+#      - 如果有合适的图片作为回答，则必须输出图片。输出图片时，仅需输出图片的 url，不要输出图片描述，例如：[](url)。
+#      - 使用与问题相同的语言回答。
+#
+#      <Cites>
+#      {context}
+#      </Cites>
+#    n_samples: 500
+  #  # 任务1.1: 基金经理机器人 - 使用准确性和简洁性评估
   #  - name: "fund_manager_accuracy_test"
-  #    description: "基金经理机器人使用准确性指标测试"
+  #    description: "基金经理机器人使用准确性和简洁性指标测试"
   #    dataset:
   #      name: "fund_manager_qa_10"
   #      module_path: "examples.data.fund_manager_robot_qa"
@@ -80,22 +324,24 @@ tasks:
   #      {context}
   #      </Cites>
   #    n_samples: 10
-
-  #  - name: "customer_robot_accuracy_test"
-  #    description: "客服机器人使用答案正确性指标测试"
+  #
+  #  # 任务1.2: 基金经理机器人 - 使用答案正确性评估
+  #  - name: "fund_manager_correctness_test"
+  #    description: "基金经理机器人使用答案正确性指标测试"
   #    dataset:
-  #      name: "rag_qa_10"
-  #      module_path: "diting_optimizer.datasets.rag_robot_qa"
-  #      function_name: "rag_qa_10"
-  #      description: "RAG问答数据集"
+  #      name: "fund_manager_qa_10"
+  #      module_path: "examples.data.fund_manager_robot_qa"
+  #      function_name: "fund_manager_qa_10"
+  #      description: "基金经理问答数据集"
   #      size: 10
   #    metric:
-  #      name: "AccuracyAndConciseMetric"
-  #      module_path: "examples.metric.accuracy_metric"
-  #      class_name: "AccuracyAndConciseMetric"
+  #      name: "AnswerCorrectness"
+  #      module_path: "diting_core.metrics"
+  #      class_name: "AnswerCorrectness"
   #      params:
   #        model: "eval"
-  #      description: "准确性和简洁性评估指标"
+  #        embedding_model: "embedding"
+  #      description: "答案正确性评估指标"
   #    optimizer:
   #      name: "HierarchicalReflectiveOptimizer"
   #      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
@@ -129,8 +375,8 @@ tasks:
   #      {context}
   #      </Cites>
   #    n_samples: 10
-  #
-  #  # 任务2: 客服机器人 - 使用答案正确性评估
+
+  #  # 任务2.1: 客服机器人 - 使用答案正确性评估
   #  - name: "customer_robot_correctness_test"
   #    description: "客服机器人使用答案正确性指标测试"
   #    dataset:
@@ -179,59 +425,109 @@ tasks:
   #      <Cites>
   #      {context}
   #      </Cites>
-  #    n_samples: 10
+  #    n_samples: 8
+  #
+  #  # 任务2.2: 客服机器人 - 使用准确性和简洁性评估
+  #  - name: "customer_robot_accuracy_test"
+  #    description: "客服机器人使用准确性和简洁性指标测试"
+  #    dataset:
+  #      name: "rag_qa_10"
+  #      module_path: "diting_optimizer.datasets.rag_robot_qa"
+  #      function_name: "rag_qa_10"
+  #      description: "RAG问答数据集"
+  #      size: 10
+  #    metric:
+  #      name: "AccuracyAndConciseMetric"
+  #      module_path: "examples.metric.accuracy_metric"
+  #      class_name: "AccuracyAndConciseMetric"
+  #      params:
+  #        model: "eval"
+  #      description: "准确性和简洁性评估指标"
+  #    optimizer:
+  #      name: "HierarchicalReflectiveOptimizer"
+  #      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
+  #      class_name: "HierarchicalReflectiveOptimizer"
+  #      params:
+  #        num_eval_threads: 10
+  #      description: "分层反射优化器"
+  #    prompt_template: |
+  #      ## 任务描述
+  #      你是一个知识库回答助手，可以使用 <Cites></Cites> 中的内容作为你本次回答的参考。
+  #      同时，为了使回答结果更加可信并且可追溯，你需要在每段话结尾添加引用标记，标识参考了哪些内容。
+  #
+  #      ## 追溯展示规则
+  #
+  #      - 使用 [id](CITE) 的格式来引用 <Cites></Cites> 中的知识，其中 CITE 是固定常量, id 为引文中的 id。
+  #      - 在 **每段话结尾** 自然地整合引用。例如: "Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)。"。
+  #      - 每段话**至少包含一个引用**，多个引用时按顺序排列，例如："Nginx是一款轻量级的Web服务器、反向代理服务器[67e517e74767063e882d6861](CITE)[67e517e74767063e882d6862](CITE)。
+  #        它的特点是非常轻量[67e517e74767063e882d6863](CITE)。"
+  #      - 不要把示例作为知识点。
+  #      - 不要伪造 id，返回的 id 必须都存在 <Cites></Cites> 中！
+  #
+  #      ## 通用规则
+  #
+  #      - 如果你不清楚答案，你需要澄清。
+  #      - 保持答案与 <Cites></Cites> 中描述的一致。但是要避免提及你是从 <Cites></Cites> 获取的知识。
+  #      - 使用 Markdown 语法优化回答格式。尤其是图片、表格、序列号等内容，需严格完整输出。
+  #      - 如果有合适的图片作为回答，则必须输出图片。输出图片时，仅需输出图片的 url，不要输出图片描述，例如：[](url)。
+  #      - 使用与问题相同的语言回答。
+  #
+  #      <Cites>
+  #      {context}
+  #      </Cites>
+  #    n_samples: 8
 
   # 任务3: Hotpot QA - 使用准确性评估
-  - name: "hotpot_accuracy_test"
-    description: "Hotpot QA数据集使用准确性指标测试"
-    dataset:
-      name: "hotpot_300"
-      module_path: "diting_optimizer.datasets.hotpot_qa"
-      function_name: "hotpot_300"
-      description: "Hotpot问答数据集"
-      size: 300
-    metric:
-      name: "AccuracyAndConciseMetric"
-      module_path: "examples.metric.accuracy_metric"
-      class_name: "AccuracyAndConciseMetric"
-      params:
-        model: "eval"
-      description: "准确性和简洁性评估指标"
-    optimizer:
-      name: "HierarchicalReflectiveOptimizer"
-      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
-      class_name: "HierarchicalReflectiveOptimizer"
-      params:
-        num_eval_threads: 20
-      description: "分层反射优化器"
-    prompt_template: "Provide an answer to the question"
-    n_samples: 1
-
-  - name: "hotpot_correctness_test"
-    description: "Hotpot QA数据集使用准确性指标测试"
-    dataset:
-      name: "hotpot_300"
-      module_path: "diting_optimizer.datasets.hotpot_qa"
-      function_name: "hotpot_300"
-      description: "Hotpot问答数据集"
-      size: 300
-    metric:
-      name: "AnswerCorrectness"
-      module_path: "diting_core.metrics"
-      class_name: "AnswerCorrectness"
-      params:
-        model: "eval"
-        embedding_model: "embedding"
-      description: "答案正确性评估指标"
-    optimizer:
-      name: "HierarchicalReflectiveOptimizer"
-      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
-      class_name: "HierarchicalReflectiveOptimizer"
-      params:
-        num_eval_threads: 20
-      description: "分层反射优化器"
-    prompt_template: "Provide an answer to the question"
-    n_samples: 1
+#  - name: "hotpot_accuracy_test"
+#    description: "Hotpot QA数据集使用准确性指标测试"
+#    dataset:
+#      name: "hotpot_300"
+#      module_path: "diting_optimizer.datasets.hotpot_qa"
+#      function_name: "hotpot_300"
+#      description: "Hotpot问答数据集"
+#      size: 300
+#    metric:
+#      name: "AccuracyAndConciseMetric"
+#      module_path: "examples.metric.accuracy_metric"
+#      class_name: "AccuracyAndConciseMetric"
+#      params:
+#        model: "eval"
+#      description: "准确性和简洁性评估指标"
+#    optimizer:
+#      name: "HierarchicalReflectiveOptimizer"
+#      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
+#      class_name: "HierarchicalReflectiveOptimizer"
+#      params:
+#        num_eval_threads: 20
+#      description: "分层反射优化器"
+#    prompt_template: "Provide an answer to the question"
+#    n_samples: 80
+#
+#  - name: "hotpot_correctness_test"
+#    description: "Hotpot QA数据集使用准确性指标测试"
+#    dataset:
+#      name: "hotpot_300"
+#      module_path: "diting_optimizer.datasets.hotpot_qa"
+#      function_name: "hotpot_300"
+#      description: "Hotpot问答数据集"
+#      size: 300
+#    metric:
+#      name: "AnswerCorrectness"
+#      module_path: "diting_core.metrics"
+#      class_name: "AnswerCorrectness"
+#      params:
+#        model: "eval"
+#        embedding_model: "embedding"
+#      description: "答案正确性评估指标"
+#    optimizer:
+#      name: "HierarchicalReflectiveOptimizer"
+#      module_path: "diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.optimizer"
+#      class_name: "HierarchicalReflectiveOptimizer"
+#      params:
+#        num_eval_threads: 20
+#      description: "分层反射优化器"
+#    prompt_template: "Provide an answer to the question"
+#    n_samples: 80
 
 # 执行配置
 execution:

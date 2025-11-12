@@ -5,7 +5,7 @@ from diting_optimizer.algorithms.prompt.prompt_messages.hierarchical_reflective.
     HierarchicalReflectiveOptimizer,
 )
 from diting_optimizer.target.prompt_config import PromptConfig
-from examples.accuracy_metric import AccuracyAndConciseMetric
+from examples.metric.accuracy_metric import AccuracyAndConciseMetric
 from examples.data.fund_manager_robot_qa import fund_manager_qa_10
 
 FASTGPT_PROMPT = """

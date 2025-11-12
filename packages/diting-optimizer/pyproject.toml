@@ -5,7 +5,11 @@ description = "DiTing Optimizer Module"
 requires-python = ">=3.11"
 dependencies = [
     "diting-core",
-    "optuna>=3.0.0"
+    "optuna>=3.0.0",
+    "datasets==3.3.2",
+    "gepa",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0"
 ]
 
 [build-system]

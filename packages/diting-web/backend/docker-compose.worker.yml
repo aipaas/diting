@@ -1,0 +1,49 @@
+# Docker Compose for ARQ Worker
+# This file can be used to run the worker as a separate service
+
+version: '3.8'
+
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://admin:password@postgres:5432/diting_web
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - diting-network
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: diting_web
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - diting-network
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+    networks:
+      - diting-network
+
+networks:
+  diting-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+
+

@@ -1,0 +1,278 @@
+version: '3.8'
+
+services:
+  # ==================== PostgreSQL Database ====================
+  postgres:
+    image: postgres:16-alpine
+    container_name: diting-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-diting}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-diting_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-diting_web}
+      # 性能优化
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-diting} -d ${POSTGRES_DB:-diting_web}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - diting-network
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "maintenance_work_mem=64MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "work_mem=2MB"
+      - "-c"
+      - "min_wal_size=1GB"
+      - "-c"
+      - "max_wal_size=4GB"
+
+  # ==================== Redis (Cache & Task Queue) ====================
+  redis:
+    image: ${REDIS_IMAGE:-diting-redis:latest}
+    pull_policy: never
+    container_name: diting-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - diting-network
+
+  # ==================== MinIO (Object Storage) ====================
+  minio:
+    image: minio/minio:latest
+    container_name: diting-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin_secure_password}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-http://localhost:9001}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+    networks:
+      - diting-network
+
+  # ==================== Backend API (FastAPI) ====================
+  backend:
+    image: ${BACKEND_IMAGE:-diting-backend:latest}
+    pull_policy: never
+    container_name: diting-backend
+    restart: unless-stopped
+    environment:
+      # Application
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+      HOST: 0.0.0.0
+      PORT: 8000
+      
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-diting}:${POSTGRES_PASSWORD:-diting_secure_password}@postgres:5432/${POSTGRES_DB:-diting_web}
+      DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-20}
+      DATABASE_MAX_OVERFLOW: ${DATABASE_MAX_OVERFLOW:-10}
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      ARQ_REDIS_URL: redis://redis:6379/0
+      
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      
+      # Admin
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin_secure_password}
+      
+      # MinIO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin_secure_password}
+      MINIO_SECURE: ${MINIO_SECURE:-false}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-diting-datasets}
+      
+      # LLM Configuration
+      DEFAULT_LLM_MODEL: ${DEFAULT_LLM_MODEL:-gpt-4o-mini}
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_TIMEOUT: ${LLM_TIMEOUT:-60.0}
+      
+      # Embedding Configuration
+      DEFAULT_EMBEDDING_MODEL: ${DEFAULT_EMBEDDING_MODEL:-bge-m3}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY}
+      EMBEDDING_TIMEOUT: ${EMBEDDING_TIMEOUT:-60.0}
+      
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost","http://localhost:80","http://localhost:3000"]}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - backend_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - diting-network
+
+  # ==================== Worker (ARQ) ====================
+  worker:
+    image: ${WORKER_IMAGE:-diting-worker:latest}
+    pull_policy: never
+    container_name: diting-worker
+    restart: unless-stopped
+    environment:
+      # Application
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+      
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-diting}:${POSTGRES_PASSWORD:-diting_secure_password}@postgres:5432/${POSTGRES_DB:-diting_web}
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      ARQ_REDIS_URL: redis://redis:6379/0
+      
+      # JWT
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      
+      # MinIO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin_secure_password}
+      MINIO_SECURE: ${MINIO_SECURE:-false}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-diting-datasets}
+      
+      # LLM Configuration
+      DEFAULT_LLM_MODEL: ${DEFAULT_LLM_MODEL:-gpt-4o-mini}
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_TIMEOUT: ${LLM_TIMEOUT:-60.0}
+      
+      # Embedding Configuration
+      DEFAULT_EMBEDDING_MODEL: ${DEFAULT_EMBEDDING_MODEL:-bge-m3}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY}
+      EMBEDDING_TIMEOUT: ${EMBEDDING_TIMEOUT:-60.0}
+      
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      
+      # Worker Settings
+      WORKER_MAX_JOBS: ${WORKER_MAX_JOBS:-10}
+      WORKER_JOB_TIMEOUT: ${WORKER_JOB_TIMEOUT:-3600}
+    volumes:
+      - worker_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - diting-network
+
+  # ==================== Frontend (Nginx + React) ====================
+  frontend:
+    image: ${FRONTEND_IMAGE:-diting-frontend:latest}
+    pull_policy: never
+    container_name: diting-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_SSL_PORT:-443}:443"
+    volumes:
+      - frontend_logs:/var/log/nginx
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - diting-network
+
+# ==================== Volumes ====================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  backend_logs:
+    driver: local
+  worker_logs:
+    driver: local
+  frontend_logs:
+    driver: local
+
+# ==================== Networks ====================
+networks:
+  diting-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+

@@ -1,0 +1,20 @@
+# Dockerfile for ARQ Worker
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install uv
+RUN pip install uv
+
+# Copy project files
+COPY pyproject.toml ./
+COPY src/ ./src/
+
+# Install dependencies
+RUN uv sync
+
+# Run worker
+CMD ["uv", "run", "python", "-m", "diting_web.scripts.run_worker"]
+
+

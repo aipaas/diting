@@ -1,0 +1,218 @@
+[project]
+name = "diting-web"
+version = "0.1.0"
+description = "DiTing Web Gateway - Web UI and API Gateway for LLM Evaluation Platform"
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "DiTing Team", email = "team@diting.ai" }
+]
+keywords = ["llm", "evaluation", "web", "api-gateway", "fastapi"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
+
+dependencies = [
+    # 核心 SDK
+    "diting-core",
+    # 🔑 服务层代码（复用 diting-server 的业务逻辑）
+    "diting-server",
+    # Web 框架
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    # 数据库
+    "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    "psycopg2-binary>=2.9.0",
+    # 任务队列
+    "arq>=0.25.0",
+    # 缓存 (arq 已包含 Redis)
+    "redis[hiredis]>=5.0.0",
+    # 对象存储
+    "minio>=7.2.0",
+    # WebSocket
+    "python-socketio>=5.11.0",
+    "python-engineio>=4.9.0",
+    # 认证
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt>=4.0.0,<5.0.0", # 固定 bcrypt 版本以避免兼容性问题
+    # 数据验证
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.10.0",
+    # 日志
+    "structlog>=24.4.0",
+    # 配置
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.0",
+    # 工具
+    "python-multipart>=0.0.9",
+    "email-validator>=2.1.0",
+    # 数据处理
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0", # Excel support
+    "faiss-cpu>=1.12.0",
+]
+
+[project.optional-dependencies]
+# 开发依赖
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.27.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+    "pre-commit>=3.8.0",
+    "factory-boy>=3.3.0",
+    "faker>=25.0.0",
+]
+
+# 监控（可选）
+monitoring = [
+    "prometheus-client>=0.21.0",
+    "opentelemetry-api>=1.27.0",
+    "opentelemetry-sdk>=1.27.0",
+    "opentelemetry-instrumentation-fastapi>=0.48b0",
+]
+
+# 完整功能
+all = [
+    "diting-web[monitoring]",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/diting"
+Documentation = "https://diting.readthedocs.io"
+Repository = "https://github.com/your-org/diting"
+Issues = "https://github.com/your-org/diting/issues"
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning>=0.7.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+bump = true
+
+[tool.uv.sources]
+diting-core = { workspace = true }
+diting-server = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/diting_web"]
+
+# ===== Ruff 配置 =====
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "W191",   # indentation contains tabs
+    "B904",   # Allow raising exceptions without from e
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+# ===== MyPy 配置 =====
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "normal"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+
+# ===== Pytest 配置 =====
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=diting_web",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+]
+
+# ===== Coverage 配置 =====
+[tool.coverage.run]
+source = ["src/diting_web"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+# UV 镜像源配置（使用阿里云镜像）
+[tool.uv]
+index-url = "https://mirrors.aliyun.com/pypi/simple/"
+
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple/"
+

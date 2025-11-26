@@ -16,8 +16,6 @@ class PrivateEmbeddings(BaseModel, BaseEmbeddings):
     client: Any = Field(default=None, exclude=True)
     async_client: Any = Field(default=None, exclude=True)
 
-    cache: Optional[CacheInterface] = None
-
     async def embed_text(self, text: str, **kwargs: Any) -> List[float]:
         run_manager, _ = await new_group(
             name=self.__repr__(),

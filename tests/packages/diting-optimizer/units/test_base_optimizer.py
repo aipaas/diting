@@ -1,5 +1,7 @@
 """测试重构后的BaseOptimizer"""
 
+from typing import Optional, Tuple
+
 import pytest
 
 from diting_optimizer.base_optimizer import BaseOptimizer
@@ -66,6 +68,14 @@ class MockOptimizer(BaseOptimizer):
 
 class MockDataset(BaseDataset):
     """用于测试的Mock数据集"""
+
+    def split(
+        self,
+        train_ratio: float = 0.8,
+        shuffle: bool = True,
+        random_state: Optional[int] = None,
+    ) -> Tuple["BaseDataset", "BaseDataset"]:
+        pass
 
     def __init__(self, name: str = "test_dataset"):
         self.name = name

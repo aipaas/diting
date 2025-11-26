@@ -29,7 +29,7 @@ def discover_synthesizers(
     """
     synthesizers: Dict[str, Type[BaseSynthesizer]] = {}
 
-    def _is_valid_synthesizer_class(cls):  # type: ignore
+    def _is_valid_synthesizer_class(cls):
         """Check if a class is a valid synthesizer class."""
         if not isinstance(cls, type):
             return False

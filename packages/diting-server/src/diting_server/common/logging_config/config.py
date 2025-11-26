@@ -17,7 +17,7 @@ class LoggingConfig:
 
 
 # https://github.com/hynek/structlog/issues/35#issuecomment-591321744
-def rename_event_key(_, __, event_dict: EventDict) -> EventDict:  # type: ignore
+def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
     """
     Log entries keep the text message in the `event` field, but Datadog
     uses the `message` field. This processor moves the value from one field to
@@ -27,7 +27,7 @@ def rename_event_key(_, __, event_dict: EventDict) -> EventDict:  # type: ignore
     return event_dict
 
 
-def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:  # type: ignore
+def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
     """
     Uvicorn logs the message a second time in the extra `color_message`, but we don't
     need it. This processor drops the key from the event dict if it exists.
@@ -37,13 +37,13 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:  # type: 
 
 
 # 自定义处理器，用于添加进程号（用于开发测试）
-def add_process_id(_, __, event_dict: EventDict) -> EventDict:  # type: ignore
+def add_process_id(_, __, event_dict: EventDict) -> EventDict:
     record = event_dict.get("_record")
     event_dict["process"] = getattr(record, "process", os.getpid())  # 获取当前进程号
     return event_dict
 
 
-def add_line(_, __, event_dict: EventDict) -> EventDict:  # type: ignore
+def add_line(_, __, event_dict: EventDict) -> EventDict:
     record = event_dict.get("_record")
     if not record:
         return event_dict
@@ -115,7 +115,7 @@ def setup_logging(config: LoggingConfig, dev: bool = False) -> None:
         log_renderer,
     ]
     if dev:
-        formatter_processors: list[Any] = [  # type: ignore
+        formatter_processors: list[Any] = [
             add_process_id,
             add_line,
         ] + formatter_processors

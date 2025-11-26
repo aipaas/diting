@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import typing as t
 from pydantic import BaseModel
 
-from diting_core.utilities.cache import CacheInterface, cacher  # type: ignore
+from diting_core.utilities.cache import CacheInterface, cacher
 from diting_core.utilities.slug import camel_to_snake
 
 DictOrPydanticClass = t.Union[t.Dict[str, t.Any], t.Type[BaseModel]]

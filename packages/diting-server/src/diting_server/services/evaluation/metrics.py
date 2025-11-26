@@ -27,7 +27,7 @@ def discover_metrics(
     """
     metrics: Dict[str, Type[BaseMetric]] = {}
 
-    def _is_valid_metric_class(cls):  # type: ignore
+    def _is_valid_metric_class(cls):
         """Check if a class is a valid metric class."""
         if not isinstance(cls, type):
             return False

@@ -95,7 +95,7 @@ class DiskCacheBackend(CacheInterface):
         Returns:
             The cached value associated with the key, or None if not found.
         """
-        return self.cache.get(key)  # type: ignore
+        return self.cache.get(key)
 
     def set(self, key: str, value: Any) -> None:
         """Store a value in the disk cache with the given key.
@@ -104,7 +104,7 @@ class DiskCacheBackend(CacheInterface):
             key: The key to store the value under.
             value: The value to cache.
         """
-        self.cache.set(key, value)  # type: ignore
+        self.cache.set(key, value)
 
     def has_key(self, key: str) -> bool:
         """Check if a key exists in the disk cache.
@@ -133,11 +133,11 @@ class DiskCacheBackend(CacheInterface):
 
 def _make_hashable(o: Any) -> Any:
     if isinstance(o, (tuple, list)):
-        return tuple(_make_hashable(e) for e in o)  # type: ignore
+        return tuple(_make_hashable(e) for e in o)
     elif isinstance(o, dict):
-        return tuple(sorted((k, _make_hashable(v)) for k, v in o.items()))  # type: ignore
+        return tuple(sorted((k, _make_hashable(v)) for k, v in o.items()))
     elif isinstance(o, set):
-        return tuple(sorted(_make_hashable(e) for e in o))  # type: ignore
+        return tuple(sorted(_make_hashable(e) for e in o))
     elif isinstance(o, BaseModel):
         return _make_hashable(o.model_dump())
     else:
@@ -147,8 +147,8 @@ def _make_hashable(o: Any) -> Any:
 EXCLUDE_KEYS = ["callbacks"]
 
 
-def _generate_cache_key(func: Callable, args: tuple, kwargs: dict) -> str:  # type: ignore
-    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in EXCLUDE_KEYS}  # type: ignore
+def _generate_cache_key(func: Callable, args: tuple, kwargs: dict) -> str:
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in EXCLUDE_KEYS}
 
     key_data = {
         "function": func.__qualname__,
@@ -161,7 +161,7 @@ def _generate_cache_key(func: Callable, args: tuple, kwargs: dict) -> str:  # ty
     return cache_key
 
 
-def cacher(cache_backend: Optional[CacheInterface] = None) -> Callable:  # type: ignore
+def cacher(cache_backend: Optional[CacheInterface] = None) -> Callable:
     """Decorator that adds caching functionality to a function.
 
     This decorator can be applied to both synchronous and asynchronous functions to cache their results.
@@ -175,18 +175,18 @@ def cacher(cache_backend: Optional[CacheInterface] = None) -> Callable:  # type:
         Callable: A decorated function that implements caching behavior.
     """
 
-    def decorator(func: Callable) -> Callable:  # type: ignore
+    def decorator(func: Callable) -> Callable:
         if cache_backend is None:
-            return func  # type: ignore
+            return func
 
         # hack to make pyright happy
         backend: CacheInterface = cache_backend
 
-        is_async = inspect.iscoroutinefunction(func)  # type: ignore
+        is_async = inspect.iscoroutinefunction(func)
 
         if is_async:
 
-            @functools.wraps(func)  # type: ignore
+            @functools.wraps(func)
             async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                 cache_key = _generate_cache_key(func, args, kwargs)
 
@@ -194,14 +194,14 @@ def cacher(cache_backend: Optional[CacheInterface] = None) -> Callable:  # type:
                     logger.debug(f"Cache hit for {cache_key}")
                     return backend.get(cache_key)
 
-                result = await func(*args, **kwargs)  # type: ignore
+                result = await func(*args, **kwargs)
                 backend.set(cache_key, result)
-                return result  # type: ignore
+                return result
 
-            return async_wrapper  # type: ignore
+            return async_wrapper
         else:
 
-            @functools.wraps(func)  # type: ignore
+            @functools.wraps(func)
             def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
                 cache_key = _generate_cache_key(func, args, kwargs)
 
@@ -209,10 +209,10 @@ def cacher(cache_backend: Optional[CacheInterface] = None) -> Callable:  # type:
                     logger.debug(f"Cache hit for {cache_key}")
                     return backend.get(cache_key)
 
-                result = func(*args, **kwargs)  # type: ignore
+                result = func(*args, **kwargs)
                 backend.set(cache_key, result)
-                return result  # type: ignore
+                return result
 
-            return sync_wrapper  # type: ignore
+            return sync_wrapper
 
-    return decorator  # type: ignore
+    return decorator

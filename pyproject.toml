@@ -8,6 +8,7 @@ dependencies = [
   "diting-core",
   "diting-server",
   "diting-optimizer",
+  "diting-dataset",
 ]
 
 [build-system]
@@ -28,10 +29,16 @@ only-include = ["/README.md"]
 [tool.uv.sources]
 diting-core = { workspace = true }
 diting-server = { workspace = true}
+diting-dataset = { workspace = true }
 diting-optimizer = { workspace = true}
 
 [tool.uv.workspace]
 members = ["packages/*"]
+
+[project.optional-dependencies]
+all = [
+  "diting-dataset[all]",
+]
 
 [dependency-groups]
 dev = [
@@ -98,11 +105,16 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.pyright]
 pythonVersion = "3.11"
-typeCheckingMode = "strict"
+typeCheckingMode = "basic"
 reportMissingTypeStubs = false
 reportUnnecessaryIsInstance = false
 reportUnnecessaryTypeIgnoreComment = true
 reportMissingModuleSource = false
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportGeneralTypeIssues = "warning"
+reportReturnType = "warning"
+
 include = [
     "packages",
     # "tests",

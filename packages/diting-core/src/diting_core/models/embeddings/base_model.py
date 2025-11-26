@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 import typing as t
 
-from diting_core.utilities.cache import CacheInterface, cacher  # type: ignore
+from diting_core.utilities.cache import CacheInterface, cacher
 
 
 class BaseEmbeddings(ABC):

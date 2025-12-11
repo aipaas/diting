@@ -317,3 +317,67 @@ class QAGenerateTemplate:
 
                 JSON
                 """
+
+    @staticmethod
+    def generate_question_pairs(
+        context: List[str],
+        language: Language = Language.ENGLISH,
+    ) -> str:
+        if language == Language.CHINESE:
+            return f"""You will process an article following the steps below.
+
+            Extract five viewpoints using a conversational QA style
+
+            Summarize the article into five key viewpoints, and present them in a QA format with the following constraints:
+
+            For each Answer, generate two conversational, natural, human-like questions (Q1/Q2) that express the same meaning but with slightly different wording. Q2 must be a lightly rephrased version of Q1, and must include the same key entity terms to avoid semantic drift.”
+
+            The five viewpoints must be independent, non-overlapping, and reflect different angles of the article.
+
+            You should only respond in JSON format as described below:
+            {{
+                "summary_within_20_words": "",
+                "five_QAstyle_viewpoints": [
+                    {{
+                        "shared_key_term": "",
+                        "question1": "",
+                        "question2": "",
+                        "answer": "",
+                    }}
+                ]
+            }}
+                            
+            Context:
+            {context}
+
+            JSON
+            """
+        else:
+            return f"""You will process an article following the steps below.
+
+            Extract five viewpoints using a conversational QA style
+
+            Summarize the article into five key viewpoints, and present them in a QA format with the following constraints:
+
+            For each Answer, generate two conversational, natural, human-like questions (Q1/Q2) that express the same meaning but with slightly different wording. Q2 must be a lightly rephrased version of Q1, and must include the same key entity terms to avoid semantic drift.”
+
+            The five viewpoints must be independent, non-overlapping, and reflect different angles of the article.
+
+            You should only respond in JSON format as described below:
+            {{
+                "summary_within_20_words": "",
+                "five_QAstyle_viewpoints": [
+                    {{
+                        "shared_key_term": "",
+                        "question1": "",
+                        "question2": "",
+                        "answer": "",
+                    }}
+                ]
+            }}
+                            
+            Context:
+            {context}
+
+            JSON
+            """

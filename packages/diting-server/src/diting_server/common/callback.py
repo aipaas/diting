@@ -109,3 +109,33 @@ class GetLLMTokenCallbackHandler(BaseTokenCallbackHandler):
             ]
             completion_tokens = count_tokens(chat_generation)
             self._append_usage(ModelType.LLM, prompt_tokens, completion_tokens)
+
+
+class GetRerankTokenCallbackHandler(BaseTokenCallbackHandler):
+    @override
+    async def on_chain_end(
+        self,
+        outputs: Dict[str, Any],
+        *,
+        run_id: UUID,
+        parent_run_id: Optional[UUID] = None,
+        **kwargs: Any,
+    ) -> None:
+        chain_type = kwargs.pop("chain_type", None)
+        if chain_type != ChainType.RERANK:
+            return
+
+        rankings = outputs.get("rankings")
+        usage = outputs.get("usage")
+        if rankings and usage:
+            usage = Usage(
+                model_type=ModelType.RERANK,
+                **usage,
+            )
+            self.usages.append(usage)
+        else:
+            chain_input = kwargs.pop("inputs", None)
+            rerank_input = chain_input.get("documents") if chain_input else None
+            if rerank_input is not None:
+                self._append_usage(ModelType.RERANK, len(rerank_input))
+                # TODO: 确认api返回的resp为什么token是len of doc

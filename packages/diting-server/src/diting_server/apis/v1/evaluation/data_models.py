@@ -62,6 +62,55 @@ class EvaluationResult(BaseSchema):
     run_logs: Optional[Dict[str, Any]] = Field(None, description="运行日志")
 
 
+class RerankEvalCase(BaseSchema):
+    """Rerank评估案例"""
+    q: str = Field(..., description="查询问题")
+    retrieval_reference_list: List[dict] = Field(..., description="检索参考文档ID列表(仅retrieval)")
+    expected_dataid: List[str] = Field(..., description="期望的数据ID列表")
+
+
+class RerankMetricConfig(BaseSchema):
+    metric_name: str = Field("rerank_metric", description="指标名称")
+    k_values: Optional[List[int]] = Field(
+        default_factory=lambda: [5, 10, 15],
+        description="评估的top-k值列表，系统将根据k值自动生成对应的评估列名"
+    )
+    prefixes: Optional[List[str]] = Field(
+        default_factory=lambda: ["rerank"],
+        description="评估列名前缀列表，用于生成如 '{prefix}_top{k}' 的列名，支持多个前缀"
+    )
+    
+    def get_columns_to_evaluate(self) -> List[str]:
+        """
+        根据k值和前缀列表动态生成要评估的列名列表
+        
+        Returns:
+            List[str]: 生成的列名列表，如 ['rerank_top5', 'rerank_top10', 'rerank_top15', 'embedding_top5', ...]
+        """
+        columns = []
+        for prefix in self.prefixes:
+            for k in self.k_values:
+                columns.append(f"{prefix}_top{k}")
+        return columns
+    
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "metric_name": "rerank_metric",
+                "k_values": [5, 10, 15],
+                "prefixes": ["rerank", "embedding"]
+            }
+        }
+    }
+
+
+class RerankEvaluationRequest(BaseSchema):
+    """Rerank数据集评估请求"""
+    dataset: List[RerankEvalCase] = Field(..., description="评估数据集")
+    reranker_config: ModelConfig = Field(..., description="reranker模型配置")
+    metric_config: RerankMetricConfig = Field(..., description="指标配置")
+
+
 class EvaluationResponse(BaseSchema):
     request_id: str = Field(..., description="请求唯一标识符")
     status: StatusEnum = Field(..., description="评估状态")

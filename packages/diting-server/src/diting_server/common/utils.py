@@ -4,7 +4,9 @@ from typing import Any, List, Optional
 from diting_server.common.schema import Usage, ModelType
 
 
-def compute_token_usage(llm_usages: List[Any], embed_usages: List[Any]) -> List[Usage]:
+def compute_token_usage(
+        llm_usages: List[Any], embed_usages: List[Any], rerank_usages: List[Any]
+    ) -> List[Usage]:
     usages: List[Usage] = []
 
     # Embedding token
@@ -33,6 +35,16 @@ def compute_token_usage(llm_usages: List[Any], embed_usages: List[Any]) -> List[
                 model_type=ModelType.LLM,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
+                total_tokens=total_tokens,
+            )
+        )
+
+    # Rerank token
+    if rerank_usages:
+        total_tokens = sum(u.total_tokens for u in rerank_usages)
+        usages.append(
+            Usage(
+                model_type=ModelType.RERANK,
                 total_tokens=total_tokens,
             )
         )

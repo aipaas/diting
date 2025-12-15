@@ -282,6 +282,7 @@ class ChainType(Enum):
     EMBED = "embed"
     CORPORA = "corpora"
     FUNC = "func"
+    RERANK = "rerank"
 
 
 class ChainRun(BaseModel):

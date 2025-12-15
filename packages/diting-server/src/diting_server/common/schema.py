@@ -29,6 +29,7 @@ class SchemaBase(BaseModel):
 class ModelType(StrEnum):
     LLM = "llm"
     EMBED = "embed"
+    RERANK = "rerank"
 
 
 class StatusEnum(StrEnum):

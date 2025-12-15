@@ -4,11 +4,11 @@ from dataclasses import field, dataclass
 from typing import Any, List, Optional
 
 from diting_core.callbacks.base import Callbacks
-from diting_core.cases.llm_case import LLMCase
+from diting_core.cases.llm_case import LLMCaseParams, LLMCase
 from diting_core.models.llms.base_model import BaseLLM
 from diting_core.synthesis.base_synthesizer import BaseSynthesizer
 from diting_core.synthesis.base_corpus import BaseCorpus
-from diting_core.synthesis.qa.schema import QuestionPairs
+from diting_core.synthesis.qa.schema import QA
 from diting_core.synthesis.qa.template import QAGenerateTemplate
 from diting_core.metrics.utils import detect_language
 from diting_server.common.logging_config.config import get_logger
@@ -17,9 +17,9 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class QuestionListSynthesizer(BaseSynthesizer):
+class EvalQASynthesizer(BaseSynthesizer):
     """
-    基于文本生成问题列表的合成器，用于生成5*2 indexes
+    基于QA生成finetune评估集的合成器
 
     Attributes:
         model (BaseLLM): 用于生成数据的语言模型
@@ -30,13 +30,14 @@ class QuestionListSynthesizer(BaseSynthesizer):
     model: Optional[BaseLLM] = None
     required_input_fields: List[str] = field(
         default_factory=lambda: [
-            "context",
+            LLMCaseParams.CONTEXT.value,
         ]
     )
 
     required_output_fields: List[str] = field(
         default_factory=lambda: [
-            "context",
+            LLMCaseParams.USER_INPUT.value,
+            LLMCaseParams.EXPECTED_OUTPUT.value,
         ]
     )
 
@@ -56,30 +57,19 @@ class QuestionListSynthesizer(BaseSynthesizer):
         language = detect_language(combined_text)
 
         # 生成问题列表
-        prompt = QAGenerateTemplate.generate_question_pairs(context, language=language)
+        prompt = QAGenerateTemplate.generate_simple_qa(context, language=language)
 
-        question_pairs = await self.model.generate_structured_output(
-            prompt, schema=QuestionPairs, callbacks=callbacks
+        qa_pairs = await self.model.generate_structured_output(
+            prompt, schema=QA, callbacks=callbacks
         )
-        question_pairs = QuestionPairs.model_validate(
-            question_pairs
-        ).five_QAstyle_viewpoints
+        qa_pairs = QA.model_validate(qa_pairs)
 
-        # 提取问题列表
-        questions = []
-        for pair in question_pairs:
-            questions.append(pair.question1)
-            questions.append(pair.question2)
-
-        # 创建LLMCase，将问题列表存储在metadata中
         llm_case = LLMCase(
-            user_input=context[0],
-            context=questions,
+            user_input=qa_pairs.question,
+            expected_output=qa_pairs.answer,
+            context=context,
             metadata={
                 "synthesizer": self.name,
-                "language": language.value
-                if hasattr(language, "value")
-                else str(language),
             },
         )
 

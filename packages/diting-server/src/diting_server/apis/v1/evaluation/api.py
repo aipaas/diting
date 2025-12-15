@@ -36,7 +36,7 @@ async def run_rerank_evaluation(
     request: RerankEvaluationRequest, http_request: Request
 ) -> EvaluationResponse:
     """Rerank数据集评估，调用RerankMetric进行评估
-    
+
     接受评估数据集，入参格式：
     - q: 查询问题
     - retrieval_reference_list: 检索参考文档ID列表
@@ -56,7 +56,7 @@ async def run_rerank_evaluation(
             }
         ]
     - expected_dataid: 期望的数据ID列表
-        ["68fecc566d93adba6a4c0207"]  
+        ["68fecc566d93adba6a4c0207"]
     """
     request_id = get_request_id_from_scope(http_request.scope)
 

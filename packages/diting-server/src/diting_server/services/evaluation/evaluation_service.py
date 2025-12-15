@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from typing import Optional, Any, Type, List, Dict
+from typing import Optional, Any, Type, List
 from diting_core.cases.llm_case import LLMCase
 from diting_server.apis.v1.evaluation.data_models import (
     EvaluationRequest,
@@ -10,21 +10,19 @@ from diting_server.apis.v1.evaluation.data_models import (
     ModelConfig,
     EvalMetricTypeEnum,
     RerankEvaluationRequest,
-    RerankMetricConfig
+    RerankMetricConfig,
 )
 from diting_server.services.evaluation.metrics import MetricFactory
 from diting_server.common.callback import (
     GetEmbedTokenCallbackHandler,
     GetLLMTokenCallbackHandler,
-    GetRerankTokenCallbackHandler
+    GetRerankTokenCallbackHandler,
 )
 from diting_core.metrics.base_metric import BaseMetric
 from diting_core.models.llms.factory import llm_factory
 from diting_server.common.logging_config.config import get_logger
 from diting_core.models.embeddings.factory import embedding_factory
 from diting_core.models.reranker.factory import reranker_factory
-from diting_core.models.reranker.base_model import BaseReranker
-from diting_core.metrics.rerank_metric.rerank_metric import RerankMetric
 from diting_server.exceptions.evaluation import (
     ModelConfigException,
     MetricNotFoundException,
@@ -158,6 +156,7 @@ class EvaluationService:
             usages = compute_token_usage(
                 llm_usages=get_llm_token.usages,
                 embed_usages=get_embed_token.usages,
+                rerank_usages=None,
             )
 
         return {"metric_value": metric_value, "usages": usages, "error": error}
@@ -173,15 +172,17 @@ class EvaluationService:
         """运行Rerank数据集评估"""
         cases = []
         for eval_data in request.dataset:
-            retrieval_questions = [item.get("q") for item in eval_data.retrieval_reference_list]
+            retrieval_questions = [
+                item.get("q") for item in eval_data.retrieval_reference_list
+            ]
             cases.append(
                 LLMCase(
-                    user_input=eval_data.q, # test question
-                    retrieval_context=retrieval_questions, # recall_refs
+                    user_input=eval_data.q,  # test question
+                    retrieval_context=retrieval_questions,  # recall_refs
                     metadata={
-                        "dataId": eval_data.expected_dataid, 
-                        "embed_quote_list": eval_data.retrieval_reference_list
-                    }
+                        "dataId": eval_data.expected_dataid,
+                        "embed_quote_list": eval_data.retrieval_reference_list,
+                    },
                 )
             )
 
@@ -213,7 +214,6 @@ class EvaluationService:
         )
         return response
 
-
     async def _evaluate_rerank_case_with_metric(
         self,
         cases: List[LLMCase],
@@ -241,10 +241,10 @@ class EvaluationService:
 
         if is_rerank_required and reranker_config:
             reranker_config_resolved = {
-                "model": reranker_config.name, 
-                "api_url": reranker_config.base_url, 
-                "api_key": reranker_config.api_key, 
-                "timeout": reranker_config.timeout
+                "model": reranker_config.name,
+                "api_url": reranker_config.base_url,
+                "api_key": reranker_config.api_key,
+                "timeout": reranker_config.timeout,
             }
             rerank_model = reranker_factory(**reranker_config_resolved)
             setattr(metric, "rerank_model", rerank_model)

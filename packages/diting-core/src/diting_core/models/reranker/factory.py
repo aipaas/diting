@@ -28,7 +28,7 @@ def reranker_factory(
     """
     if api_url is None:
         raise ValueError("api_url is required for reranker_factory")
-    
+
     return PrivateReranker(
         model=model,
         api_url=api_url,
@@ -36,6 +36,5 @@ def reranker_factory(
         timeout=timeout,
         max_retries=max_retries,
         headers=headers or {},
-        **kwargs
+        **kwargs,
     )
-

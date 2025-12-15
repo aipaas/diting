@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_format: str = "plain"  # json
     host: str = "0.0.0.0"
-    port: int = 3000
+    port: int = 7777
 
 
 @lru_cache

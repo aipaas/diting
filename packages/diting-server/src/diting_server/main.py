@@ -53,4 +53,4 @@ if __name__ == "__main__":
     import uvicorn
 
     log_config = get_uvicorn_log_config(settings)
-    uvicorn.run(app, host=settings.host, port=7777, log_config=log_config)
+    uvicorn.run(app, host=settings.host, port=settings.port, log_config=log_config)

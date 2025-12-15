@@ -7,9 +7,11 @@ QA合成模块
 from .qa_synthesizer import QASynthesizer
 from .question_list_synthesizer import QuestionListSynthesizer
 from .fine_tune_data_synthesizer import FineTuneDataSynthesizer
+from .finetune_eval_qa_synthesizer import EvalQASynthesizer
 
 __all__ = [
     "QASynthesizer",
     "QuestionListSynthesizer",
     "FineTuneDataSynthesizer",
+    "EvalQASynthesizer",
 ]

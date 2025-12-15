@@ -5,8 +5,8 @@ from diting_server.common.schema import Usage, ModelType
 
 
 def compute_token_usage(
-        llm_usages: List[Any], embed_usages: List[Any], rerank_usages: List[Any]
-    ) -> List[Usage]:
+    llm_usages: List[Any], embed_usages: List[Any], rerank_usages: List[Any]
+) -> List[Usage]:
     usages: List[Usage] = []
 
     # Embedding token

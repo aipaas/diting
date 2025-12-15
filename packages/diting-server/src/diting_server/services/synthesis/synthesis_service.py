@@ -11,13 +11,13 @@ from diting_server.apis.v1.synthesis.data_models import (
     SyntheticQAResult,
     QAPair,
     FineTuneDataItem,
-    FineTuneSample
+    FineTuneSample,
 )
 from diting_core.synthesis.base_synthesizer import BaseSynthesizer
 from diting_core.synthesis.base_corpus import BaseCorpus
 from diting_server.services.synthesis.synthesizers import SynthesizerFactory
 from diting_core.models.llms.factory import llm_factory
-from diting_server.common.logging_config.config import get_logger 
+from diting_server.common.logging_config.config import get_logger
 from diting_core.models.embeddings.factory import embedding_factory
 from diting_server.common.callback import (
     GetEmbedTokenCallbackHandler,
@@ -31,7 +31,7 @@ from diting_server.common.utils import resolve_model_config
 from diting_server.common.schema import StatusEnum
 from diting_server.common.utils import compute_token_usage
 
-logger = get_logger(__name__) 
+logger = get_logger(__name__)
 
 
 class SynthesizerService:
@@ -55,11 +55,13 @@ class SynthesizerService:
             logger.error(f"Error in synthesizing case: {str(e)}")
             raise e
         if request.synthesizer_config.synthesizer_name == "question_list_synthesizer":
+            # 生成 1*10 indexes
             questions = QuestionList(
                 questions=[]
                 if error_msg
                 else (
-                    [question for question in synthesizer_result.context] if synthesizer_result 
+                    [question for question in synthesizer_result.context]
+                    if synthesizer_result
                     else []
                 )
             )
@@ -180,6 +182,7 @@ class SynthesizerService:
             usages = compute_token_usage(
                 llm_usages=get_llm_token.usages,
                 embed_usages=get_embed_token.usages,
+                rerank_usages=None,
             )
 
         return {"llm_case": llm_case, "usages": usages, "error": error}
@@ -203,49 +206,54 @@ class SynthesizerService:
         try:
             synthesizer_class = self._load_synthesizer("fine_tune_data_synthesizer")
             synthesizer = synthesizer_class()
-            
+
             corpus = BaseCorpus()
             corpus.fine_tune_items = items
             corpus.min_negative_samples = min_negative_samples
             corpus.max_negative_samples = max_negative_samples
             corpus.include_original_q = include_original_q
             corpus.request_id = request_id
-            
+
             llm_case = await synthesizer.apply(corpus=corpus)
-            
+
             # 从 metadata 中提取结果
             result = llm_case.metadata.get("result", {})
-            
+
             # 将字典格式的样本转换为 FineTuneSample 对象
-            samples = result.get('samples', [])
+            samples = result.get("samples", [])
             converted_samples = []
             for sample_dict in samples:
                 if isinstance(sample_dict, dict):
                     # 转换为 FineTuneSample 对象
                     sample = FineTuneSample(
-                        query=sample_dict.get('query', ''),
-                        positive=sample_dict.get('positive', []),
-                        negatives=sample_dict.get('negatives', []),
-                        source_id=sample_dict.get('source_id', ''),
-                        collection_id=sample_dict.get('collection_id', ''),
-                        original_q=sample_dict.get('original_q'),
-                        original_a=sample_dict.get('original_a'),
-                        metadata=sample_dict.get('metadata', {})
+                        query=sample_dict.get("query", ""),
+                        positive=sample_dict.get("positive", []),
+                        negatives=sample_dict.get("negatives", []),
+                        source_id=sample_dict.get("source_id", ""),
+                        collection_id=sample_dict.get("collection_id", ""),
+                        original_q=sample_dict.get("original_q"),
+                        original_a=sample_dict.get("original_a"),
+                        metadata=sample_dict.get("metadata", {}),
                     )
                     converted_samples.append(sample)
                 else:
                     # 如果已经是 FineTuneSample 对象，直接使用
                     converted_samples.append(sample_dict)
-            
+
             # 更新结果中的样本
-            result['samples'] = converted_samples
-            
-            logger.info(f"Request {request_id}: Built {result.get('total_samples', 0)} samples from {len(items)} items using synthesizer") 
-            
+            result["samples"] = converted_samples
+
+            logger.info(
+                f"Request {request_id}: Built {result.get('total_samples', 0)} samples from {len(items)} items using synthesizer"
+            )
+
             return result
-            
+
         except Exception as e:
-            logger.error(f"Request {request_id}: Error building fine tune data with synthesizer: {str(e)}", exc_info=True)
+            logger.error(
+                f"Request {request_id}: Error building fine tune data with synthesizer: {str(e)}",
+                exc_info=True,
+            )
             raise RuntimeError(f"Failed to build fine tune data: {str(e)}") from e
 
 

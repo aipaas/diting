@@ -3,12 +3,7 @@
 from typing import Optional, Dict, Any
 from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field
-
-
-def to_camel(string: str) -> str:
-    """snake_case → camelCase"""
-    parts = string.split("_")
-    return parts[0] + "".join(word.capitalize() for word in parts[1:])
+from pydantic.alias_generators import to_camel
 
 
 class BaseSchema(BaseModel):
@@ -26,21 +21,9 @@ class SchemaBase(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
 
-class ModelType(StrEnum):
-    LLM = "llm"
-    EMBED = "embed"
-
-
 class StatusEnum(StrEnum):
     SUCCESS = "success"
     FAILED = "failed"
-
-
-class Usage(BaseSchema):
-    model_type: ModelType = Field(..., description="Type of the model (llm, embed)")
-    prompt_tokens: Optional[int] = Field(None, description="提示词token数")
-    completion_tokens: Optional[int] = Field(None, description="完成token数")
-    total_tokens: Optional[int] = Field(None, description="总token数")
 
 
 class ModelConfig(BaseSchema):

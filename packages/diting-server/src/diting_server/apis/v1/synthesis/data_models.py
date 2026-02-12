@@ -1,6 +1,8 @@
 from pydantic import Field
 from typing import Optional, Dict, Any, List
-from diting_server.common.schema import Usage, StatusEnum, BaseSchema, ModelConfig
+
+from diting_core.callbacks.usage import Usage
+from diting_server.common.schema import StatusEnum, BaseSchema, ModelConfig
 
 
 class Metadata(BaseSchema):

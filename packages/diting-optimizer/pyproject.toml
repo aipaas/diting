@@ -1,0 +1,31 @@
+[project]
+name = "diting-optimizer"
+version = "0.1.0"
+description = "DiTing Optimizer Module"
+requires-python = ">=3.11"
+dependencies = [
+    "diting-core",
+    "optuna>=3.0.0",
+    "datasets==3.3.2",
+    "gepa",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0"
+]
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning>=0.7.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "pep440"
+bump = true
+
+[tool.uv.sources]
+diting-core = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/diting_optimizer"]

@@ -171,7 +171,7 @@ class TestEvaluationService(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(self.service, "_load_metric", return_value=mock_metric_class):
             with patch(
-                "diting_server.common.utils.compute_token_usage", return_value=[]
+                "diting_core.callbacks.usage.compute_token_usages", return_value=[]
             ):
                 result = await self.service._evaluate_case_with_metric(
                     case, metric_config, llm_config, embedding_config
@@ -209,7 +209,7 @@ class TestEvaluationService(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(self.service, "_load_metric", return_value=mock_metric_class):
             with patch(
-                "diting_server.common.utils.compute_token_usage", return_value=[]
+                "diting_core.callbacks.usage.compute_token_usages", return_value=[]
             ):
                 result = await self.service._evaluate_case_with_metric(
                     case, metric_config, llm_config
@@ -303,7 +303,7 @@ class TestEvaluationService(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(self.service, "_load_metric", return_value=mock_metric_class):
             with patch(
-                "diting_server.common.utils.compute_token_usage", return_value=[]
+                "diting_core.callbacks.usage.compute_token_usages", return_value=[]
             ):
                 result = await self.service._evaluate_case_with_metric(
                     case, metric_config

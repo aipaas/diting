@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import typing as t
 from pydantic import BaseModel
 
+from diting_core.utilities.slug import camel_to_snake
 
 DictOrPydanticClass = t.Union[t.Dict[str, t.Any], t.Type[BaseModel]]
 DictOrPydantic = t.Union[t.Dict[str, t.Any], BaseModel]
@@ -10,6 +11,10 @@ PydanticClass = type[BaseModel]
 
 
 class BaseLLM(ABC):
+    @property
+    def model_name(self) -> str:
+        return camel_to_snake(self.__class__.__name__)
+
     @abstractmethod
     async def generate(
         self,
